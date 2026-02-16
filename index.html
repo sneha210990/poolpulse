@@ -171,6 +171,21 @@ function PoolBusynessTracker() {
   const [showHomepage, setShowHomepage] = useState(true);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [recentCheckins, setRecentCheckins] = useState([]);
+
+const loadRecentCheckins = async () => {
+  const { data, error } = await supa
+    .from("checkins")
+    .select("created_at, pool_id, lane, delta")
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  if (error) {
+    console.error("loadRecentCheckins error:", error);
+    return;
+  }
+  setRecentCheckins(data || []);
+};
 
   useEffect(() => {
     loadData();
