@@ -116,14 +116,21 @@ export default function PoolBusynessTracker() {
 
   const loadData = async () => {
     try {
-      const result = await window.storage.list('pool:', false);
-      if (result && result.keys) {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('pool:')) {
+          keys.push(key);
+        }
+      }
+      
+      if (keys.length > 0) {
         const data = {};
-        for (const key of result.keys) {
-          const poolResult = await window.storage.get(key, false);
-          if (poolResult) {
+        for (const key of keys) {
+          const value = localStorage.getItem(key);
+          if (value) {
             const poolId = key.replace('pool:', '');
-            data[poolId] = JSON.parse(poolResult.value);
+            data[poolId] = JSON.parse(value);
           }
         }
         setPoolData(data);
@@ -172,7 +179,7 @@ export default function PoolBusynessTracker() {
     };
 
     try {
-      await window.storage.set(`pool:${poolId}`, JSON.stringify(update), false);
+      localStorage.setItem(`pool:${poolId}`, JSON.stringify(update));
       setPoolData(prev => ({ ...prev, [poolId]: update }));
       
       // Record this check-in time
