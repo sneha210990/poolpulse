@@ -529,7 +529,7 @@ export default function PoolBusynessTracker() {
               </div>
             </div>
             <p className="text-center text-teal-50 text-lg max-w-2xl mx-auto">
-              Know before you go - See how busy each lane is at Edinburgh Leisure pools
+              Know before you go - See how busy your local pool is.
             </p>
           </div>
         </div>
@@ -593,7 +593,7 @@ export default function PoolBusynessTracker() {
           {/* Features */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="font-bold text-xl mb-3 text-gray-900">🏊 All 7 Edinburgh Pools</h3>
+              <h3 className="font-bold text-xl mb-3 text-gray-900">🏊 Available Pools</h3>
               <ul className="space-y-2 text-gray-600">
                 <li>• Royal Commonwealth Pool</li>
                 <li>• Warrender Swim Centre</li>
