@@ -189,6 +189,7 @@ const loadRecentCheckins = async () => {
 
   useEffect(() => {
     loadData();
+    loadRecentCheckins();
   }, []);
 
   const loadData = async () => {
