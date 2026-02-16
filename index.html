@@ -41,6 +41,7 @@
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5Z2pza3Zma3VjdXd0Y2loYml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNjQ4OTMsImV4cCI6MjA4Njg0MDg5M30.SSrSE9J9-hs0kZNIzUMBCPST5T_JXZG5I68UF4ZjgLs";
 
 const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.supa = supa;
     
     // Get Lucide icons
     const Droplets = (props) => <i data-lucide="droplets" {...props}></i>;
