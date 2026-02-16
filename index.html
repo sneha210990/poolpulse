@@ -172,6 +172,34 @@ function PoolBusynessTracker() {
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [recentCheckins, setRecentCheckins] = useState([]);
+    // --- Recent check-ins from Supabase ---
+  const [recentCheckins, setRecentCheckins] = useState([]);
+  const [checkinsLoading, setCheckinsLoading] = useState(true);
+  const [checkinsError, setCheckinsError] = useState(null);
+
+  const loadRecentCheckins = async () => {
+    setCheckinsLoading(true);
+
+    const { data, error } = await window.supa
+      .from("checkins")
+      .select("id, created_at, pool_id, lane, delta")
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      setCheckinsError(error.message);
+      setRecentCheckins([]);
+    } else {
+      setCheckinsError(null);
+      setRecentCheckins(data ?? []);
+    }
+
+    setCheckinsLoading(false);
+  };
+
+  const formatTime = (iso) => new Date(iso).toLocaleString();
+  const checkinsForPool = (poolId) =>
+    recentCheckins.filter((c) => c.pool_id === poolId).slice(0, 10);
 
 const loadRecentCheckins = async () => {
   const { data, error } = await supa
