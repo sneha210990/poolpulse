@@ -171,7 +171,6 @@ function PoolBusynessTracker() {
   const [showHomepage, setShowHomepage] = useState(true);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [recentCheckins, setRecentCheckins] = useState([]);
     // --- Recent check-ins from Supabase ---
   const [recentCheckins, setRecentCheckins] = useState([]);
   const [checkinsLoading, setCheckinsLoading] = useState(true);
@@ -201,67 +200,95 @@ function PoolBusynessTracker() {
   const checkinsForPool = (poolId) =>
     recentCheckins.filter((c) => c.pool_id === poolId).slice(0, 10);
 
-const loadRecentCheckins = async () => {
-  const { data, error } = await supa
-    .from("checkins")
-    .select("created_at, pool_id, lane, delta")
-    .order("created_at", { ascending: false })
-    .limit(20);
-
-  if (error) {
-    console.error("loadRecentCheckins error:", error);
-    return;
-  }
-  setRecentCheckins(data || []);
-};
-
-  useEffect(() => {
-    loadData();
-    loadRecentCheckins();
-
     // optional: refresh every 10s so you can see other people's check-ins appear
   const t = setInterval(loadRecentCheckins, 10000);
   return () => clearInterval(t);
   }, []);
 
-  const loadData = async () => {
-    try {
-      const result = await window.storage.list('pool:', false);
-      if (result && result.keys) {
-        const data = {};
-        for (const key of result.keys) {
-          const poolResult = await window.storage.get(key, false);
-          if (poolResult) {
-            const poolId = key.replace('pool:', '');
-            data[poolId] = JSON.parse(poolResult.value);
-          }
-        }
-        setPoolData(data);
-      }
-    } catch (error) {
-      console.log('No existing data, starting fresh');
-    } finally {
-      setLoading(false);
-    }
-  };
+ const CHECKIN_WINDOW_MINUTES = 180; // last 3 hours
 
-  const savePoolUpdate = async (poolId, lane, busynessLevel) => {
-    const timestamp = new Date().toISOString();
-    
-    // Basic spam protection: Check last check-in time for this device
-    const lastCheckInKey = 'lastCheckIn';
-    const lastCheckIn = localStorage.getItem(lastCheckInKey);
-    
-    if (lastCheckIn) {
-      const timeSinceLastCheckIn = Date.now() - parseInt(lastCheckIn);
-      const oneHour = 60 * 60 * 1000;
-      
-      if (timeSinceLastCheckIn < oneHour) {
-        const minutesLeft = Math.ceil((oneHour - timeSinceLastCheckIn) / 60000);
-        alert(`Please wait ${minutesLeft} minutes before checking in again. This helps prevent spam and keeps the data accurate for everyone.`);
-        return;
+const loadData = async () => {
+  try {
+    setLoading(true);
+
+    const sinceIso = new Date(Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000).toISOString();
+
+    const { data, error } = await window.supa
+      .from("checkins")
+      .select("pool_id,lane,delta,created_at")
+      .gte("created_at", sinceIso);
+
+    if (error) throw error;
+
+    const agg = {};
+
+    for (const row of data || []) {
+      const poolId = row.pool_id;
+      const laneId = row.lane;
+      const delta = typeof row.delta === "number" ? row.delta : 1;
+      const ts = row.created_at;
+
+      if (!agg[poolId]) agg[poolId] = { lanes: {}, totalUpdates: 0, lastUpdate: null };
+      agg[poolId].totalUpdates += delta;
+
+      if (!agg[poolId].lanes[laneId]) agg[poolId].lanes[laneId] = { checkInCount: 0, lastUpdate: null };
+      agg[poolId].lanes[laneId].checkInCount += delta;
+
+      if (!agg[poolId].lanes[laneId].lastUpdate || ts > agg[poolId].lanes[laneId].lastUpdate) {
+        agg[poolId].lanes[laneId].lastUpdate = ts;
+      }
+      if (!agg[poolId].lastUpdate || ts > agg[poolId].lastUpdate) {
+        agg[poolId].lastUpdate = ts;
       }
     }
+
+    setPoolData(agg);
+  } catch (e) {
+    console.error("loadData error:", e);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const savePoolUpdate = async (poolId, lane) => {
+  // Basic spam protection: Check last check-in time for this device
+  const lastCheckInKey = "lastCheckIn";
+  const lastCheckIn = localStorage.getItem(lastCheckInKey);
+
+  if (lastCheckIn) {
+    const timeSinceLastCheckIn = Date.now() - parseInt(lastCheckIn, 10);
+    const oneHour = 60 * 60 * 1000;
+
+    if (timeSinceLastCheckIn < oneHour) {
+      const minutesLeft = Math.ceil((oneHour - timeSinceLastCheckIn) / 60000);
+      alert(`Please wait ${minutesLeft} minutes before checking in again.`);
+      return;
+    }
+  }
+
+  try {
+    const { error } = await window.supa
+      .from("checkins")
+      .insert([{ pool_id: poolId, lane: lane, delta: 1 }]);
+
+    if (error) throw error;
+
+    localStorage.setItem(lastCheckInKey, Date.now().toString());
+
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
+
+    setSelectedPool(null);
+    setSelectedLane(null);
+
+    // refresh the UI from Supabase
+    loadData();
+    loadRecentCheckins();
+  } catch (e) {
+    console.error("insert error:", e);
+    alert("Failed to save check-in. Please try again.");
+  }
+};
     
     // Get existing pool data or create new
     const existingData = poolData[poolId] || { lanes: {}, totalUpdates: 0 };
@@ -299,12 +326,11 @@ const loadRecentCheckins = async () => {
     }
   };
 
-  const handleSubmit = () => {
-    if (selectedPool && selectedLane) {
-      // Just record the check-in without busyness level
-      savePoolUpdate(selectedPool, selectedLane, null);
-    }
-  };
+ const handleSubmit = () => {
+  if (selectedPool && selectedLane) {
+    savePoolUpdate(selectedPool, selectedLane);
+  }
+};
 
   const getTimeSince = (timestamp) => {
     if (!timestamp) return 'No data yet';
@@ -810,8 +836,8 @@ const loadRecentCheckins = async () => {
     const isOpen = isPoolOpen(pool);
     const hoursText = getOpeningHoursText(pool);
     
-    return (<div className="mt-6">
-  <h3 className="text-lg font-semibold mb-2">Recent check-ins</h3>
+  return (
+  <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 pb-20">
 
   {checkinsLoading && <div className="text-gray-500">Loading check-ins…</div>}
   {checkinsError && <div className="text-red-600">Error: {checkinsError}</div>}
@@ -885,6 +911,30 @@ const loadRecentCheckins = async () => {
         </div>
 
         <div className="max-w-2xl mx-auto px-4 py-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+  <h2 className="text-xl font-bold text-gray-900 mb-4">Recent check-ins</h2>
+
+  {checkinsLoading && <div className="text-gray-500">Loading…</div>}
+  {checkinsError && <div className="text-red-600">Error: {checkinsError}</div>}
+
+  {!checkinsLoading && !checkinsError && (
+    <div className="space-y-2">
+      {checkinsForPool(pool.id).length === 0 ? (
+        <div className="text-gray-500">No check-ins yet.</div>
+      ) : (
+        checkinsForPool(pool.id).map((c) => (
+          <div key={c.id} className="flex items-center justify-between border rounded-lg p-3">
+            <div>
+              <div className="font-medium">{c.lane} lane</div>
+              <div className="text-sm text-gray-600">{formatTime(c.created_at)}</div>
+            </div>
+            <div className="text-sm text-gray-700">+{c.delta}</div>
+          </div>
+        ))
+      )}
+    </div>
+  )}
+</div>
           {poolStatus ? (
             <>
               <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
