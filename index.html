@@ -52,14 +52,13 @@
     // -----------------------
     // Icons (Lucide)
     // -----------------------
-    const Droplets = (props) => <i data-lucide="droplets" {...props}></i>;
-    const Users = (props) => <i data-lucide="users" {...props}></i>;
-    const Clock = (props) => <i data-lucide="clock" {...props}></i>;
-    const MapPin = (props) => <i data-lucide="map-pin" {...props}></i>;
-    const ArrowLeft = (props) => <i data-lucide="arrow-left" {...props}></i>;
-    const Activity = (props) => <i data-lucide="activity" {...props}></i>;
-    const Waves = (props) => <i data-lucide="waves" {...props}></i>;
-
+const Droplets = (props) => <span {...props}>💧</span>;
+const Users = (props) => <span {...props}>👥</span>;
+const Clock = (props) => <span {...props}>⏰</span>;
+const MapPin = (props) => <span {...props}>📍</span>;
+const ArrowLeft = (props) => <span {...props}>⬅️</span>;
+const Activity = (props) => <span {...props}>📊</span>;
+const Waves = (props) => <span {...props}>🌊</span>;
     // -----------------------
     // Data
     // -----------------------
@@ -270,13 +269,17 @@
 
         return () => clearInterval(t);
       }, []);
-
-      // Re-render Lucide icons after React updates
-      useEffect(() => {
-        if (window.lucide && window.lucide.createIcons) {
-          window.lucide.createIcons();
-        }
-      });
+      
+   // Re-render Lucide icons after React updates
+useEffect(() => {
+  if (window.lucide && window.lucide.createIcons) {
+    try {
+      window.lucide.createIcons();
+    } catch (e) {
+      console.error("Lucide error:", e);
+    }
+  }
+}, []);
 
       const savePoolUpdate = async (poolId, lane) => {
         // Spam protection: 1 check-in per hour per device
