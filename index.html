@@ -201,9 +201,24 @@ function PoolBusynessTracker() {
     recentCheckins.filter((c) => c.pool_id === poolId).slice(0, 10);
 
     // optional: refresh every 10s so you can see other people's check-ins appear
-  const t = setInterval(loadRecentCheckins, 10000);
   return () => clearInterval(t);
-  }, []);
+  const formatTime = (iso) => new Date(iso).toLocaleString();
+const checkinsForPool = (poolId) =>
+  recentCheckins.filter((c) => c.pool_id === poolId).slice(0, 10);
+
+const CHECKIN_WINDOW_MINUTES = 180; // last 3 hours
+
+useEffect(() => {
+  loadData();
+  loadRecentCheckins();
+
+  const t = setInterval(() => {
+    loadData();
+    loadRecentCheckins();
+  }, 10000);
+
+  return () => clearInterval(t);
+}, []);
 
  const CHECKIN_WINDOW_MINUTES = 180; // last 3 hours
 
