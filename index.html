@@ -601,13 +601,15 @@ useEffect(() => {
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <div className="grid md:grid-cols-3 gap-8 items-center">
             {/* Left side - Image/Avatar */}
-            <div className="text-center md:col-span-1">
-              <div className="bg-gradient-to-br from-teal-200 to-cyan-200 rounded-full w-32 h-32 mx-auto flex items-center justify-center shadow-lg">
-                <span className="text-6xl">🏊</span>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mt-4">Sneha</h3>
-              <p className="text-teal-600 font-semibold">Swimmer & Creator</p>
-            </div>
+           <div className="text-center md:col-span-1">
+  <img
+    src="./assets/sneha.jpg"
+    alt="Sneha"
+    className="w-32 h-32 mx-auto rounded-full object-cover shadow-lg border-4 border-white"
+  />
+  <h3 className="text-xl font-bold text-gray-900 mt-4">Sneha</h3>
+  <p className="text-teal-600 font-semibold">Swimmer & Creator</p>
+</div>
 
             {/* Right side - Bio */}
             <div className="md:col-span-2">
