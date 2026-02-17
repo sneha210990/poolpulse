@@ -192,151 +192,112 @@ const Waves = (props) => <span {...props}>🌊</span>;
       const checkinsForPool = (poolId) =>
         recentCheckins.filter((c) => c.pool_id === poolId).slice(0, 10);
 
-      const loadRecentCheckins = async () => {
-        setCheckinsLoading(true);
+  const CHECKIN_WINDOW_MINUTES = 180; // last 3 hours
 
-        const { data, error } = await window.supa
-          .from("checkins")
-          .select("id, created_at, pool_id, lane, delta")
-          .order("created_at", { ascending: false })
-          .limit(50);
+// Only show the big spinner on the very first load (prevents "blinking")
+const loadData = async ({ showSpinner = false } = {}) => {
+  try {
+    if (showSpinner) setLoading(true);
 
-        if (error) {
-          console.error("loadRecentCheckins error:", error);
-          setCheckinsError(error.message);
-          setRecentCheckins([]);
-        } else {
-          setCheckinsError(null);
-          setRecentCheckins(data ?? []);
-        }
+    const sinceIso = new Date(
+      Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
+    ).toISOString();
 
-        setCheckinsLoading(false);
-      };
+    const { data, error } = await window.supa
+      .from("checkins")
+      .select("pool_id,lane,delta,created_at")
+      .gte("created_at", sinceIso);
 
-      const loadData = async () => {
-        try {
-          setLoading(true);
+    if (error) throw error;
 
-          const sinceIso = new Date(
-            Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
-          ).toISOString();
+    const agg = {};
 
-          const { data, error } = await window.supa
-            .from("checkins")
-            .select("pool_id,lane,delta,created_at")
-            .gte("created_at", sinceIso);
+    for (const row of data || []) {
+      const poolId = row.pool_id;
+      const laneId = row.lane;
+      const delta = typeof row.delta === "number" ? row.delta : 1;
+      const ts = row.created_at;
 
-          if (error) throw error;
+      if (!agg[poolId]) agg[poolId] = { lanes: {}, totalUpdates: 0, lastUpdate: null };
+      agg[poolId].totalUpdates += delta;
 
-          const agg = {};
+      if (!agg[poolId].lanes[laneId]) agg[poolId].lanes[laneId] = { checkInCount: 0, lastUpdate: null };
+      agg[poolId].lanes[laneId].checkInCount += delta;
 
-          for (const row of data || []) {
-            const poolId = row.pool_id;
-            const laneId = row.lane;
-            const delta = typeof row.delta === "number" ? row.delta : 1;
-            const ts = row.created_at;
+      if (!agg[poolId].lanes[laneId].lastUpdate || ts > agg[poolId].lanes[laneId].lastUpdate) {
+        agg[poolId].lanes[laneId].lastUpdate = ts;
+      }
+      if (!agg[poolId].lastUpdate || ts > agg[poolId].lastUpdate) {
+        agg[poolId].lastUpdate = ts;
+      }
+    }
 
-            if (!agg[poolId]) agg[poolId] = { lanes: {}, totalUpdates: 0, lastUpdate: null };
-            agg[poolId].totalUpdates += delta;
+    setPoolData(agg);
+  } catch (e) {
+    console.error("loadData error:", e);
+  } finally {
+    if (showSpinner) setLoading(false);
+  }
+};
 
-            if (!agg[poolId].lanes[laneId]) agg[poolId].lanes[laneId] = { checkInCount: 0, lastUpdate: null };
-            agg[poolId].lanes[laneId].checkInCount += delta;
-
-            if (!agg[poolId].lanes[laneId].lastUpdate || ts > agg[poolId].lanes[laneId].lastUpdate) {
-              agg[poolId].lanes[laneId].lastUpdate = ts;
-            }
-            if (!agg[poolId].lastUpdate || ts > agg[poolId].lastUpdate) {
-              agg[poolId].lastUpdate = ts;
-            }
-          }
-
-          setPoolData(agg);
-        } catch (e) {
-          console.error("loadData error:", e);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      useEffect(() => {
-        loadData();
-        loadRecentCheckins();
-
-        const t = setInterval(() => {
-          loadData();
-          loadRecentCheckins();
-        }, 10000);
-
-        return () => clearInterval(t);
-      }, []);
-      // Handle browser back button
 useEffect(() => {
-  const handlePopState = () => {
-    setShowHomepage(true);
-    setShowPrivacyPolicy(false);
-    setShowTerms(false);
-    setViewingPool(null);
-  };
+  // Initial load WITH spinner
+  loadData({ showSpinner: true });
+  loadRecentCheckins();
 
-  window.addEventListener('popstate', handlePopState);
-  return () => window.removeEventListener('popstate', handlePopState);
+  // Background refresh WITHOUT spinner (prevents blinking)
+  const t = setInterval(() => {
+    loadData();
+    loadRecentCheckins();
+  }, 10000);
+
+  return () => clearInterval(t);
 }, []);
-      
-   // Re-render Lucide icons after React updates
-useEffect(() => {
-  if (window.lucide && window.lucide.createIcons) {
-    try {
-      window.lucide.createIcons();
-    } catch (e) {
-      console.error("Lucide error:", e);
+
+const savePoolUpdate = async (poolId, lane) => {
+  const lastCheckInKey = "lastCheckIn";
+  const lastCheckIn = localStorage.getItem(lastCheckInKey);
+
+  if (lastCheckIn) {
+    const timeSinceLastCheckIn = Date.now() - parseInt(lastCheckIn, 10);
+    const oneHour = 60 * 60 * 1000;
+
+    if (timeSinceLastCheckIn < oneHour) {
+      const minutesLeft = Math.ceil((oneHour - timeSinceLastCheckIn) / 60000);
+      alert(`Please wait ${minutesLeft} minutes before checking in again.`);
+      return;
     }
   }
-}, []);
 
-      const savePoolUpdate = async (poolId, lane) => {
-        // Spam protection: 1 check-in per hour per device
-        const lastCheckInKey = "lastCheckIn";
-        const lastCheckIn = localStorage.getItem(lastCheckInKey);
+  try {
+    const { error } = await window.supa
+      .from("checkins")
+      .insert([{ pool_id: poolId, lane: lane, delta: 1 }]);
 
-        if (lastCheckIn) {
-          const timeSinceLastCheckIn = Date.now() - parseInt(lastCheckIn, 10);
-          const oneHour = 60 * 60 * 1000;
+    if (error) throw error;
 
-          if (timeSinceLastCheckIn < oneHour) {
-            const minutesLeft = Math.ceil((oneHour - timeSinceLastCheckIn) / 60000);
-            alert(`Please wait ${minutesLeft} minutes before checking in again.`);
-            return;
-          }
-        }
+    localStorage.setItem(lastCheckInKey, Date.now().toString());
 
-        try {
-          const { error } = await window.supa
-            .from("checkins")
-            .insert([{ pool_id: poolId, lane, delta: 1 }]);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
 
-          if (error) throw error;
+    setSelectedPool(null);
+    setSelectedLane(null);
 
-          localStorage.setItem(lastCheckInKey, Date.now().toString());
+    // Refresh UI after inserting
+    loadData();
+    loadRecentCheckins();
+  } catch (e) {
+    console.error("insert error:", e);
+    alert("Failed to save check-in. Please try again.");
+  }
+};
 
-          setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 2000);
-
-          setSelectedPool("");
-          setSelectedLane("");
-
-          await Promise.all([loadData(), loadRecentCheckins()]);
-        } catch (e) {
-          console.error("insert error:", e);
-          alert("Failed to save check-in. Please try again.");
-        }
-      };
-
-      const handleSubmit = () => {
-        if (selectedPool && selectedLane) {
-          savePoolUpdate(selectedPool, selectedLane);
-        }
-      };
-
+const handleSubmit = () => {
+  if (selectedPool && selectedLane) {
+    savePoolUpdate(selectedPool, selectedLane);
+  }
+};
       const getTimeSince = (timestamp) => {
         if (!timestamp) return "No data yet";
         const now = new Date();
