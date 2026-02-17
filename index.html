@@ -513,104 +513,169 @@ useEffect(() => {
       // -----------------------
       // Homepage View
       // -----------------------
-      if (showHomepage) {
-        return (
-          <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50">
-            <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-lg">
-              <div className="max-w-4xl mx-auto px-4 py-8">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-white/30 rounded-full blur-2xl"></div>
-                    <div className="relative bg-white/10 backdrop-blur-sm p-4 rounded-3xl border-2 border-white/30 shadow-2xl">
-                      <Waves className="w-12 h-12" />
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <h1 className="text-4xl font-bold mb-1">Pool Pulse</h1>
-                    <p className="text-teal-100 text-sm font-medium">Edinburgh & Glasgow</p>
-                  </div>
-                </div>
-                <p className="text-center text-teal-50 text-lg max-w-2xl mx-auto">
-                  Know before you go — see how busy each lane is, based on anonymous check-ins.
-                </p>
+     if (showHomepage) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-lg">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-white/30 rounded-full blur-2xl"></div>
+              <div className="relative bg-white/10 backdrop-blur-sm p-4 rounded-3xl border-2 border-white/30 shadow-2xl">
+                <Waves className="w-12 h-12" />
               </div>
             </div>
-
-            <div className="max-w-4xl mx-auto px-4 py-12">
-              <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    Never waste a walk to a crowded pool again
-                  </h2>
-                  <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Pool Pulse shows lane busyness using community check-ins so you can plan your swim better.
-                  </p>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
-                  <div className="text-center">
-                    <div className="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <Users className="w-8 h-8 text-teal-600" />
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">1. Check Before You Go</h3>
-                    <p className="text-gray-600 text-sm">See lane busyness estimates</p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="bg-cyan-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <MapPin className="w-8 h-8 text-cyan-600" />
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">2. Pick Your Pool</h3>
-                    <p className="text-gray-600 text-sm">Check opening times & status</p>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                      <Droplets className="w-8 h-8 text-blue-600" />
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">3. Check In</h3>
-                    <p className="text-gray-600 text-sm">Takes 2 seconds, helps everyone</p>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <button
-                    onClick={() => setShowHomepage(false)}
-                    className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold px-10 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg text-lg"
-                  >
-                    View All Pools
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-8 text-center text-gray-500 text-sm">
-                <p>🔒 Anonymous check-ins • No accounts required</p>
-                <p className="mt-2">
-                  Made with 💙 by Sneha •{" "}
-                  <a href="mailto:snehasindhu2109@gmail.com" className="text-teal-600 hover:text-teal-700 underline">
-                    Contact me
-                  </a>
-                </p>
-
-                <p className="mt-2">
-                  <button
-                    onClick={() => { setShowHomepage(false); setShowPrivacyPolicy(true); }}
-                    className="text-gray-500 hover:text-gray-700 underline mr-3"
-                  >
-                    Privacy Policy
-                  </button>
-                  <button
-                    onClick={() => { setShowHomepage(false); setShowTerms(true); }}
-                    className="text-gray-500 hover:text-gray-700 underline"
-                  >
-                    Terms of Service
-                  </button>
-                </p>
-              </div>
+            <div className="text-center">
+              <h1 className="text-4xl font-bold mb-1">Pool Pulse</h1>
+              <p className="text-teal-100 text-sm font-medium">Edinburgh & Glasgow</p>
             </div>
           </div>
-        );
-      }
+          <p className="text-center text-teal-50 text-lg max-w-2xl mx-auto">
+            Know before you go — see how busy each lane is, based on anonymous check-ins.
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        {/* Main CTA */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Never waste a walk to a crowded pool again
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Pool Pulse shows lane busyness using community check-ins so you can plan your swim better.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="text-center">
+              <div className="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-teal-600" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">1. Check Before You Go</h3>
+              <p className="text-gray-600 text-sm">See lane busyness estimates</p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-cyan-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <MapPin className="w-8 h-8 text-cyan-600" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">2. Pick Your Pool</h3>
+              <p className="text-gray-600 text-sm">Check opening times & status</p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Droplets className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">3. Check In</h3>
+              <p className="text-gray-600 text-sm">Takes 2 seconds, helps everyone</p>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <button
+              onClick={() => setShowHomepage(false)}
+              className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold px-10 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg text-lg"
+            >
+              View All Pools
+            </button>
+          </div>
+        </div>
+
+        {/* About Me Section */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <div className="grid md:grid-cols-3 gap-8 items-center">
+            {/* Left side - Image/Avatar */}
+            <div className="text-center md:col-span-1">
+              <div className="bg-gradient-to-br from-teal-200 to-cyan-200 rounded-full w-32 h-32 mx-auto flex items-center justify-center shadow-lg">
+                <span className="text-6xl">🏊</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mt-4">Sneha</h3>
+              <p className="text-teal-600 font-semibold">Swimmer & Creator</p>
+            </div>
+
+            {/* Right side - Bio */}
+            <div className="md:col-span-2">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">About Pool Pulse</h2>
+              <p className="text-gray-700 mb-4 leading-relaxed">
+                I'm a swimmer who got tired of wasting trips to crowded pools while training for open water swims in Scotland in 2025. I created <strong>Pool Pulse</strong> to solve this problem with a privacy-first solution that helps the swimming community make smarter decisions.
+              </p>
+              <p className="text-gray-700 mb-4 leading-relaxed">
+                Every swimmer contributes anonymously when they check in. No names, no location tracking, just real-time lane busyness insights that help everyone find the perfect time to swim.
+              </p>
+              <p className="text-gray-700 leading-relaxed">
+                Whether you're training hard, getting a casual swim, or avoiding peak hours, <strong>Pool Pulse</strong> has your back. 🌊
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Pools Covered Section */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Pools Covered</h2>
+          <p className="text-gray-600 mb-6">Currently tracking busyness at {POOLS.length} pools in Edinburgh and Glasgow</p>
+          
+          <div className="grid md:grid-cols-2 gap-4">
+            {POOLS.map((pool) => (
+              <div
+                key={pool.id}
+                className="border-l-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                style={{ borderColor: pool.color }}
+              >
+                <h3 className="font-bold text-lg text-gray-900 mb-1">{pool.name}</h3>
+                <div className="flex items-center gap-1 text-gray-600 text-sm">
+                  <MapPin className="w-4 h-4" />
+                  <span>{pool.location}</span>
+                </div>
+                <div className="flex items-center gap-1 text-gray-600 text-sm mt-2">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-xs">
+                    {pool.hours.weekday.open} - {pool.hours.weekday.close}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-teal-50 border-2 border-teal-200 rounded-lg p-4 mt-6">
+            <p className="text-teal-900 text-sm">
+              <strong>🎯 Pilot Phase:</strong> We're currently tracking Leith Victoria, Glenogle, and Royal Commonwealth. More pools coming soon!
+            </p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-12 text-center text-gray-500 text-sm">
+          <p>🔒 Anonymous check-ins • No accounts required • Privacy first</p>
+          <p className="mt-2">
+            Made with 💙 by Sneha •{" "}
+            <a href="mailto:snehasindhu2109@gmail.com" className="text-teal-600 hover:text-teal-700 underline">
+              Contact me
+            </a>
+          </p>
+
+          <p className="mt-4">
+            <button
+              onClick={() => { setShowHomepage(false); setShowPrivacyPolicy(true); }}
+              className="text-gray-500 hover:text-gray-700 underline mr-4"
+            >
+              Privacy Policy
+            </button>
+            <button
+              onClick={() => { setShowHomepage(false); setShowTerms(true); }}
+              className="text-gray-500 hover:text-gray-700 underline"
+            >
+              Terms of Service
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
       // -----------------------
       // Loading screen
