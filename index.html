@@ -626,48 +626,25 @@ useEffect(() => {
         </div>
 
        {/* Swimming Gallery */}
-<div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-  <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+  <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+  <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
     Why Pool Pulse? 💧
   </h2>
 
-  <div className="grid md:grid-cols-3 gap-4">
-    <div className="rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-      <img
-        src="https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&fm=jpg&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&ixlib=rb-4.1.0&q=60&w=1200"
-        alt="Swimming"
-        className="w-full h-48 object-cover"
-      />
-      <div className="p-4 bg-teal-50">
-        <p className="font-bold text-teal-900">Smart Planning</p>
-        <p className="text-sm text-gray-600">Know lane busyness before you go</p>
-      </div>
-    </div>
-
-    <div className="rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-      <img
-        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=60"
-        alt="Community"
-        className="w-full h-48 object-cover"
-      />
-      <div className="p-4 bg-cyan-50">
-        <p className="font-bold text-cyan-900">Community</p>
-        <p className="text-sm text-gray-600">Help other swimmers with your check-ins</p>
-      </div>
-    </div>
-
-    <div className="rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-      <img
-        src="https://images.unsplash.com/photo-1506967726964-da9127fdec36?auto=format&fit=crop&fm=jpg&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&ixlib=rb-4.1.0&q=60&w=1200"
-        alt="Privacy"
-        className="w-full h-48 object-cover"
-      />
-      <div className="p-4 bg-blue-50">
-        <p className="font-bold text-blue-900">Privacy First</p>
-        <p className="text-sm text-gray-600">Anonymous check-ins, no tracking</p>
-      </div>
-    </div>
-  </div>
+  <ul className="space-y-3 text-gray-700 max-w-2xl mx-auto">
+    <li className="flex gap-3">
+      <span className="text-teal-600 font-bold">•</span>
+      <span><span className="font-semibold">Smart planning:</span> know lane busyness before you go.</span>
+    </li>
+    <li className="flex gap-3">
+      <span className="text-cyan-600 font-bold">•</span>
+      <span><span className="font-semibold">Community-powered:</span> your check-ins help other swimmers.</span>
+    </li>
+    <li className="flex gap-3">
+      <span className="text-blue-600 font-bold">•</span>
+      <span><span className="font-semibold">Privacy first:</span> anonymous check-ins, no tracking.</span>
+    </li>
+  </ul>
 </div>
         {/* Pools Covered Section */}
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
