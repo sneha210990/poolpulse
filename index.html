@@ -269,6 +269,18 @@ const Waves = (props) => <span {...props}>🌊</span>;
 
         return () => clearInterval(t);
       }, []);
+      // Handle browser back button
+useEffect(() => {
+  const handlePopState = () => {
+    setShowHomepage(true);
+    setShowPrivacyPolicy(false);
+    setShowTerms(false);
+    setViewingPool(null);
+  };
+
+  window.addEventListener('popstate', handlePopState);
+  return () => window.removeEventListener('popstate', handlePopState);
+}, []);
       
    // Re-render Lucide icons after React updates
 useEffect(() => {
