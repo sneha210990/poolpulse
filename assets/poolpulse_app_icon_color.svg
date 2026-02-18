@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="200" y1="160" x2="860" y2="920" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#12B7B6"/>
+      <stop offset="1" stop-color="#0A7E80"/>
+    </linearGradient>
+  </defs>
+  <rect x="80" y="80" width="864" height="864" rx="200" fill="url(#bg)"/>
+  <g transform="translate(256, 160) scale(1.07)">
+    <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gFill" x1="160" y1="120" x2="390" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#72F0E9"/>
+      <stop offset="0.55" stop-color="#12B7B6"/>
+      <stop offset="1" stop-color="#0A7E80"/>
+    </linearGradient>
+    <linearGradient id="gWave" x1="110" y1="350" x2="470" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.65"/>
+    </linearGradient>
+    <filter id="softShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#071A2B" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <path d="M256 40
+C226 92 164 168 142 250
+C118 340 144 430 212 476
+C232 490 244 496 256 496
+C268 496 280 490 300 476
+C368 430 394 340 370 250
+C348 168 286 92 256 40Z" fill="url(#gFill)" stroke="#0A5E60" stroke-width="18" stroke-linejoin="round"/>
+  </g>
+
+  <defs>
+    <clipPath id="clipDrop">
+      <path d="M256 70
+C232 114 182 184 166 254
+C148 332 170 404 228 444
+C242 454 250 458 256 458
+C262 458 270 454 284 444
+C342 404 364 332 346 254
+C330 184 280 114 256 70Z"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#clipDrop)">
+    <path d="M204 138 C176 220 182 300 210 374 C238 448 256 458 256 458" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="24" stroke-linecap="round"/>
+
+    <path d="M64 348 C150 310 236 310 256 346 C276 382 376 382 476 340"
+          stroke="url(#gWave)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+    <path d="M64 398 C150 360 236 360 256 396 C276 432 376 432 476 390"
+          stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M64 442 C150 404 236 404 256 440 C276 476 376 476 476 434"
+          stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <path d="M118 292 H224
+             L246 252
+             L266 336
+             L294 282
+             L308 302
+             H406"
+          stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M118 292 H150" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" opacity="0.85"/>
+    <path d="M376 302 H406" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" opacity="0.85"/>
+  </g>
+</svg>
+  </g>
+</svg>
