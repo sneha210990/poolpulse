@@ -424,7 +424,7 @@ useEffect(() => {
       if (showPrivacyPolicy) {
         return (
           <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50">
-            <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-lg">
+            <div className="<div className="bg-[#043A3D] text-white shadow-lg"> text-white shadow-lg">
               <div className="max-w-4xl mx-auto px-4 py-6">
                 <button
                   onClick={() => { setShowPrivacyPolicy(false); setShowHomepage(true); }}
@@ -494,7 +494,7 @@ useEffect(() => {
       if (showTerms) {
         return (
           <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50">
-            <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-lg">
+            <div className="<div className="bg-[#043A3D] text-white shadow-lg"> text-white shadow-lg">
               <div className="max-w-4xl mx-auto px-4 py-6">
                 <button
                   onClick={() => { setShowTerms(false); setShowHomepage(true); }}
@@ -615,7 +615,7 @@ useEffect(() => {
           <div className="text-center">
             <button
               onClick={() => setShowHomepage(false)}
-              className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold px-10 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg text-lg"
+              className="<div className="bg-[#043A3D] text-white shadow-lg"> text-white font-bold px-10 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg text-lg"
             >
               View All Pools
             </button>
@@ -766,7 +766,7 @@ useEffect(() => {
         return (
           <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 pb-20">
             <div
-              className="text-white shadow-lg"
+              className="bg-[#043A3D] text-white shadow-lg"
               style={{ background: `linear-gradient(to right, ${pool.color}, ${pool.color}dd)` }}
             >
               <div className="max-w-2xl mx-auto px-4 py-4">
@@ -933,7 +933,7 @@ useEffect(() => {
       // -----------------------
       return (
         <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 pb-20">
-          <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-lg">
+          <div className="<div className="bg-[#043A3D] text-white shadow-lg"> text-white shadow-lg">
             <div className="max-w-2xl mx-auto px-4 py-6">
               <button
                 onClick={() => setShowHomepage(true)}
@@ -1102,7 +1102,7 @@ useEffect(() => {
               {selectedPool && selectedLane && selectedPoolIsOpen && (
                 <button
                   onClick={handleSubmit}
-                  className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold py-4 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all shadow-md mt-4"
+                  className="w-full <div className="bg-[#043A3D] text-white shadow-lg"> text-white font-bold py-4 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all shadow-md mt-4"
                 >
                   I'm Swimming Here Now
                 </button>
