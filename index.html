@@ -1061,7 +1061,11 @@ useEffect(() => {
                 </select>
               </div>
 
-              {selectedPool && (
+              {selectedPool && !selectedPoolIsOpen && (
+  <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+    This pool is currently closed — check-ins are disabled outside opening hours.
+  </div>
+)}
                 <div className="mb-4 animate-fadeIn">
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
                     What lane are you swimming in?
