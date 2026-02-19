@@ -186,13 +186,17 @@ const Waves = (props) => <span {...props}>🌊</span>;
       const [recentCheckins, setRecentCheckins] = useState([]);
       const [checkinsLoading, setCheckinsLoading] = useState(true);
       const [checkinsError, setCheckinsError] = useState(null);
+const getPoolById = (id) => POOLS.find((p) => p.id === id);
+  const selectedPoolObj = selectedPool ? getPoolById(selectedPool) : null;
+  const selectedPoolIsOpen = selectedPoolObj ? isPoolOpen(selectedPoolObj) : false;
 
-      const formatTime = (iso) => new Date(iso).toLocaleString();
+  const formatTime = (iso) => new Date(iso).toLocaleString();
 
-      const checkinsForPool = (poolId) =>
-        recentCheckins.filter((c) => c.pool_id === poolId).slice(0, 10);
+  const checkinsForPool = (poolId) =>
+    recentCheckins.filter((c) => c.pool_id === poolId).slice(0, 10);
 
-      const loadRecentCheckins = async () => {
+  const loadRecentCheckins = async () => {
+     
         setCheckinsLoading(true);
 
         const { data, error } = await window.supa
@@ -331,11 +335,19 @@ useEffect(() => {
         }
       };
 
-      const handleSubmit = () => {
-        if (selectedPool && selectedLane) {
-          savePoolUpdate(selectedPool, selectedLane);
-        }
-      };
+     const handleSubmit = () => {
+  if (!selectedPool || !selectedLane) return;
+
+  const pool = POOLS.find((p) => p.id === selectedPool);
+  if (!pool) return;
+
+  if (!isPoolOpen(pool)) {
+    alert(`${pool.name} is currently closed. Check-ins are disabled outside opening hours.`);
+    return;
+  }
+
+  savePoolUpdate(selectedPool, selectedLane);
+};
 
       const getTimeSince = (timestamp) => {
         if (!timestamp) return "No data yet";
