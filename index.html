@@ -173,6 +173,11 @@ const Waves = (props) => <span {...props}>🌊</span>;
       const [poolData, setPoolData] = useState({});
       const [selectedPool, setSelectedPool] = useState("");
       const [selectedLane, setSelectedLane] = useState("");
+
+      // Reset lane whenever pool changes (prevents accidental check-ins when switching pools)
+      useEffect(() => {
+        setSelectedLane("");
+      }, [selectedPool]);
       const [showSuccess, setShowSuccess] = useState(false);
       const [loading, setLoading] = useState(true);
       const [viewingPool, setViewingPool] = useState(null);
@@ -369,7 +374,7 @@ useEffect(() => {
         return data;
       };
 
-      const isPoolOpen = (pool) => {
+      function isPoolOpen(pool) {
         const now = new Date();
         const day = now.getDay(); // 0 Sunday, 6 Saturday
         const currentTime = now.toTimeString().slice(0, 5);
@@ -389,7 +394,7 @@ useEffect(() => {
         }
 
         return currentTime >= hours.open && currentTime < hours.close;
-      };
+      }
 
       const getOpeningHoursText = (pool) => {
         const now = new Date();
@@ -910,11 +915,12 @@ useEffect(() => {
 
               <div className="text-center">
                 <button
-                  onClick={() => { setSelectedPool(viewingPool); setViewingPool(null); }}
-                  className="text-white font-bold px-8 py-3 rounded-lg hover:opacity-90 transition-all shadow-md"
+                  onClick={() => { if (!isOpen) return; setSelectedPool(viewingPool); setViewingPool(null); }}
+                  disabled={!isOpen}
+                  className={"text-white font-bold px-8 py-3 rounded-lg transition-all shadow-md" + (!isOpen ? " opacity-50 cursor-not-allowed" : " hover:opacity-90")}
                   style={{ backgroundColor: pool.color }}
                 >
-                  Check In At This Pool
+                  {isOpen ? "Check In At This Pool" : "Pool Closed — Check-in disabled"}
                 </button>
               </div>
             </div>
@@ -1066,7 +1072,9 @@ useEffect(() => {
     This pool is currently closed — check-ins are disabled outside opening hours.
   </div>
 )}
-                <div className="mb-4 animate-fadeIn">
+
+              {selectedPool && (
+                <div className={"mb-4 animate-fadeIn" + (!selectedPoolIsOpen ? " opacity-50 pointer-events-none" : "")}>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
                     What lane are you swimming in?
                   </label>
