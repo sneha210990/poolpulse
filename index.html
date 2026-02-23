@@ -27,6 +27,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
   <style>
+    body { font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji'; }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -186,6 +188,10 @@ const Waves = (props) => <span {...props}>🌊</span>;
       const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
       const [showTerms, setShowTerms] = useState(false);
 
+      // Pools list filters (beta)
+      const [openNowOnly, setOpenNowOnly] = useState(true);
+      const [cityFilter, setCityFilter] = useState("All");
+
       // Supabase check-ins state
       const CHECKIN_WINDOW_MINUTES = 180; // last 3 hours
       const [recentCheckins, setRecentCheckins] = useState([]);
@@ -199,6 +205,28 @@ const getPoolById = (id) => POOLS.find((p) => p.id === id);
 
   const checkinsForPool = (poolId) =>
     recentCheckins.filter((c) => c.pool_id === poolId).slice(0, 10);
+
+  const buildStatusFromRecent = (poolId) => {
+    const rows = checkinsForPool(poolId);
+    if (!rows || rows.length === 0) return null;
+
+    const status = { lanes: {}, totalUpdates: 0, lastUpdate: null };
+
+    for (const r of rows) {
+      const laneId = r.lane;
+      const delta = typeof r.delta === "number" ? r.delta : 1;
+      const ts = r.created_at;
+
+      if (!status.lanes[laneId]) status.lanes[laneId] = { checkInCount: 0, lastUpdate: null };
+      status.lanes[laneId].checkInCount += delta;
+      status.totalUpdates += delta;
+
+      if (!status.lanes[laneId].lastUpdate || ts > status.lanes[laneId].lastUpdate) status.lanes[laneId].lastUpdate = ts;
+      if (!status.lastUpdate || ts > status.lastUpdate) status.lastUpdate = ts;
+    }
+
+    return status;
+  };
 
   const loadRecentCheckins = async () => {
      
@@ -374,6 +402,30 @@ useEffect(() => {
         return data;
       };
 
+      const cityOf = (pool) =>
+        (pool.location || "").toLowerCase().includes("glasgow") ? "Glasgow" : "Edinburgh";
+
+      const getOpenStatusText = (pool) => {
+        const now = new Date();
+        const day = now.getDay(); // 0 = Sunday, 6 = Saturday
+        const currentTime = now.toTimeString().slice(0, 5);
+
+        const hoursText = getOpeningHoursText(pool); // "HH:MM - HH:MM"
+        const [open, close] = hoursText.split(" - ");
+
+        // Handle Royal Commonwealth Wednesday training closure
+        if (day === 3 && pool.hours.wednesdayClosed) {
+          if (
+            currentTime >= pool.hours.wednesdayClosed.start &&
+            currentTime < pool.hours.wednesdayClosed.end
+          ) {
+            return `Closed — reopens ${pool.hours.wednesdayClosed.end}`;
+          }
+        }
+
+        return isPoolOpen(pool) ? `Open until ${close}` : `Closed — opens ${open}`;
+      };
+
       function isPoolOpen(pool) {
         const now = new Date();
         const day = now.getDay(); // 0 Sunday, 6 Saturday
@@ -439,49 +491,102 @@ useEffect(() => {
 
             <div className="max-w-4xl mx-auto px-4 py-12">
               <div className="bg-white rounded-xl shadow-lg p-8">
-                <p className="text-gray-600 mb-6">Last updated: February 16, 2026</p>
+                <p className="text-gray-600 mb-6">Last updated: February 20, 2026</p>
 
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Commitment to Privacy</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Privacy Policy</h2>
                 <p className="text-gray-700 mb-6 leading-relaxed">
-                  Pool Pulse is built on trust, not surveillance. This app is designed to help swimmers decide when to swim —
-                  not to identify who they are.
+                  Pool Pulse is designed to be privacy-first. We do not ask you to create an account, and check-ins are
+                  submitted anonymously.
                 </p>
 
-                <div className="bg-teal-50 border-2 border-teal-200 rounded-lg p-6 mb-6">
-                  <h3 className="font-bold text-lg text-teal-900 mb-2">🔒 No Login Required</h3>
-                  <p className="text-teal-800 leading-relaxed">
-                    Pool Pulse doesn’t require accounts, emails, or passwords. Check-ins are anonymous.
-                  </p>
-                </div>
-
-                <h2 className="text-xl font-bold text-gray-900 mb-3">What We Collect</h2>
-                <p className="text-gray-700 mb-4 leading-relaxed">When you check in, we store:</p>
-                <ul className="list-disc ml-6 mb-6 text-gray-700 space-y-2">
-                  <li>Which pool you’re at</li>
-                  <li>Which lane you selected (Fast, Medium, or Slow)</li>
-                  <li>The time you checked in</li>
-                </ul>
-
-                <h2 className="text-xl font-bold text-gray-900 mb-3">What We Don’t Collect</h2>
-                <ul className="list-disc ml-6 mb-6 text-gray-700 space-y-2">
-                  <li>No names, emails, phone numbers</li>
-                  <li>No GPS tracking</li>
-                  <li>No advertising identifiers</li>
-                </ul>
-
-                <h2 className="text-xl font-bold text-gray-900 mb-3">How the Data Is Used</h2>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Who we are</h3>
                 <p className="text-gray-700 mb-6 leading-relaxed">
-                  Check-ins are used only to show lane busyness to other swimmers. Data is stored in a database (Supabase)
-                  so it can be shared across users — but it remains anonymous.
+                  Pool Pulse (“we”, “us”) is an independent community project. Pool Pulse is not affiliated with, endorsed
+                  by, or sponsored by Edinburgh Leisure or any pool operator.
                 </p>
 
-                <h2 className="text-xl font-bold text-gray-900 mb-3">Questions?</h2>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">What data we collect</h3>
+                <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
+                  <li>
+                    <strong>Anonymous check-ins:</strong> pool identifier, lane type, a numeric “delta” (used to adjust
+                    busyness), and a timestamp.
+                  </li>
+                  <li>
+                    <strong>Basic technical data:</strong> like most websites, our hosting and infrastructure providers may
+                    automatically receive standard log data (for example IP address, device/browser type, and request
+                    metadata) for security and operational purposes.
+                  </li>
+                </ul>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">What we do not collect</h3>
+                <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
+                  <li>No names, email addresses, phone numbers, or account credentials.</li>
+                  <li>No precise location tracking, GPS data, or background location access.</li>
+                  <li>No cameras, biometrics, or surveillance.</li>
+                </ul>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">How we use the data</h3>
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  We use anonymous check-ins to calculate and display lane busyness for pools, based on check-ins from the
+                  last 3 hours.
+                </p>
+                <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
+                  <li>To show busyness snapshots (Quiet / OK / Busy) by lane type.</li>
+                  <li>To show “Updated X minutes ago” and recent check-in activity.</li>
+                  <li>To maintain reliability, prevent abuse, and debug issues.</li>
+                </ul>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Legal basis (UK GDPR)</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Where UK GDPR applies, we process anonymous check-in data on the basis of <strong>legitimate interests</strong>
+                  (providing a community service and keeping it accurate), and process limited technical/log data for
+                  <strong> security and service operation</strong>.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Data retention</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Check-ins are intended to be short-lived. The app’s busyness calculations use the most recent 3 hours of
+                  activity. Infrastructure logs (if any) are retained by providers for limited periods according to their
+                  standard practices.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Sharing and processors</h3>
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  We do not sell your data. We use service providers to run Pool Pulse:
+                </p>
+                <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
+                  <li>
+                    <strong>GitHub Pages</strong> for hosting the website.
+                  </li>
+                  <li>
+                    <strong>Supabase</strong> to store anonymous check-ins and retrieve recent check-ins.
+                  </li>
+                </ul>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Cookies and analytics</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  During the beta, Pool Pulse does not run Google Analytics (GA4) and does not set non-essential tracking
+                  cookies. Some essential technical storage may be used by your browser (for example caching).
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Security</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  We use reasonable technical measures to protect the service, but no internet transmission is 100% secure.
+                  Please avoid submitting personal information in any free-text fields (if present in future versions).
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Your rights</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  If any personal data is processed (for example in logs), you may have rights under UK data protection law,
+                  including access, correction, deletion, and objection. Because check-ins are anonymous and we do not
+                  collect identifiers, we may not be able to link records to a specific individual.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Contact</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Email me at{" "}
-                  <a href="mailto:snehasindhu2109@gmail.com" className="text-teal-600 hover:text-teal-700 underline">
-                    snehasindhu2109@gmail.com
-                  </a>
+                  Questions or requests? Please contact the project maintainer via the Pool Pulse GitHub repository.
                 </p>
+
               </div>
             </div>
           </div>
@@ -509,30 +614,74 @@ useEffect(() => {
 
             <div className="max-w-4xl mx-auto px-4 py-12">
               <div className="bg-white rounded-xl shadow-lg p-8">
-                <p className="text-gray-600 mb-6">Last updated: February 16, 2026</p>
+                <p className="text-gray-600 mb-6">Last updated: February 20, 2026</p>
 
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Pool Pulse</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Terms of Service</h2>
                 <p className="text-gray-700 mb-6 leading-relaxed">
-                  Pool Pulse is a free community tool to help swimmers estimate lane busyness using anonymous check-ins.
+                  Pool Pulse is a free, community-built tool that helps swimmers estimate lane busyness using anonymous
+                  check-ins. By using the site, you agree to these Terms.
                 </p>
 
-                <h2 className="text-xl font-bold text-gray-900 mb-3">No Guarantees</h2>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">1) Beta service</h3>
                 <p className="text-gray-700 mb-6 leading-relaxed">
-                  Busyness is based on user check-ins and may not reflect exact current conditions.
+                  Pool Pulse is in beta. Features may change, and the service may be unavailable or interrupted from time
+                  to time.
                 </p>
 
-                <h2 className="text-xl font-bold text-gray-900 mb-3">Be a Good Neighbour</h2>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">2) No affiliation</h3>
                 <p className="text-gray-700 mb-6 leading-relaxed">
-                  Please don’t spam fake check-ins. The system works because swimmers use it honestly.
+                  Pool Pulse is not affiliated with, endorsed by, or sponsored by Edinburgh Leisure or any pool operator.
+                  Opening times and availability may change without notice.
                 </p>
 
-                <h2 className="text-xl font-bold text-gray-900 mb-3">Questions?</h2>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">3) Busyness estimates (no guarantees)</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Busyness is estimated from recent community check-ins (last 3 hours). It may not reflect exact current
+                  conditions. You should always use your own judgement when planning a visit.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">4) Acceptable use</h3>
+                <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
+                  <li>Do not submit spam, fake, or malicious check-ins.</li>
+                  <li>Do not attempt to disrupt or overload the service.</li>
+                  <li>Do not reverse engineer, scrape excessively, or misuse the service.</li>
+                </ul>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">5) Safety</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Pool Pulse does not provide safety advice. Always follow pool rules, lifeguard instructions, and local
+                  guidance.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">6) Intellectual property</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  The Pool Pulse name, logo, and site content are owned by Pool Pulse or its licensors. You may share links
+                  to the site, but you must not use our branding in a way that suggests endorsement.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">7) Limitation of liability</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  To the fullest extent permitted by law, Pool Pulse is provided “as is” and we exclude warranties and
+                  liability for any loss or damage arising from your use of the site or reliance on busyness estimates.
+                  Nothing in these Terms limits liability that cannot be limited under law.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">8) Changes</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  We may update these Terms from time to time. The “Last updated” date indicates the latest version.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">9) Governing law</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  These Terms are governed by the laws of Scotland, and the courts of Scotland will have jurisdiction,
+                  subject to any mandatory consumer protections that apply.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Contact</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Email{" "}
-                  <a href="mailto:snehasindhu2109@gmail.com" className="text-teal-600 hover:text-teal-700 underline">
-                    snehasindhu2109@gmail.com
-                  </a>
+                  Questions or requests? Please contact the project maintainer via the Pool Pulse GitHub repository.
                 </p>
+
               </div>
             </div>
           </div>
@@ -568,7 +717,7 @@ useEffect(() => {
       </div>
     </div>
 
-    <p className="text-center text-white/85 text-lg max-w-2xl mx-auto">
+    <p className="text-center text-white/85 text-lg max-w-4xl mx-auto">
       Know before you go — see how busy each lane is, based on anonymous check-ins.
     </p>
   </div>
@@ -581,7 +730,7 @@ useEffect(() => {
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Never waste a walk to a crowded pool again
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-4xl mx-auto">
               Pool Pulse shows lane busyness using community check-ins so you can plan your swim better.
             </p>
           </div>
@@ -658,7 +807,7 @@ useEffect(() => {
     Why Pool Pulse? 
   </h2>
 
-  <ul className="space-y-3 text-gray-700 max-w-2xl mx-auto">
+  <ul className="space-y-3 text-gray-700 max-w-4xl mx-auto">
     <li className="flex gap-3">
       <span className="text-teal-600 font-bold">•</span>
       <span><span className="font-semibold">Smart planning:</span> know lane busyness before you go.</span>
@@ -712,9 +861,7 @@ useEffect(() => {
           <p>🔒 Anonymous check-ins • No accounts required • Privacy first</p>
           <p className="mt-2">
             Made with 💙 by Sneha •{" "}
-            <a href="mailto:snehasindhu2109@gmail.com" className="text-teal-600 hover:text-teal-700 underline">
-              Contact me
-            </a>
+            the project maintainer via the Pool Pulse GitHub repository
           </p>
 
           <p className="mt-4">
@@ -759,7 +906,7 @@ useEffect(() => {
       // -----------------------
       if (viewingPool) {
         const pool = POOLS.find((p) => p.id === viewingPool);
-        const poolStatus = getPoolStatus(viewingPool);
+        const poolStatus = getPoolStatus(viewingPool) || buildStatusFromRecent(viewingPool);
         const isOpen = isPoolOpen(pool);
         const hoursText = getOpeningHoursText(pool);
 
@@ -768,7 +915,7 @@ useEffect(() => {
             <div
               className="bg-[#043A3D] text-white shadow-lg"
             >
-              <div className="max-w-2xl mx-auto px-4 py-4">
+              <div className="max-w-4xl mx-auto px-4 py-4">
                 <button
                   onClick={() => setViewingPool(null)}
                   className="flex items-center gap-2 text-white/80 hover:text-white mb-3 transition-colors"
@@ -813,7 +960,7 @@ useEffect(() => {
               </div>
             </div>
 
-            <div className="max-w-2xl mx-auto px-4 py-6">
+            <div className="max-w-4xl mx-auto px-4 py-6">
               {/* Recent check-ins */}
               <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Recent check-ins</h2>
@@ -930,10 +1077,19 @@ useEffect(() => {
       // -----------------------
       // Main Pool List View
       // -----------------------
+      const poolsToShow = POOLS
+        .filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter))
+        .filter((p) => (openNowOnly ? isPoolOpen(p) : true));
+
+      const showingNoneOpen = openNowOnly && poolsToShow.length === 0;
+      const poolsToRender = showingNoneOpen
+        ? POOLS.filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter))
+        : poolsToShow;
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 pb-20">
           <div className="bg-[#043A3D] text-white shadow-lg">
-            <div className="max-w-2xl mx-auto px-4 py-6">
+            <div className="max-w-4xl mx-auto px-4 py-6">
               <button
                 onClick={() => setShowHomepage(true)}
                 className="flex items-center gap-2 text-teal-100 hover:text-white mb-3 transition-colors text-sm"
@@ -967,10 +1123,49 @@ useEffect(() => {
             </div>
           )}
 
-          <div className="max-w-2xl mx-auto px-4 py-6">
-            <div className="space-y-4 mb-6">
-              {POOLS.map((pool) => {
-                const poolStatus = getPoolStatus(pool.id);
+          <div className="max-w-4xl mx-auto px-4 py-6">
+            
+        {/* Filters */}
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <input
+                type="checkbox"
+                checked={openNowOnly}
+                onChange={(e) => setOpenNowOnly(e.target.checked)}
+                className="h-4 w-4 accent-teal-600"
+              />
+              Open now
+            </label>
+
+            <div className="text-xs text-gray-500">
+              Busyness is based on check-ins from the last 3 hours.
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">City</span>
+            <select
+              value={cityFilter}
+              onChange={(e) => setCityFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="All">All</option>
+              <option value="Edinburgh">Edinburgh</option>
+              <option value="Glasgow">Glasgow</option>
+            </select>
+          </div>
+        </div>
+
+        {showingNoneOpen && (
+          <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            All pools are closed right now. Showing opening times so you can plan ahead.
+          </div>
+        )}
+
+<div className="space-y-4 mb-6">
+              {poolsToRender.map((pool) => {
+                const poolStatus = getPoolStatus(pool.id) || buildStatusFromRecent(pool.id);
                 const isOpen = isPoolOpen(pool);
                 const hoursText = getOpeningHoursText(pool);
 
@@ -1000,44 +1195,55 @@ useEffect(() => {
 
                           <div className="flex items-center gap-1 text-gray-500 text-xs mt-1">
                             <Clock className="w-3 h-3" />
-                            <span>Today: {hoursText}</span>
+                            <span>{getOpenStatusText(pool)}</span>
+                            <span className="text-gray-400">· Today {hoursText}</span>
                           </div>
                         </div>
                       </div>
 
-                      {poolStatus ? (
+                      {(
                         <div className="space-y-3">
                           <div className="grid grid-cols-3 gap-2">
                             {LANES.map((lane) => {
-                              const laneData = poolStatus.lanes[lane.id];
+                              const laneData = poolStatus?.lanes?.[lane.id];
                               const count = laneData?.checkInCount || 0;
-                              const busyness = getLaneBusyness(count);
+                              const hasData = !!poolStatus && count > 0;
+                              const busyness = hasData ? getLaneBusyness(count) : null;
 
                               return (
                                 <div key={lane.id} className="text-center">
                                   <div className="text-lg mb-1">{lane.icon}</div>
-                                  <div className={`${busyness.bgColor} ${busyness.textColor} px-2 py-1 rounded text-xs font-bold flex items-center justify-center gap-1`}>
-                                    <span>{busyness.emoji}</span>
-                                    <span>{busyness.label}</span>
-                                  </div>
+
+                                  {hasData ? (
+                                    <div
+                                      className={`${busyness.bgColor} ${busyness.textColor} px-2 py-1 rounded text-xs font-bold flex items-center justify-center gap-1`}
+                                    >
+                                      <span>{busyness.emoji}</span>
+                                      <span>{busyness.label}</span>
+                                    </div>
+                                  ) : (
+                                    <div className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs font-bold flex items-center justify-center">
+                                      —
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
                           </div>
 
-                          <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
+                          <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
-                              <span>{getTimeSince(poolStatus.lastUpdate)}</span>
+                              <span>
+                                {poolStatus?.lastUpdate
+                                  ? `Updated ${getTimeSince(poolStatus.lastUpdate)} · ${poolStatus.totalUpdates || 0} check-ins`
+                                  : "No recent check-ins yet"}
+                              </span>
                             </div>
                             <div className="font-semibold" style={{ color: pool.color }}>
-                              Tap for details →
+                              View →
                             </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="text-gray-400 text-sm italic">
-                          No check-ins yet — tap to view or be the first!
                         </div>
                       )}
                     </div>
@@ -1067,7 +1273,7 @@ useEffect(() => {
               </div>
 
               {selectedPool && !selectedPoolIsOpen && (
-  <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+  <div className="mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-sm">
     This pool is currently closed — check-ins are disabled outside opening hours.
   </div>
 )}
