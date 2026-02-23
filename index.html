@@ -228,27 +228,32 @@ const getPoolById = (id) => POOLS.find((p) => p.id === id);
     return status;
   };
 
-  const loadRecentCheckins = async () => {
-     
-        setCheckinsLoading(true);
+const loadRecentCheckins = async () => {
+  setCheckinsLoading(true);
 
-        const { data, error } = await window.supa
-          .from("checkins")
-          .select("id, created_at, pool_id, lane, delta")
-          .order("created_at", { ascending: false })
-          .limit(50);
+  // Only show check-ins from the last CHECKIN_WINDOW_MINUTES (e.g. 180 mins = 3 hours)
+  const sinceIso = new Date(
+    Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
+  ).toISOString();
 
-        if (error) {
-          console.error("loadRecentCheckins error:", error);
-          setCheckinsError(error.message);
-          setRecentCheckins([]);
-        } else {
-          setCheckinsError(null);
-          setRecentCheckins(data ?? []);
-        }
+  const { data, error } = await window.supa
+    .from("checkins")
+    .select("id, created_at, pool_id, lane, delta")
+    .gte("created_at", sinceIso)
+    .order("created_at", { ascending: false })
+    .limit(50);
 
-        setCheckinsLoading(false);
-      };
+  if (error) {
+    console.error("loadRecentCheckins error:", error);
+    setCheckinsError(error.message);
+    setRecentCheckins([]);
+  } else {
+    setCheckinsError(null);
+    setRecentCheckins(data ?? []);
+  }
+
+  setCheckinsLoading(false);
+};
 
       const loadData = async () => {
         try {
