@@ -110,6 +110,7 @@ const BUSYNESS_LEVELS = [
 ];
 
 export default function PoolBusynessTracker() {
+  const appLogo = './assets/poolpulse_app_icon_color.svg';
   const [poolData, setPoolData] = useState({});
   const [selectedPool, setSelectedPool] = useState(null);
   const [selectedLane, setSelectedLane] = useState(null);
@@ -519,8 +520,12 @@ export default function PoolBusynessTracker() {
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-white/30 rounded-full blur-2xl"></div>
-                <div className="relative bg-white/10 backdrop-blur-sm p-4 rounded-3xl border-2 border-white/30 shadow-2xl">
-                  <Waves className="w-12 h-12" />
+                <div className="relative bg-white/10 backdrop-blur-sm p-2 rounded-3xl border-2 border-white/30 shadow-2xl">
+                  <img
+                    src={appLogo}
+                    alt="Pool Pulse"
+                    className="w-14 h-14 object-contain"
+                  />
                 </div>
               </div>
               <div className="text-center">
@@ -875,8 +880,12 @@ export default function PoolBusynessTracker() {
           <div className="flex items-center gap-3 mb-2">
             <div className="relative">
               <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
-              <div className="relative bg-white/10 backdrop-blur-sm p-3 rounded-2xl border-2 border-white/30 shadow-xl">
-                <Waves className="w-8 h-8" />
+              <div className="relative bg-white/10 backdrop-blur-sm p-2 rounded-2xl border-2 border-white/30 shadow-xl">
+                <img
+                  src={appLogo}
+                  alt="Pool Pulse"
+                  className="w-10 h-10 object-contain"
+                />
               </div>
             </div>
             <div>
@@ -980,7 +989,16 @@ export default function PoolBusynessTracker() {
 
         {/* Submit Update Section */}
         <div className="bg-white rounded-xl shadow-lg p-6 sticky bottom-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Check In</h2>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-teal-50 border border-teal-100 rounded-xl p-1.5">
+              <img
+                src={appLogo}
+                alt="Pool Pulse"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Check In</h2>
+          </div>
           
           {/* Pool Selection */}
           <div className="mb-4">
