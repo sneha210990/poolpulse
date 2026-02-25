@@ -88,9 +88,9 @@ const POOLS = [
     location: 'Glasgow (Bellahouston)',
     color: '#14B8A6',
     hours: {
-      weekday: { open: '06:30', close: '21:30' },
-      saturday: { open: '08:00', close: '17:00' },
-      sunday: { open: '08:00', close: '17:00' }
+      weekday: { open: '06:00', close: '22:00' },
+      saturday: { open: '08:00', close: '18:00' },
+      sunday: { open: '08:00', close: '20:00' }
     }
   },
   {
@@ -99,20 +99,9 @@ const POOLS = [
     location: 'Glasgow (Castlemilk)',
     color: '#F97316',
     hours: {
-      weekday: { open: '06:30', close: '21:30' },
-      saturday: { open: '08:00', close: '17:00' },
-      sunday: { open: '08:00', close: '17:00' }
-    }
-  },
-  {
-    id: 'glasgow-club-drumoyne',
-    name: 'Glasgow Club Drumoyne',
-    location: 'Glasgow (Drumoyne)',
-    color: '#22C55E',
-    hours: {
-      weekday: { open: '06:30', close: '21:30' },
-      saturday: { open: '08:00', close: '17:00' },
-      sunday: { open: '08:00', close: '17:00' }
+      weekday: { open: '08:00', close: '20:00' },
+      saturday: { open: '09:00', close: '17:00' },
+      sunday: { open: '10:00', close: '17:00' }
     }
   },
   {
@@ -121,9 +110,13 @@ const POOLS = [
     location: 'Glasgow (Easterhouse)',
     color: '#38BDF8',
     hours: {
-      weekday: { open: '06:30', close: '21:30' },
-      saturday: { open: '08:00', close: '17:00' },
-      sunday: { open: '08:00', close: '17:00' }
+      monday: { open: '09:00', close: '14:30' },
+      tuesday: { open: '14:30', close: '20:00' },
+      wednesday: { open: '09:00', close: '14:30' },
+      thursday: { open: '14:30', close: '20:00' },
+      friday: { open: '09:00', close: '14:30' },
+      saturday: { open: '09:00', close: '16:00' },
+      sunday: { closed: true }
     }
   },
   {
@@ -132,9 +125,9 @@ const POOLS = [
     location: 'Glasgow (Gorbals)',
     color: '#F43F5E',
     hours: {
-      weekday: { open: '06:30', close: '21:30' },
-      saturday: { open: '08:00', close: '17:00' },
-      sunday: { open: '08:00', close: '17:00' }
+      weekday: { open: '06:00', close: '22:00' },
+      saturday: { open: '08:00', close: '18:00' },
+      sunday: { open: '08:00', close: '20:00' }
     }
   },
   {
@@ -143,9 +136,13 @@ const POOLS = [
     location: 'Glasgow (North Woodside)',
     color: '#8B5CF6',
     hours: {
-      weekday: { open: '06:30', close: '21:30' },
-      saturday: { open: '08:00', close: '17:00' },
-      sunday: { open: '08:00', close: '17:00' }
+      monday: { open: '15:00', close: '21:00' },
+      tuesday: { open: '10:00', close: '15:00' },
+      wednesday: { open: '10:00', close: '15:00' },
+      thursday: { open: '15:00', close: '21:00' },
+      friday: { open: '10:00', close: '15:00' },
+      saturday: { open: '09:00', close: '18:00' },
+      sunday: { closed: true }
     }
   },
   {
@@ -154,9 +151,9 @@ const POOLS = [
     location: 'Glasgow (Scotstoun)',
     color: '#0EA5E9',
     hours: {
-      weekday: { open: '06:30', close: '21:30' },
-      saturday: { open: '08:00', close: '17:00' },
-      sunday: { open: '08:00', close: '17:00' }
+      weekday: { open: '06:00', close: '22:00' },
+      saturday: { open: '08:00', close: '18:00' },
+      sunday: { open: '08:00', close: '20:00' }
     }
   },
   {
@@ -165,20 +162,20 @@ const POOLS = [
     location: 'Glasgow (Springburn)',
     color: '#10B981',
     hours: {
-      weekday: { open: '06:30', close: '21:30' },
-      saturday: { open: '08:00', close: '17:00' },
-      sunday: { open: '08:00', close: '17:00' }
+      weekday: { open: '06:00', close: '21:00' },
+      saturday: { open: '08:00', close: '16:00' },
+      sunday: { open: '08:00', close: '16:00' }
     }
   },
   {
-    id: 'glasgow-club-tollcross',
-    name: 'Glasgow Club Tollcross International Swimming Centre',
+    id: 'tollcross-international-swimming-centre',
+    name: 'Tollcross International Swimming Centre',
     location: 'Glasgow (Tollcross)',
     color: '#06B6D4',
     hours: {
-      weekday: { open: '06:30', close: '21:30' },
-      saturday: { open: '08:00', close: '17:00' },
-      sunday: { open: '08:00', close: '17:00' }
+      weekday: { open: '06:00', close: '22:00' },
+      saturday: { open: '08:00', close: '18:00' },
+      sunday: { open: '08:00', close: '20:00' }
     }
   },
   {
@@ -187,9 +184,13 @@ const POOLS = [
     location: 'Glasgow (Whitehill)',
     color: '#84CC16',
     hours: {
-      weekday: { open: '06:30', close: '21:30' },
-      saturday: { open: '08:00', close: '17:00' },
-      sunday: { open: '08:00', close: '17:00' }
+      monday: { closed: true },
+      tuesday: { closed: true },
+      wednesday: { closed: true },
+      thursday: { closed: true },
+      friday: { closed: true },
+      saturday: { closed: true },
+      sunday: { closed: true }
     }
   },
  {
@@ -352,44 +353,40 @@ export default function PoolBusynessTracker() {
     return data;
   };
 
+  const getHoursForDay = (pool, day) => {
+    const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const specific = pool.hours[dayKeys[day]];
+    if (specific) return specific;
+    if (day === 0) return pool.hours.sunday;
+    if (day === 6) return pool.hours.saturday;
+    return pool.hours.weekday;
+  };
+
   const isPoolOpen = (pool) => {
     const now = new Date();
     const day = now.getDay(); // 0 = Sunday, 6 = Saturday
     const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
-    
-    let hours;
-    if (day === 0) { // Sunday
-      hours = pool.hours.sunday;
-    } else if (day === 6) { // Saturday
-      hours = pool.hours.saturday;
-    } else { // Weekday
-      hours = pool.hours.weekday;
-      
-      // Check for Wednesday morning closure at Royal Commonwealth
-      if (day === 3 && pool.hours.wednesdayClosed) {
-        if (currentTime >= pool.hours.wednesdayClosed.start && 
-            currentTime < pool.hours.wednesdayClosed.end) {
-          return false;
-        }
+    const hours = getHoursForDay(pool, day);
+
+    if (!hours || hours.closed) return false;
+
+    // Check for Wednesday morning closure at Royal Commonwealth
+    if (day === 3 && pool.hours.wednesdayClosed) {
+      if (currentTime >= pool.hours.wednesdayClosed.start &&
+          currentTime < pool.hours.wednesdayClosed.end) {
+        return false;
       }
     }
-    
+
     return currentTime >= hours.open && currentTime < hours.close;
   };
 
   const getOpeningHoursText = (pool) => {
     const now = new Date();
     const day = now.getDay();
-    
-    let hours;
-    if (day === 0) {
-      hours = pool.hours.sunday;
-    } else if (day === 6) {
-      hours = pool.hours.saturday;
-    } else {
-      hours = pool.hours.weekday;
-    }
-    
+    const hours = getHoursForDay(pool, day);
+
+    if (!hours || hours.closed) return 'Closed today';
     return `${hours.open} - ${hours.close}`;
   };
 
