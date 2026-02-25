@@ -193,12 +193,14 @@ const Waves = (props) => <span {...props}>🌊</span>;
       const [cityFilter, setCityFilter] = useState("All");
 
       // Feedback form
+      const FEEDBACK_EMAIL = "snehasindhu2109@gmail.com";
       const [feedbackType, setFeedbackType] = useState("general");
       const [feedbackMessage, setFeedbackMessage] = useState("");
       const [feedbackContact, setFeedbackContact] = useState("");
       const [feedbackSent, setFeedbackSent] = useState(false);
       const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
       const [feedbackError, setFeedbackError] = useState("");
+      const [feedbackFallbackHref, setFeedbackFallbackHref] = useState("");
 
       // Supabase check-ins state
       const CHECKIN_WINDOW_MINUTES = 180; // last 3 hours
@@ -271,7 +273,9 @@ const submitFeedback = async (e) => {
   }
 
   setFeedbackSubmitting(true);
+  setFeedbackSent(false);
   setFeedbackError("");
+  setFeedbackFallbackHref("");
 
   const payload = {
     type: feedbackType,
@@ -285,7 +289,18 @@ const submitFeedback = async (e) => {
 
   if (error) {
     console.error("submitFeedback error:", error);
-    setFeedbackError("Sorry, we couldn't send your feedback right now. Please try again or email snehasindhu2109@gmail.com.");
+    const subject = `[Pool Pulse feedback] ${feedbackType}`;
+    const body = [
+      `Type: ${feedbackType}`,
+      "",
+      feedbackMessage.trim(),
+      "",
+      `Contact: ${feedbackContact.trim() || "(not provided)"}`,
+    ].join("\n");
+    const mailtoHref = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    setFeedbackFallbackHref(mailtoHref);
+    setFeedbackError(`Sorry, we couldn't send your feedback right now (${error.message || "unknown error"}). Please try again or email ${FEEDBACK_EMAIL}.`);
     setFeedbackSubmitting(false);
     return;
   }
@@ -906,7 +921,7 @@ useEffect(() => {
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Share feedback</h2>
           <p className="text-gray-600 mb-6">
-            Tell us what would make Pool Pulse more useful. Submit your feedback directly here—no email app needed.
+            Tell us what would make Pool Pulse more useful. Submit your feedback directly here.
           </p>
 
           <form onSubmit={submitFeedback} className="space-y-4">
@@ -962,9 +977,17 @@ useEffect(() => {
           )}
 
           {feedbackError && (
-            <p className="text-sm text-red-700 mt-4">
-              {feedbackError}
-            </p>
+            <div className="text-sm text-red-700 mt-4 space-y-2">
+              <p>{feedbackError}</p>
+              {feedbackFallbackHref && (
+                <a
+                  href={feedbackFallbackHref}
+                  className="underline font-medium"
+                >
+                  Send via email instead
+                </a>
+              )}
+            </div>
           )}
         </div>
 
