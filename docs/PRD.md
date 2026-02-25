@@ -10,7 +10,7 @@
 
 ## 1. Summary
 
-PoolPulse is a privacy-first mobile app that helps swimmers decide **when to go** and **which lane type to use** by showing **real-time busyness** for Edinburgh Leisure pools. v1 focuses on lane-level busyness by **lane type** (Fast / Medium / Slow) using **verified check-ins** that automatically expire to stay accurate.
+PoolPulse is a privacy-first mobile app that helps swimmers decide **when to go** and **which lane type to use** by showing **real-time busyness** for Edinburgh Leisure pools. v1 focuses on lane-level busyness by **lane type** (Fast / Medium / Slow) using **anonymous community check-ins** that automatically age out of the live window to stay accurate.
 
 > **Key principle:** No surveillance. No cameras. No location tracking. Data is aggregated and time-bucketed.
 > 
@@ -36,7 +36,7 @@ This causes:
 
 - Show **open/closed** for pilot pools
 - Show **lane-type busyness** (Fast/Medium/Slow) for Lane Swim and Casual w/ lanes
-- Enable **verified contributions** via email OTP check-in
+- Enable **anonymous contributions** with basic anti-abuse throttling
 - Keep it **privacy-first** and transparent (open source)
 
 ### Non-goals (v1)
@@ -50,7 +50,7 @@ This causes:
 
 - Data quality depends on community participation; v1 prioritises *directional usefulness* over exact accuracy.
 - Lane configurations may change during a session (lifeguard discretion, lessons, clubs).
-- Users can view without login; OTP is required only to contribute to reduce spam.
+- Users can view and contribute without login in the current web beta; anti-abuse controls are applied at product/infrastructure level.
 - v1 uses manual configuration for pool hours/session modes; no automated timetable parsing.
 
 ## 5. Users
@@ -61,19 +61,18 @@ This causes:
 
 ## 6. User journeys
 
-### Browse (no OTP)
+### Browse (read-only)
 
 1. Open app → Pools list
 2. See open/closed + overall busyness badge (derived)
 3. Tap a pool → view lane-type busyness (read-only)
 
-### Contribute (OTP)
+### Contribute (anonymous)
 
 1. Tap “Check in”
-2. Verify email via OTP
-3. Choose lane type: Fast / Medium / Slow (and optional: “Casual lane swim” vs “Lane swim”)
-4. See lane busyness screen
-5. Optionally: Move lane / Leave
+2. Choose lane type: Fast / Medium / Slow (and optional: “Casual lane swim” vs “Lane swim”)
+3. See lane busyness screen
+4. Optionally: Move lane / Leave
 
 ## 7. Scope (Must / Should / Won’t)
 
@@ -81,9 +80,9 @@ This causes:
 
 - Pools list (3 pools) + open/closed indicator (manual schedule acceptable)
 - View lane busyness without login
-- OTP only required to check in
+- Anonymous check-in (no account required)
 - Check-in lane type (Fast/Medium/Slow)
-- Auto-expire check-ins after 75 minutes
+- Use a short-lived activity window of 75 minutes for live busyness calculations
 - Lane busyness labels (Quiet/OK/Busy) + last updated time
 - Leave / Move lane actions
 
@@ -102,7 +101,7 @@ This causes:
 ## **8. Functional requirements (v1)**
 
 - Users **shall** be able to view pool and lane busyness without authentication.
-- Users **shall** verify via email OTP only when submitting check-in / move lane / leave.
+- Users **shall** be able to submit anonymous check-ins in the web beta (no login required).
 - The system **shall** allow only **one active check-in per user per pool** at a time.
 - Users **shall** be able to update lane type via **Move lane** without creating a second active session.
 - The system **shall** auto-expire check-ins after **75 minutes** and exclude expired check-ins from busyness.
@@ -112,7 +111,7 @@ This causes:
 ## **9. Non-functional requirements**
 
 - **Privacy:** No GPS tracking, no camera data, no public display of user-level activity; only aggregated busyness is shown.
-- **Security:** OTP auth via Supabase; basic rate limiting for check-in attempts.
+- **Security:** Supabase-backed storage with anti-abuse throttling and moderation safeguards for check-in attempts.
 - **Performance:** Pool and lane busyness should load in **<2 seconds** on typical mobile data.
 - **Reliability:** If busyness cannot load, app should show a friendly fallback (“Data temporarily unavailable”).
 - **Accessibility:** Tap targets ≥ 44px, readable contrast, clear labels for lane types.
@@ -121,7 +120,7 @@ This causes:
 
 **Overall pool busyness (derived):** sum of active check-ins across Fast/Medium/Slow, mapped to Quiet/OK/Busy.
 
-**Input:** Verified check-ins by lane type.
+**Input:** Anonymous check-ins by lane type.
 
 **Active check-in window:** 75 minutes.
 
@@ -150,16 +149,16 @@ This causes:
 
 - No cameras, no surveillance
 - No location tracking
-- Email is used only for OTP authentication
+- Optional email may be provided only in the feedback form for follow-up (not required for check-ins)
 - Public display is aggregated by lane-type + time window
 - Open-source algorithm + schema
 
 ## 13. Success metrics (pilot)
 
-- 50 verified check-ins within 14 days
+- 50 check-ins within 14 days
 - 10 repeat contributors
 - ≥ 60% of surveyed users say it helped them decide when/where to swim
-- Median time-to-check-in < 30 seconds (after first OTP)
+- Median time-to-check-in < 30 seconds
 
 ## **14. Analytics / instrumentation (v1)**
 
@@ -168,8 +167,6 @@ Track these events (anonymous, aggregated):
 - `view_pools_list`
 - `view_pool_page`
 - `tap_checkin`
-- `otp_sent`
-- `otp_verified`
 - `checkin_created`
 - `move_lane`
 - `leave_pool`
@@ -180,7 +177,7 @@ Pilot survey prompt (in-app, optional): “Did this help you decide when/where t
 
 ## 15. Risks & mitigations
 
-- **Low adoption →** allow read-only browsing without OTP; seed early users; add QR posters later
+- **Low adoption →** allow read-only browsing without login friction; seed early users; add QR posters later
 - **Inaccurate data →** ranges + confidence + “last updated”; auto-expiry; easy “leave/move”
 - **Lane setup differs →** label “lane setup may vary”; add quick crowd confirmation later
 

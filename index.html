@@ -212,7 +212,7 @@ const LogoMark = ({ className = "" }) => (
       const [feedbackFallbackHref, setFeedbackFallbackHref] = useState("");
 
       // Supabase check-ins state
-      const CHECKIN_WINDOW_MINUTES = 180; // last 3 hours
+      const CHECKIN_WINDOW_MINUTES = 75; // short-lived check-ins
       const [recentCheckins, setRecentCheckins] = useState([]);
       const [checkinsLoading, setCheckinsLoading] = useState(true);
       const [checkinsError, setCheckinsError] = useState(null);
@@ -252,7 +252,7 @@ const loadRecentCheckins = async ({ silent = false } = {}) => {
     setCheckinsLoading(true);
   }
 
-  // Only show check-ins from the last CHECKIN_WINDOW_MINUTES (e.g. 180 mins = 3 hours)
+  // Only show check-ins from the last CHECKIN_WINDOW_MINUTES
   const sinceIso = new Date(
     Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
   ).toISOString();
@@ -409,7 +409,7 @@ useEffect(() => {
 }, []);
 
       const savePoolUpdate = async (poolId, lane) => {
-        // Spam protection: 1 check-in per hour per device
+        // UX throttling: 1 check-in per hour per browser (server-side controls still required)
         const lastCheckInKey = "lastCheckIn";
         const lastCheckIn = localStorage.getItem(lastCheckInKey);
 
@@ -538,7 +538,7 @@ useEffect(() => {
         return `${hours.open} - ${hours.close}`;
       };
 
-      // Map "count in last 3 hours" into a friendly label
+      // Map recent check-in counts into a friendly label
       const getLaneBusyness = (count) => {
         const c = count || 0;
         if (c === 0) return { label: "Empty", emoji: "😊", bgColor: "bg-green-100", textColor: "text-green-800" };
@@ -598,15 +598,15 @@ useEffect(() => {
 
                 <h3 className="text-xl font-bold text-gray-900 mb-3">What we do not collect</h3>
                 <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
-                  <li>No names, email addresses, phone numbers, or account credentials.</li>
+                  <li>No account credentials, profile accounts, or mandatory identity fields for browsing/check-ins.</li>
                   <li>No precise location tracking, GPS data, or background location access.</li>
                   <li>No cameras, biometrics, or surveillance.</li>
                 </ul>
 
                 <h3 className="text-xl font-bold text-gray-900 mb-3">How we use the data</h3>
                 <p className="text-gray-700 mb-4 leading-relaxed">
-                  We use anonymous check-ins to calculate and display lane busyness for pools, based on check-ins from the
-                  last 3 hours.
+                  We use anonymous check-ins to calculate and display lane busyness for pools, based on recent check-ins
+                  from the last {CHECKIN_WINDOW_MINUTES} minutes.
                 </p>
                 <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
                   <li>To show busyness snapshots (Quiet / OK / Busy) by lane type.</li>
@@ -623,9 +623,15 @@ useEffect(() => {
 
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Data retention</h3>
                 <p className="text-gray-700 mb-6 leading-relaxed">
-                  Check-ins are intended to be short-lived. The app’s busyness calculations use the most recent 3 hours of
+                  Check-ins are intended to be short-lived. The app’s busyness calculations use the most recent {CHECKIN_WINDOW_MINUTES} minutes of
                   activity. Infrastructure logs (if any) are retained by providers for limited periods according to their
                   standard practices.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Feedback data</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  If you submit feedback, we store your feedback type, message, and any optional contact email you provide.
+                  Optional contact details are only used to follow up on your feedback and are never sold.
                 </p>
 
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Sharing and processors</h3>
@@ -714,7 +720,7 @@ useEffect(() => {
 
                 <h3 className="text-xl font-bold text-gray-900 mb-3">3) Busyness estimates (no guarantees)</h3>
                 <p className="text-gray-700 mb-6 leading-relaxed">
-                  Busyness is estimated from recent community check-ins (last 3 hours). It may not reflect exact current
+                  Busyness is estimated from recent community check-ins (last {CHECKIN_WINDOW_MINUTES} minutes). It may not reflect exact current
                   conditions. You should always use your own judgement when planning a visit.
                 </p>
 
@@ -845,6 +851,21 @@ useEffect(() => {
               View All Pools and Check in
             </button>
           </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => document.getElementById("homepage-pools-covered")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="px-4 py-2 rounded-full border border-teal-200 text-teal-800 bg-teal-50 text-sm font-semibold hover:bg-teal-100"
+            >
+              Jump to pools covered
+            </button>
+            <button
+              onClick={() => document.getElementById("homepage-feedback")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="px-4 py-2 rounded-full border border-cyan-200 text-cyan-800 bg-cyan-50 text-sm font-semibold hover:bg-cyan-100"
+            >
+              Jump to feedback
+            </button>
+          </div>
         </div>
 
         {/* About Me Section */}
@@ -899,7 +920,7 @@ useEffect(() => {
   </ul>
 </div>
         {/* Pools Covered Section */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <div id="homepage-pools-covered" className="bg-white rounded-2xl shadow-xl p-8 mb-8 scroll-mt-24">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Pools Covered</h2>
           <p className="text-gray-600 mb-6">Currently tracking busyness at {POOLS.length} pools in Edinburgh and Glasgow</p>
           
@@ -917,7 +938,7 @@ useEffect(() => {
                 </div>
                 <div className="flex items-center gap-1 text-gray-600 text-sm mt-2">
                   <Clock className="w-4 h-4" />
-                  <span className="text-xs">
+                  <span className="text-sm">
                     {pool.hours.weekday.open} - {pool.hours.weekday.close}
                   </span>
                 </div>
@@ -933,7 +954,7 @@ useEffect(() => {
         </div>
 
         {/* Feedback Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <div id="homepage-feedback" className="bg-white rounded-2xl shadow-xl p-8 mb-8 scroll-mt-24">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Share feedback</h2>
           <p className="text-gray-600 mb-6">
             Tell us what would make Pool Pulse more useful. Submit your feedback directly here.
@@ -1291,7 +1312,7 @@ useEffect(() => {
             </label>
 
             <div className="text-xs text-gray-500">
-              Busyness is based on check-ins from the last 3 hours.
+              Busyness is based on check-ins from the last {CHECKIN_WINDOW_MINUTES} minutes.
             </div>
           </div>
 
@@ -1322,9 +1343,11 @@ useEffect(() => {
                 const hoursText = getOpeningHoursText(pool);
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={pool.id}
-                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    aria-label={`View details for ${pool.name}`}
+                    className="w-full text-left bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                     onClick={() => setViewingPool(pool.id)}
                     style={{ borderLeft: `6px solid ${pool.color}` }}
                   >
@@ -1345,7 +1368,7 @@ useEffect(() => {
                             <span>{pool.location}</span>
                           </div>
 
-                          <div className="flex items-center gap-1 text-gray-500 text-xs mt-1">
+                          <div className="flex items-center gap-1 text-gray-500 text-sm mt-1">
                             <Clock className="w-3 h-3" />
                             <span>{getOpenStatusText(pool)}</span>
                             <span className="text-gray-400">· Today {hoursText}</span>
@@ -1368,13 +1391,13 @@ useEffect(() => {
 
                                   {hasData ? (
                                     <div
-                                      className={`${busyness.bgColor} ${busyness.textColor} px-2 py-1 rounded text-xs font-bold flex items-center justify-center gap-1`}
+                                      className={`${busyness.bgColor} ${busyness.textColor} px-2 py-1 rounded text-sm font-bold flex items-center justify-center gap-1`}
                                     >
                                       <span>{busyness.emoji}</span>
                                       <span>{busyness.label}</span>
                                     </div>
                                   ) : (
-                                    <div className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs font-bold flex items-center justify-center">
+                                    <div className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm font-bold flex items-center justify-center">
                                       —
                                     </div>
                                   )}
@@ -1383,7 +1406,7 @@ useEffect(() => {
                             })}
                           </div>
 
-                          <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+                          <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
                               <span>
@@ -1399,7 +1422,7 @@ useEffect(() => {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
