@@ -61,6 +61,15 @@ const MapPin = (props) => <span {...props}>📍</span>;
 const ArrowLeft = (props) => <span {...props}>⬅️</span>;
 const Activity = (props) => <span {...props}>📊</span>;
 const Waves = (props) => <span {...props}>🌊</span>;
+const APP_LOGO = "./assets/poolpulse_app_icon_color.svg";
+
+const LogoMark = ({ className = "" }) => (
+  <img
+    src={APP_LOGO}
+    alt="Pool Pulse"
+    className={`w-full h-full object-contain ${className}`.trim()}
+  />
+);
     // -----------------------
     // Data
     // -----------------------
@@ -763,12 +772,10 @@ useEffect(() => {
         <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl"></div>
 
         {/* Logo container */}
-        <div className="relative bg-white/5 backdrop-blur-sm p-4 rounded-3xl border border-white/10 shadow-2xl">
-          <img
-            src="./assets/poolpulse_app_icon_color.svg"
-            alt="Pool Pulse"
-            className="w-12 h-12"
-          />
+        <div className="relative bg-white/5 backdrop-blur-sm p-2 rounded-3xl border border-white/10 shadow-2xl">
+          <div className="w-14 h-14">
+            <LogoMark />
+          </div>
         </div>
       </div>
 
@@ -1236,8 +1243,10 @@ useEffect(() => {
               <div className="flex items-center gap-3 mb-2">
                 <div className="relative">
                   <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
-                  <div className="relative bg-white/10 backdrop-blur-sm p-3 rounded-2xl border-2 border-white/30 shadow-xl">
-                    <Waves className="w-8 h-8" />
+                  <div className="relative bg-white/10 backdrop-blur-sm p-2 rounded-2xl border-2 border-white/30 shadow-xl">
+                    <div className="w-10 h-10">
+                      <LogoMark />
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -1389,7 +1398,12 @@ useEffect(() => {
 
             {/* Check In box */}
             <div className="bg-white rounded-xl shadow-lg p-6 sticky bottom-4">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Check In</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-teal-50 border border-teal-100 rounded-xl p-1.5">
+                  <LogoMark />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Check In</h2>
+              </div>
 
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
