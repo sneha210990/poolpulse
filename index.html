@@ -247,8 +247,10 @@ const getPoolById = (id) => POOLS.find((p) => p.id === id);
     return status;
   };
 
-const loadRecentCheckins = async () => {
-  setCheckinsLoading(true);
+const loadRecentCheckins = async ({ silent = false } = {}) => {
+  if (!silent) {
+    setCheckinsLoading(true);
+  }
 
   // Only show check-ins from the last CHECKIN_WINDOW_MINUTES (e.g. 180 mins = 3 hours)
   const sinceIso = new Date(
@@ -271,7 +273,9 @@ const loadRecentCheckins = async () => {
     setRecentCheckins(data ?? []);
   }
 
-  setCheckinsLoading(false);
+  if (!silent) {
+    setCheckinsLoading(false);
+  }
 };
 
 const submitFeedback = async (e) => {
@@ -320,9 +324,11 @@ const submitFeedback = async (e) => {
   setFeedbackSubmitting(false);
 };
 
-      const loadData = async () => {
+      const loadData = async ({ silent = false } = {}) => {
         try {
-          setLoading(true);
+          if (!silent) {
+            setLoading(true);
+          }
 
           const sinceIso = new Date(
             Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
@@ -361,7 +367,9 @@ const submitFeedback = async (e) => {
         } catch (e) {
           console.error("loadData error:", e);
         } finally {
-          setLoading(false);
+          if (!silent) {
+            setLoading(false);
+          }
         }
       };
 
@@ -370,8 +378,8 @@ const submitFeedback = async (e) => {
         loadRecentCheckins();
 
         const t = setInterval(() => {
-          loadData();
-          loadRecentCheckins();
+          loadData({ silent: true });
+          loadRecentCheckins({ silent: true });
         }, 10000);
 
         return () => clearInterval(t);
