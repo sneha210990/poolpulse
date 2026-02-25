@@ -197,6 +197,8 @@ const Waves = (props) => <span {...props}>🌊</span>;
       const [feedbackMessage, setFeedbackMessage] = useState("");
       const [feedbackContact, setFeedbackContact] = useState("");
       const [feedbackSent, setFeedbackSent] = useState(false);
+      const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+      const [feedbackError, setFeedbackError] = useState("");
 
       // Supabase check-ins state
       const CHECKIN_WINDOW_MINUTES = 180; // last 3 hours
@@ -261,24 +263,37 @@ const loadRecentCheckins = async () => {
   setCheckinsLoading(false);
 };
 
-const submitFeedback = (e) => {
+const submitFeedback = async (e) => {
   e.preventDefault();
 
   if (!feedbackMessage.trim()) {
     return;
   }
 
-  const subject = encodeURIComponent(`Pool Pulse feedback (${feedbackType})`);
-  const body = encodeURIComponent(
-    `Feedback type: ${feedbackType}\n` +
-    `Contact (optional): ${feedbackContact || "Not provided"}\n\n` +
-    `${feedbackMessage.trim()}`
-  );
+  setFeedbackSubmitting(true);
+  setFeedbackError("");
 
-  window.location.href = `mailto:snehasindhu2109@gmail.com?subject=${subject}&body=${body}`;
+  const payload = {
+    type: feedbackType,
+    message: feedbackMessage.trim(),
+    contact: feedbackContact.trim() || null,
+  };
+
+  const { error } = await window.supa
+    .from("feedback")
+    .insert(payload);
+
+  if (error) {
+    console.error("submitFeedback error:", error);
+    setFeedbackError("Sorry, we couldn't send your feedback right now. Please try again or email snehasindhu2109@gmail.com.");
+    setFeedbackSubmitting(false);
+    return;
+  }
+
   setFeedbackSent(true);
   setFeedbackMessage("");
   setFeedbackContact("");
+  setFeedbackSubmitting(false);
 };
 
       const loadData = async () => {
@@ -891,7 +906,7 @@ useEffect(() => {
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Share feedback</h2>
           <p className="text-gray-600 mb-6">
-            Tell us what would make Pool Pulse more useful. Submitting opens your email app with the message pre-filled.
+            Tell us what would make Pool Pulse more useful. Submit your feedback directly here—no email app needed.
           </p>
 
           <form onSubmit={submitFeedback} className="space-y-4">
@@ -933,15 +948,22 @@ useEffect(() => {
 
             <button
               type="submit"
+              disabled={feedbackSubmitting}
               className="bg-[#043A3D] text-white font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition"
             >
-              Send feedback
+              {feedbackSubmitting ? "Sending..." : "Send feedback"}
             </button>
           </form>
 
           {feedbackSent && (
             <p className="text-sm text-green-700 mt-4">
-              Thanks for your feedback! If your email app did not open, please message snehasindhu2109@gmail.com.
+              Thanks for your feedback! Your message was sent successfully.
+            </p>
+          )}
+
+          {feedbackError && (
+            <p className="text-sm text-red-700 mt-4">
+              {feedbackError}
             </p>
           )}
         </div>
