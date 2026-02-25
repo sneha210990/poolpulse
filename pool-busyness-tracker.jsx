@@ -82,6 +82,116 @@ const POOLS = [
       sunday: { open: '08:00', close: '17:00' }
     }
   },
+  {
+    id: 'glasgow-club-bellahouston',
+    name: 'Glasgow Club Bellahouston',
+    location: 'Glasgow (Bellahouston)',
+    color: '#14B8A6',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '08:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-castlemilk',
+    name: 'Glasgow Club Castlemilk',
+    location: 'Glasgow (Castlemilk)',
+    color: '#F97316',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '08:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-drumoyne',
+    name: 'Glasgow Club Drumoyne',
+    location: 'Glasgow (Drumoyne)',
+    color: '#22C55E',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '08:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-easterhouse',
+    name: 'Glasgow Club Easterhouse',
+    location: 'Glasgow (Easterhouse)',
+    color: '#38BDF8',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '08:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-gorbals',
+    name: 'Glasgow Club Gorbals',
+    location: 'Glasgow (Gorbals)',
+    color: '#F43F5E',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '08:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-north-woodside',
+    name: 'Glasgow Club North Woodside',
+    location: 'Glasgow (North Woodside)',
+    color: '#8B5CF6',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '08:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-scotstoun',
+    name: 'Glasgow Club Scotstoun',
+    location: 'Glasgow (Scotstoun)',
+    color: '#0EA5E9',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '08:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-springburn',
+    name: 'Glasgow Club Springburn',
+    location: 'Glasgow (Springburn)',
+    color: '#10B981',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '08:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-tollcross',
+    name: 'Glasgow Club Tollcross International Swimming Centre',
+    location: 'Glasgow (Tollcross)',
+    color: '#06B6D4',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '08:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-whitehill',
+    name: 'Glasgow Club Whitehill',
+    location: 'Glasgow (Whitehill)',
+    color: '#84CC16',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '08:00', close: '17:00' }
+    }
+  },
  {
   id: "western-baths-club",
   name: "Western Baths Club",
