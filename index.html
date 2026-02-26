@@ -523,7 +523,12 @@ useEffect(() => {
       const savePoolUpdate = async (poolId, lane) => {
         // UX throttling: 1 check-in per hour per pool/lane per browser (server-side controls still required)
         const lastCheckInKey = `lastCheckIn:${poolId}:${lane}`;
-        const lastCheckIn = localStorage.getItem(lastCheckInKey);
+        let lastCheckIn = null;
+        try {
+          lastCheckIn = localStorage.getItem(lastCheckInKey);
+        } catch (storageReadError) {
+          console.warn("localStorage read error:", storageReadError);
+        }
 
         if (lastCheckIn) {
           const parsedLastCheckIn = parseInt(lastCheckIn, 10);
@@ -545,7 +550,11 @@ useEffect(() => {
 
           if (error) throw error;
 
-          localStorage.setItem(lastCheckInKey, Date.now().toString());
+          try {
+            localStorage.setItem(lastCheckInKey, Date.now().toString());
+          } catch (storageWriteError) {
+            console.warn("localStorage write error:", storageWriteError);
+          }
 
           setShowSuccess(true);
           setTimeout(() => setShowSuccess(false), 2000);
