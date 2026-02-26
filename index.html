@@ -327,6 +327,7 @@ const LogoMark = ({ className = "" }) => (
       const [recentCheckins, setRecentCheckins] = useState([]);
       const [checkinsLoading, setCheckinsLoading] = useState(true);
       const [checkinsError, setCheckinsError] = useState(null);
+      const [submittingCheckin, setSubmittingCheckin] = useState(false);
 const getPoolById = (id) => POOLS.find((p) => p.id === id);
   const selectedPoolObj = selectedPool ? getPoolById(selectedPool) : null;
   const selectedPoolIsOpen = selectedPoolObj ? isPoolOpen(selectedPoolObj) : false;
@@ -520,15 +521,21 @@ useEffect(() => {
 }, []);
 
       const savePoolUpdate = async (poolId, lane) => {
-        // UX throttling: 1 check-in per hour per browser (server-side controls still required)
-        const lastCheckInKey = "lastCheckIn";
-        const lastCheckIn = localStorage.getItem(lastCheckInKey);
+        // UX throttling: 1 check-in per hour per pool/lane per browser (server-side controls still required)
+        const lastCheckInKey = `lastCheckIn:${poolId}:${lane}`;
+        let lastCheckIn = null;
+        try {
+          lastCheckIn = localStorage.getItem(lastCheckInKey);
+        } catch (storageReadError) {
+          console.warn("localStorage read error:", storageReadError);
+        }
 
         if (lastCheckIn) {
-          const timeSinceLastCheckIn = Date.now() - parseInt(lastCheckIn, 10);
+          const parsedLastCheckIn = parseInt(lastCheckIn, 10);
+          const timeSinceLastCheckIn = Date.now() - parsedLastCheckIn;
           const oneHour = 60 * 60 * 1000;
 
-          if (timeSinceLastCheckIn < oneHour) {
+          if (!Number.isNaN(parsedLastCheckIn) && timeSinceLastCheckIn < oneHour) {
             const minutesLeft = Math.ceil((oneHour - timeSinceLastCheckIn) / 60000);
             alert(`Please wait ${minutesLeft} minutes before checking in again.`);
             return;
@@ -536,13 +543,18 @@ useEffect(() => {
         }
 
         try {
+          setSubmittingCheckin(true);
           const { error } = await window.supa
             .from("checkins")
             .insert([{ pool_id: poolId, lane, delta: 1 }]);
 
           if (error) throw error;
 
-          localStorage.setItem(lastCheckInKey, Date.now().toString());
+          try {
+            localStorage.setItem(lastCheckInKey, Date.now().toString());
+          } catch (storageWriteError) {
+            console.warn("localStorage write error:", storageWriteError);
+          }
 
           setShowSuccess(true);
           setTimeout(() => setShowSuccess(false), 2000);
@@ -554,10 +566,13 @@ useEffect(() => {
         } catch (e) {
           console.error("insert error:", e);
           alert("Failed to save check-in. Please try again.");
+        } finally {
+          setSubmittingCheckin(false);
         }
       };
 
      const handleSubmit = () => {
+  if (submittingCheckin) return;
   if (!selectedPool || !selectedLane) return;
 
   const pool = POOLS.find((p) => p.id === selectedPool);
@@ -1601,9 +1616,10 @@ useEffect(() => {
               {selectedPool && selectedLane && selectedPoolIsOpen && (
                 <button
                   onClick={handleSubmit}
-                  className="w-full bg-[#043A3D] text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all shadow-md mt-4"
+                  disabled={submittingCheckin}
+                  className="w-full bg-[#043A3D] text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all shadow-md mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  I'm Swimming Here Now
+                  {submittingCheckin ? "Saving check-in..." : "I'm Swimming Here Now"}
                 </button>
               )}
 
