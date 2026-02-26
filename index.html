@@ -1206,6 +1206,32 @@ useEffect(() => {
       // -----------------------
       if (viewingPool) {
         const pool = POOLS.find((p) => p.id === viewingPool);
+        if (!pool) {
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 pb-20">
+              <div className="bg-[#043A3D] text-white shadow-lg">
+                <div className="max-w-4xl mx-auto px-4 py-6">
+                  <button
+                    onClick={() => setViewingPool(null)}
+                    className="flex items-center gap-2 text-teal-100 hover:text-white mb-3 transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                    Back to all pools
+                  </button>
+                  <h1 className="text-2xl font-bold">Pool details unavailable</h1>
+                </div>
+              </div>
+
+              <div className="max-w-4xl mx-auto px-4 py-6">
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <p className="text-gray-700">
+                    We couldn't find that pool. Please go back and select a pool again.
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        }
         const poolStatus = getPoolStatus(viewingPool) || buildStatusFromRecent(viewingPool);
         const isOpen = isPoolOpen(pool);
         const hoursText = getOpeningHoursText(pool);
