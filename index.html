@@ -63,6 +63,13 @@ const Activity = (props) => <span {...props}>📊</span>;
 const Waves = (props) => <span {...props}>🌊</span>;
 const APP_LOGO = "./assets/poolpulse_app_icon_color.svg";
 
+const getSupabaseClient = () => {
+  if (!window.supa || typeof window.supa.from !== "function") {
+    throw new Error("Connection to the check-in service is unavailable right now.");
+  }
+  return window.supa;
+};
+
 const LogoMark = ({ className = "" }) => (
   <img
     src={APP_LOGO}
@@ -360,33 +367,40 @@ const getPoolById = (id) => POOLS.find((p) => p.id === id);
   };
 
 const loadRecentCheckins = async ({ silent = false } = {}) => {
-  if (!silent) {
-    setCheckinsLoading(true);
-  }
+  try {
+    if (!silent) {
+      setCheckinsLoading(true);
+    }
 
-  // Only show check-ins from the last CHECKIN_WINDOW_MINUTES
-  const sinceIso = new Date(
-    Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
-  ).toISOString();
+    // Only show check-ins from the last CHECKIN_WINDOW_MINUTES
+    const sinceIso = new Date(
+      Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
+    ).toISOString();
 
-  const { data, error } = await window.supa
-    .from("checkins")
-    .select("id, created_at, pool_id, lane, delta")
-    .gte("created_at", sinceIso)
-    .order("created_at", { ascending: false })
-    .limit(50);
+    const supaClient = getSupabaseClient();
+    const { data, error } = await supaClient
+      .from("checkins")
+      .select("id, created_at, pool_id, lane, delta")
+      .gte("created_at", sinceIso)
+      .order("created_at", { ascending: false })
+      .limit(50);
 
-  if (error) {
-    console.error("loadRecentCheckins error:", error);
-    setCheckinsError(error.message);
+    if (error) {
+      console.error("loadRecentCheckins error:", error);
+      setCheckinsError(error.message);
+      setRecentCheckins([]);
+    } else {
+      setCheckinsError(null);
+      setRecentCheckins(data ?? []);
+    }
+  } catch (e) {
+    console.error("loadRecentCheckins exception:", e);
+    setCheckinsError(e.message || "Unable to load recent check-ins.");
     setRecentCheckins([]);
-  } else {
-    setCheckinsError(null);
-    setRecentCheckins(data ?? []);
-  }
-
-  if (!silent) {
-    setCheckinsLoading(false);
+  } finally {
+    if (!silent) {
+      setCheckinsLoading(false);
+    }
   }
 };
 
@@ -408,9 +422,18 @@ const submitFeedback = async (e) => {
     contact: feedbackContact.trim() || null,
   };
 
-  const { error } = await window.supa
-    .from("feedback")
-    .insert(payload);
+  let error = null;
+
+  try {
+    const supaClient = getSupabaseClient();
+    const response = await supaClient
+      .from("feedback")
+      .insert(payload);
+
+    error = response.error;
+  } catch (e) {
+    error = e;
+  }
 
   if (error) {
     console.error("submitFeedback error:", error);
@@ -446,7 +469,8 @@ const submitFeedback = async (e) => {
             Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
           ).toISOString();
 
-          const { data, error } = await window.supa
+          const supaClient = getSupabaseClient();
+          const { data, error } = await supaClient
             .from("checkins")
             .select("pool_id,lane,delta,created_at")
             .gte("created_at", sinceIso);
@@ -544,7 +568,8 @@ useEffect(() => {
 
         try {
           setSubmittingCheckin(true);
-          const { error } = await window.supa
+          const supaClient = getSupabaseClient();
+          const { error } = await supaClient
             .from("checkins")
             .insert([{ pool_id: poolId, lane, delta: 1 }]);
 
