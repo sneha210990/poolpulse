@@ -204,6 +204,43 @@ const POOLS = [
     sunday: { open: "08:00", close: "18:30" }
   }
 },
+  {
+    id: 'glasgow-club-drumchapel',
+    name: 'Glasgow Club Drumchapel',
+    location: 'Glasgow (Drumchapel)',
+    color: '#D97706',
+    hours: {
+      weekday: { open: '07:00', close: '21:00' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '09:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-ibrox',
+    name: 'Glasgow Club Ibrox',
+    location: 'Glasgow (Ibrox)',
+    color: '#7C3AED',
+    hours: {
+      weekday: { open: '07:00', close: '22:00' },
+      saturday: { open: '08:00', close: '18:00' },
+      sunday: { open: '09:00', close: '18:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-maryhill',
+    name: 'Glasgow Club Maryhill',
+    location: 'Glasgow (Maryhill)',
+    color: '#DC2626',
+    hours: {
+      monday: { open: '09:00', close: '21:00' },
+      tuesday: { open: '09:00', close: '21:00' },
+      wednesday: { open: '09:00', close: '21:00' },
+      thursday: { open: '09:00', close: '21:00' },
+      friday: { open: '09:00', close: '21:00' },
+      saturday: { open: '09:00', close: '17:00' },
+      sunday: { closed: true }
+    }
+  },
 ];
 
 const LANES = [
