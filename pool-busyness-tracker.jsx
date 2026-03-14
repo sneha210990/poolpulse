@@ -241,6 +241,39 @@ const POOLS = [
       sunday: { closed: true }
     }
   },
+  {
+    id: 'glasgow-club-milton',
+    name: 'Glasgow Club Milton',
+    location: 'Glasgow (Milton)',
+    color: '#2563EB',
+    hours: {
+      weekday: { open: '07:00', close: '21:00' },
+      saturday: { open: '09:00', close: '17:00' },
+      sunday: { open: '09:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-pollok',
+    name: 'Glasgow Club Pollok',
+    location: 'Glasgow (Pollok)',
+    color: '#DB2777',
+    hours: {
+      weekday: { open: '06:30', close: '22:00' },
+      saturday: { open: '08:00', close: '18:00' },
+      sunday: { open: '08:00', close: '18:00' }
+    }
+  },
+  {
+    id: 'glasgow-club-shettleston',
+    name: 'Glasgow Club Shettleston',
+    location: 'Glasgow (Shettleston)',
+    color: '#0891B2',
+    hours: {
+      weekday: { open: '07:00', close: '21:30' },
+      saturday: { open: '09:00', close: '17:00' },
+      sunday: { open: '09:00', close: '17:00' }
+    }
+  },
 ];
 
 const LANES = [
