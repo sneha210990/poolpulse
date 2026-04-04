@@ -752,6 +752,8 @@ const renderAuthModal = () => {
           const currentUser = data?.user ?? null;
           setAuthUser(currentUser);
           if (currentUser) {
+            setShowHomepage(false);
+            setActiveTab("dashboard");
             await loadUserProfileAndLog(currentUser);
           }
         });
@@ -763,6 +765,8 @@ const renderAuthModal = () => {
           setAuthError("");
           setShowAuthModal(false);
           if (nextUser) {
+            setShowHomepage(false);
+            setActiveTab("dashboard");
             await loadUserProfileAndLog(nextUser);
           } else {
             setActiveTab("pools");
