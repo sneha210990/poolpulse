@@ -753,8 +753,7 @@ const renderAuthModal = () => {
           setAuthUser(currentUser);
           if (currentUser) {
             setShowHomepage(false);
-            setActiveTab("dashboard");
-            await loadUserProfileAndLog(currentUser);
+            setActiveTab("pools");
           }
         });
 
@@ -766,8 +765,7 @@ const renderAuthModal = () => {
           setShowAuthModal(false);
           if (nextUser) {
             setShowHomepage(false);
-            setActiveTab("dashboard");
-            await loadUserProfileAndLog(nextUser);
+            setActiveTab("pools");
           } else {
             setActiveTab("pools");
             setUserProfile(null);
@@ -806,15 +804,6 @@ useEffect(() => {
     }
   }
 }, []);
-
-useEffect(() => {
-  if (!authUser || activeTab !== "dashboard") return;
-  saveDashboardLog({
-    routine_type: routineType,
-    steps_completed: stepsCompleted,
-    weekly_treatment: weeklyTreatment,
-  });
-}, [authUser, activeTab, routineType, stepsCompleted, weeklyTreatment]);
 
       const savePoolUpdate = async (poolId, lane) => {
         // UX throttling: 1 check-in per hour per browser (server-side controls still required)
@@ -1292,27 +1281,6 @@ useEffect(() => {
       {/* Header */}
      <div className="bg-[#043A3D] text-white shadow-lg">
   <div className="max-w-4xl mx-auto px-4 py-8">
-    <div className="flex justify-end mb-4">
-      {authUser ? (
-        <div className="flex items-center gap-2">
-          <span className="text-xs sm:text-sm text-teal-100">Hi, {authDisplayName}</span>
-          <button
-            onClick={handleSignOut}
-            disabled={authLoading}
-            className="px-3 py-1.5 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-sm"
-          >
-            {authLoading ? "Signing out..." : "Sign Out"}
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => { setShowAuthModal(true); setAuthError(""); }}
-          className="px-4 py-2 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
-        >
-          Sign In
-        </button>
-      )}
-    </div>
     <div className="flex items-center justify-center gap-4 mb-4">
       <div className="relative">
         <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl"></div>
@@ -1583,7 +1551,6 @@ useEffect(() => {
           </p>
         </div>
       </div>
-      {renderAuthModal()}
     </div>
   );
 }
@@ -1620,24 +1587,6 @@ useEffect(() => {
               className="bg-[#043A3D] text-white shadow-lg"
             >
               <div className="max-w-4xl mx-auto px-4 py-4">
-                <div className="flex justify-end mb-2">
-                  {authUser ? (
-                    <button
-                      onClick={handleSignOut}
-                      disabled={authLoading}
-                      className="px-3 py-1 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-xs"
-                    >
-                      {authLoading ? "Signing out..." : "Sign Out"}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => { setShowAuthModal(true); setAuthError(""); }}
-                      className="px-3 py-1 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-xs"
-                    >
-                      Sign In
-                    </button>
-                  )}
-                </div>
                 <button
                   onClick={() => setViewingPool(null)}
                   className="flex items-center gap-2 text-white/80 hover:text-white mb-3 transition-colors"
@@ -1792,7 +1741,6 @@ useEffect(() => {
                 </button>
               </div>
             </div>
-            {renderAuthModal()}
           </div>
         );
       }
@@ -1813,27 +1761,6 @@ useEffect(() => {
         <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 pb-20">
           <div className="bg-[#043A3D] text-white shadow-lg">
             <div className="max-w-4xl mx-auto px-4 py-6">
-              <div className="flex justify-end mb-3">
-                {authUser ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs sm:text-sm text-teal-100">{authDisplayName}</span>
-                    <button
-                      onClick={handleSignOut}
-                      disabled={authLoading}
-                      className="px-3 py-1.5 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-sm"
-                    >
-                      {authLoading ? "Signing out..." : "Sign Out"}
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => { setShowAuthModal(true); setAuthError(""); }}
-                    className="px-4 py-2 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
-                  >
-                    Sign In
-                  </button>
-                )}
-              </div>
               <button
                 onClick={() => setShowHomepage(true)}
                 className="flex items-center gap-2 text-teal-100 hover:text-white mb-3 transition-colors text-sm"
@@ -1867,14 +1794,6 @@ useEffect(() => {
                 >
                   Pools
                 </button>
-                {authUser && (
-                  <button
-                    onClick={() => setActiveTab("dashboard")}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${activeTab === "dashboard" ? "bg-[#4ecdc4] text-[#1a4a47]" : "bg-white/10 text-teal-50 border border-white/30"}`}
-                  >
-                    Dashboard
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -1885,15 +1804,6 @@ useEffect(() => {
             </div>
           )}
 
-          {activeTab === "dashboard" ? (
-            authUser ? (
-              dashboardLoading ? (
-                <div className="max-w-4xl mx-auto px-4 py-6 text-gray-600">Loading your dashboard...</div>
-              ) : (
-                renderDashboard()
-              )
-            ) : null
-          ) : (
           <div className="max-w-4xl mx-auto px-4 py-6">
 
         {/* Filters */}
@@ -2109,8 +2019,6 @@ useEffect(() => {
               <p className="mt-1">Check in when you arrive • See estimated lane busyness</p>
             </div>
           </div>
-          )}
-          {renderAuthModal()}
         </div>
       );
     }
