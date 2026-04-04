@@ -274,6 +274,57 @@ const POOLS = [
       sunday: { open: '09:00', close: '17:00' }
     }
   },
+  {
+    id: 'the-peak-stirling',
+    name: 'The PEAK',
+    location: 'Stirling Sports Village',
+    city: 'Stirling',
+    address: 'Forthside Way, Stirling FK7 7QA',
+    color: '#16A34A',
+    poolSize: '25m',
+    lanes: 6,
+    notes: 'Book up to 7 days in advance via Active Stirling app. 6-lane 25m main pool.',
+    hours: {
+      weekday: { open: '06:00', close: '22:00' },
+      saturday: { open: '07:00', close: '20:00' },
+      sunday: { open: '07:00', close: '20:00' }
+    }
+  },
+  {
+    id: 'zwembad-de-zijl',
+    name: 'Zwembad De Zijl',
+    location: 'Leiden, Netherlands',
+    city: 'Leiden',
+    country: 'NL',
+    address: 'Paramaribostraat 66, 2315 VK Leiden',
+    color: '#FF6B35',
+    poolSize: '25m',
+    notes: 'Indoor and outdoor pools. Triathlon training available. Main pool open year round.',
+    hours: {
+      weekday: { open: '07:00', close: '22:00' },
+      saturday: { open: '08:00', close: '18:00' },
+      sunday: { open: '08:00', close: '18:00' }
+    }
+  },
+  {
+    id: 'combibad-de-vliet',
+    name: 'Combibad De Vliet',
+    location: 'Leiden, Netherlands',
+    city: 'Leiden',
+    country: 'NL',
+    address: 'Voorschoterweg 6, Leiden',
+    color: '#0EA5E9',
+    poolSize: '50m',
+    notes: 'Outdoor 50m pool open May to October. One of the longest pools in the Leiden area.',
+    seasonal: true,
+    seasonOpen: '05-01',
+    seasonClose: '10-31',
+    hours: {
+      weekday: { open: '07:00', close: '20:00' },
+      saturday: { open: '09:00', close: '17:30' },
+      sunday: { open: '09:00', close: '17:30' }
+    }
+  },
 ];
 
 const LANES = [
