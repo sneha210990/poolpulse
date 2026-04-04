@@ -465,11 +465,24 @@ export default function PoolBusynessTracker() {
     return BUSYNESS_LEVELS.find(b => b.value === level) || BUSYNESS_LEVELS[0];
   };
 
-  const getRegionForPool = (pool) => {
-    const city = pool.city?.toLowerCase();
-    const location = pool.location?.toLowerCase() || '';
+  const getPoolCity = (pool) => {
+    if (pool.city) return pool.city;
 
-    if (city === 'leiden' || location.includes('leiden')) return 'The Netherlands';
+    const location = pool.location?.toLowerCase() || '';
+    if (location.includes('glasgow')) return 'Glasgow';
+    if (pool.id === 'the-peak-stirling' || location.includes('stirling')) return 'Stirling';
+    return 'Edinburgh';
+  };
+
+  const getPoolCityLabel = (pool) => {
+    const city = getPoolCity(pool);
+    return city === 'Leiden' ? `${city} 🇳🇱` : city;
+  };
+
+  const getRegionForPool = (pool) => {
+    const city = getPoolCity(pool).toLowerCase();
+
+    if (city === 'leiden') return 'The Netherlands';
     return 'Scotland';
   };
 
@@ -1226,6 +1239,7 @@ export default function PoolBusynessTracker() {
                           </span>
                         )}
                       </div>
+                      <p className="text-sm text-gray-500 mb-1">{getPoolCityLabel(pool)}</p>
                       <div className="flex items-center gap-1 text-gray-500 text-sm">
                         <MapPin className="w-4 h-4" />
                         <span>{pool.location}</span>
