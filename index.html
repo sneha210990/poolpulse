@@ -558,11 +558,22 @@ useEffect(() => {
         return data;
       };
 
-      const cityOf = (pool) => {
+      const getPoolCity = (pool) => {
+        if (pool.city) return pool.city;
+
         const location = (pool.location || "").toLowerCase();
-        if (pool.country === "NL" || location.includes("leiden") || location.includes("netherlands")) return "The Netherlands";
-        return "Scotland";
+        if (pool.country === "NL" || location.includes("leiden") || location.includes("netherlands")) return "Leiden";
+        if (location.includes("glasgow")) return "Glasgow";
+        if (location.includes("stirling") || pool.id === "the-peak-stirling") return "Stirling";
+        return "Edinburgh";
       };
+
+      const getPoolCityLabel = (pool) => {
+        const city = getPoolCity(pool);
+        return pool.country === "NL" ? `${city} 🇳🇱` : city;
+      };
+
+      const cityOf = (pool) => (pool.country === "NL" ? "The Netherlands" : "Scotland");
       const cityOptions = ["All", ...Array.from(new Set(POOLS.map((pool) => cityOf(pool))))];
 
       const getOpenStatusText = (pool) => {
@@ -1444,6 +1455,8 @@ useEffect(() => {
                               <span className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded-full">CLOSED</span>
                             )}
                           </div>
+
+                          <p className="text-sm text-gray-500 mb-1">{getPoolCityLabel(pool)}</p>
 
                           <div className="flex items-center gap-1 text-gray-500 text-sm">
                             <MapPin className="w-4 h-4" />
