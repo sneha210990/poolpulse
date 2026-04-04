@@ -344,6 +344,7 @@ const BUSYNESS_LEVELS = [
 export default function PoolBusynessTracker() {
   const appLogo = './assets/poolpulse_app_icon_color.svg';
   const [poolData, setPoolData] = useState({});
+  const [selectedRegion, setSelectedRegion] = useState('Scotland');
   const [selectedPool, setSelectedPool] = useState(null);
   const [selectedLane, setSelectedLane] = useState(null);
   const [selectedBusyness, setSelectedBusyness] = useState(null);
@@ -463,6 +464,23 @@ export default function PoolBusynessTracker() {
   const getBusynessInfo = (level) => {
     return BUSYNESS_LEVELS.find(b => b.value === level) || BUSYNESS_LEVELS[0];
   };
+
+  const getRegionForPool = (pool) => {
+    const city = pool.city?.toLowerCase();
+    const location = pool.location?.toLowerCase() || '';
+
+    if (city === 'leiden' || location.includes('leiden')) return 'The Netherlands';
+    return 'Scotland';
+  };
+
+  const filteredPools = POOLS.filter(pool => getRegionForPool(pool) === selectedRegion);
+
+  useEffect(() => {
+    if (selectedPool && !filteredPools.some(pool => pool.id === selectedPool)) {
+      setSelectedPool(null);
+      setSelectedLane(null);
+    }
+  }, [selectedRegion, selectedPool, filteredPools]);
 
   const getPoolStatus = (poolId) => {
     const data = poolData[poolId];
@@ -758,7 +776,7 @@ export default function PoolBusynessTracker() {
               </div>
               <div className="text-center">
                 <h1 className="text-4xl font-bold mb-1">Pool Pulse</h1>
-                <p className="text-teal-100 text-sm font-medium">Edinburgh</p>
+                <p className="text-teal-100 text-sm font-medium">Scotland &amp; The Netherlands</p>
               </div>
             </div>
             <p className="text-center text-teal-50 text-lg max-w-2xl mx-auto">
@@ -1144,10 +1162,10 @@ export default function PoolBusynessTracker() {
             </div>
             <div>
               <h1 className="text-2xl font-bold">Pool Pulse</h1>
-              <p className="text-teal-100 text-xs font-medium">Edinburgh</p>
+              <p className="text-teal-100 text-xs font-medium">{selectedRegion}</p>
             </div>
           </div>
-          <p className="text-teal-50 text-sm">Real-time lane busyness for all Edinburgh Leisure pools</p>
+          <p className="text-teal-50 text-sm">Real-time lane busyness for pools in {selectedRegion}</p>
         </div>
       </div>
 
@@ -1159,9 +1177,29 @@ export default function PoolBusynessTracker() {
       )}
 
       <div className="max-w-2xl mx-auto px-4 py-6">
+        {/* Region Filter */}
+        <div className="mb-4">
+          <p className="text-sm font-semibold text-gray-700 mb-2">Filter by region</p>
+          <div className="grid grid-cols-2 gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+            {['Scotland', 'The Netherlands'].map(region => (
+              <button
+                key={region}
+                onClick={() => setSelectedRegion(region)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  selectedRegion === region
+                    ? 'bg-teal-600 text-white shadow'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {region}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Pool List */}
         <div className="space-y-4 mb-6">
-          {POOLS.map(pool => {
+          {filteredPools.map(pool => {
             const poolStatus = getPoolStatus(pool.id);
             const isOpen = isPoolOpen(pool);
             const hoursText = getOpeningHoursText(pool);
@@ -1263,7 +1301,7 @@ export default function PoolBusynessTracker() {
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:outline-none"
             >
               <option value="">Select a pool...</option>
-              {POOLS.map(pool => (
+              {filteredPools.map(pool => (
                 <option key={pool.id} value={pool.id}>{pool.name}</option>
               ))}
             </select>
@@ -1311,7 +1349,7 @@ export default function PoolBusynessTracker() {
 
         {/* Info Footer */}
         <div className="mt-6 text-center text-gray-500 text-sm">
-          <p>Community-powered lane tracking for Edinburgh swimmers</p>
+          <p>Community-powered lane tracking for swimmers in Scotland and The Netherlands</p>
           <p className="mt-1">Check in when you arrive • See how many swimmers are in each lane</p>
         </div>
       </div>
