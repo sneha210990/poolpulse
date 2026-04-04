@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Real-time busyness tracking for Edinburgh and Glasgow. Find the best time to swim." />
-  <meta name="keywords" content="Edinburgh pools, swimming, pool busyness, Edinburgh Leisure, Pool Pulse" />
-  <title>Pool Pulse - Edinburgh and Glasgow Pool Busyness</title>
+  <meta name="description" content="Real-time busyness tracking for pools across Scotland and The Netherlands. Find the best time to swim." />
+  <meta name="keywords" content="Scotland pools, Netherlands pools, swimming, pool busyness, Pool Pulse" />
+  <title>Pool Pulse - Scotland & The Netherlands Pool Busyness</title>
 
   <!-- Prevent favicon 404 noise -->
   <link rel="icon" href="data:," />
@@ -559,12 +559,9 @@ useEffect(() => {
       };
 
       const cityOf = (pool) => {
-        if (pool.city) return pool.city;
         const location = (pool.location || "").toLowerCase();
-        if (location.includes("glasgow")) return "Glasgow";
-        if (location.includes("stirling")) return "Stirling";
-        if (location.includes("leiden")) return "Leiden";
-        return "Edinburgh";
+        if (pool.country === "NL" || location.includes("leiden") || location.includes("netherlands")) return "The Netherlands";
+        return "Scotland";
       };
       const cityOptions = ["All", ...Array.from(new Set(POOLS.map((pool) => cityOf(pool))))];
 
@@ -880,7 +877,7 @@ useEffect(() => {
 
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-1">Pool Pulse</h1>
-        <p className="text-white/80 text-sm font-medium">Edinburgh & Glasgow</p>
+        <p className="text-white/80 text-sm font-medium">Scotland & The Netherlands</p>
       </div>
     </div>
 
@@ -1007,7 +1004,7 @@ useEffect(() => {
         {/* Pools Covered Section */}
         <div id="homepage-pools-covered" className="bg-white rounded-2xl shadow-xl p-8 mb-8 scroll-mt-24">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Pools Covered</h2>
-          <p className="text-gray-600 mb-6">Currently tracking busyness at {POOLS.length} pools in Edinburgh and Glasgow</p>
+          <p className="text-gray-600 mb-6">Currently tracking busyness at {POOLS.length} pools in Scotland and The Netherlands</p>
           
           <div className="grid md:grid-cols-2 gap-4">
             {POOLS.map((pool) => (
@@ -1365,7 +1362,7 @@ useEffect(() => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold">Pool Pulse</h1>
-                  <p className="text-teal-100 text-xs font-medium">Edinburgh & Glasgow</p>
+                  <p className="text-teal-100 text-xs font-medium">Scotland & The Netherlands</p>
                 </div>
               </div>
 
@@ -1402,7 +1399,7 @@ useEffect(() => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">City</span>
+            <span className="text-sm text-gray-600">Region</span>
             <select
               value={cityFilter}
               onChange={(e) => setCityFilter(e.target.value)}
