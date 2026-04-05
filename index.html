@@ -3,12 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Real-time busyness tracking for pools across Scotland and The Netherlands. Find the best time to swim." />
-  <meta name="keywords" content="Scotland pools, Netherlands pools, swimming, pool busyness, Pool Pulse" />
-  <title>Pool Pulse - Scotland & The Netherlands Pool Busyness</title>
+  <meta name="description" content="Real-time busyness tracking for pools across the UK & EU. Find the best time to swim." />
+  <meta name="keywords" content="UK pools, EU pools, swimming, pool busyness, Pool Pulse" />
+  <title>Pool Pulse - UK & EU Pool Busyness</title>
 
   <!-- Prevent favicon 404 noise -->
   <link rel="icon" href="data:," />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
 
   <!-- React -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -28,7 +33,7 @@
 
   <style>
     body {
-      font-family: "Avenir Next", Avenir, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-family: "DM Sans", "Avenir Next", Avenir, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
@@ -39,6 +44,14 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+
+    .pp-card {
+      border-radius: 16px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    .pp-card-hover:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    }
   </style>
 </head>
 
@@ -66,15 +79,16 @@ const MapPin = (props) => <span {...props}>📍</span>;
 const ArrowLeft = (props) => <span {...props}>⬅️</span>;
 const Activity = (props) => <span {...props}>📊</span>;
 const Waves = (props) => <span {...props}>🌊</span>;
-const APP_LOGO = "./assets/poolpulse_app_icon_color.svg";
-
-const LogoMark = ({ className = "" }) => (
-  <img
-    src={APP_LOGO}
-    alt="Pool Pulse"
-    className={`w-full h-full object-contain ${className}`.trim()}
-  />
-);
+const LogoWordmark = ({ size = "lg" }) => {
+  const sizes = { sm: "text-xl", md: "text-2xl", lg: "text-4xl" };
+  return (
+    <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, letterSpacing: "-0.5px" }} className={sizes[size] || sizes.lg}>
+      <span style={{ color: "white" }}>Pool</span>
+      {" "}
+      <em style={{ color: "#4ecdc4", fontStyle: "italic" }}>Pulse</em>
+    </span>
+  );
+};
     // -----------------------
     // Data
     // -----------------------
@@ -479,7 +493,7 @@ const renderAuthModal = () => {
   if (!showAuthModal) return null;
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-teal-100 p-6">
+      <div className="bg-white w-full max-w-md pp-card shadow-2xl border border-teal-100 p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h2 className="text-xl font-bold text-[#1a4a47]">Welcome to Pool Pulse</h2>
@@ -513,7 +527,7 @@ const renderAuthModal = () => {
           <button
             onClick={handleGoogleSignIn}
             disabled={authLoading}
-            className="w-full bg-[#1a4a47] text-white font-semibold rounded-lg py-3 hover:opacity-90 disabled:opacity-70"
+            className="w-full bg-[#043A3D] text-white font-semibold rounded-[10px] py-3 hover:opacity-90 disabled:opacity-70"
           >
             {authLoading ? "Redirecting..." : "Continue with Google"}
           </button>
@@ -537,7 +551,7 @@ const renderAuthModal = () => {
               <button
                 onClick={handleEmailSignIn}
                 disabled={authLoading}
-                className="bg-[#1a4a47] text-white font-semibold rounded-lg py-2.5 hover:opacity-90 disabled:opacity-70"
+                className="bg-[#043A3D] text-white font-semibold rounded-[10px] py-2.5 hover:opacity-90 disabled:opacity-70"
               >
                 {authLoading ? "Please wait..." : "Sign In"}
               </button>
@@ -785,7 +799,7 @@ useEffect(() => {
         return pool.country === "NL" ? `${city} 🇳🇱` : city;
       };
 
-      const cityOf = (pool) => (pool.country === "NL" ? "The Netherlands" : "Scotland");
+      const cityOf = (pool) => (pool.country === "NL" ? "EU" : "UK");
       const cityOptions = ["All", ...Array.from(new Set(POOLS.map((pool) => cityOf(pool))))];
 
       const getOpenStatusText = (pool) => {
@@ -873,7 +887,7 @@ useEffect(() => {
             </div>
 
             <div className="max-w-4xl mx-auto px-4 py-12">
-              <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="bg-white pp-card p-8">
                 <p className="text-gray-600 mb-6">Last updated: February 20, 2026</p>
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Privacy Policy</h2>
@@ -1002,7 +1016,7 @@ useEffect(() => {
             </div>
 
             <div className="max-w-4xl mx-auto px-4 py-12">
-              <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="bg-white pp-card p-8">
                 <p className="text-gray-600 mb-6">Last updated: February 20, 2026</p>
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Terms of Service</h2>
@@ -1113,21 +1127,10 @@ useEffect(() => {
         </button>
       )}
     </div>
-    <div className="flex items-center justify-center gap-4 mb-4">
-      <div className="relative">
-        <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl"></div>
-
-        {/* Logo container */}
-        <div className="relative bg-white/5 backdrop-blur-sm p-2 rounded-3xl border border-white/10 shadow-2xl">
-          <div className="w-14 h-14">
-            <LogoMark />
-          </div>
-        </div>
-      </div>
-
+    <div className="flex items-center justify-center mb-4">
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-1">Pool Pulse</h1>
-        <p className="text-white/80 text-sm font-medium">Scotland & The Netherlands</p>
+        <h1 className="mb-1"><LogoWordmark size="lg" /></h1>
+        <p className="text-white/80 text-sm font-medium">UK & EU</p>
       </div>
     </div>
 
@@ -1139,7 +1142,7 @@ useEffect(() => {
 
 <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Main CTA */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <div className="bg-white pp-card p-8 mb-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Never waste a walk to a crowded pool again
@@ -1178,7 +1181,7 @@ useEffect(() => {
           <div className="text-center">
             <button
               onClick={() => setShowHomepage(false)}
-              className="bg-[#043A3D] text-white font-bold px-10 py-4 rounded-xl hover:opacity-90 transition-all shadow-lg text-lg"
+              className="bg-[#043A3D] text-white font-bold px-10 py-4 rounded-[10px] hover:opacity-90 transition-all shadow-lg text-lg"
             >
               View All Pools and Check in
             </button>
@@ -1187,13 +1190,13 @@ useEffect(() => {
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => document.getElementById("homepage-pools-covered")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="px-4 py-2 rounded-full border border-teal-200 text-teal-800 bg-teal-50 text-sm font-semibold hover:bg-teal-100"
+              className="px-4 py-2 rounded-[10px] border border-[#e5e7eb] text-[#043A3D] bg-white text-sm font-semibold hover:bg-gray-50"
             >
               Jump to pools covered
             </button>
             <button
               onClick={() => document.getElementById("homepage-feedback")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="px-4 py-2 rounded-full border border-cyan-200 text-cyan-800 bg-cyan-50 text-sm font-semibold hover:bg-cyan-100"
+              className="px-4 py-2 rounded-[10px] border border-[#e5e7eb] text-[#043A3D] bg-white text-sm font-semibold hover:bg-gray-50"
             >
               Jump to feedback
             </button>
@@ -1201,7 +1204,7 @@ useEffect(() => {
         </div>
 
         {/* About Me Section */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <div className="bg-white pp-card p-8 mb-8">
           <div className="grid md:grid-cols-3 gap-8 items-center">
             {/* Left side - Image/Avatar */}
            <div className="text-center md:col-span-1">
@@ -1231,7 +1234,7 @@ useEffect(() => {
         </div>
 
        {/* Swimming Gallery */}
-  <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+  <div className="bg-white pp-card p-8 mb-8">
   <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
     Why Pool Pulse? 
   </h2>
@@ -1252,9 +1255,9 @@ useEffect(() => {
   </ul>
 </div>
         {/* Pools Covered Section */}
-        <div id="homepage-pools-covered" className="bg-white rounded-2xl shadow-xl p-8 mb-8 scroll-mt-24">
+        <div id="homepage-pools-covered" className="bg-white pp-card p-8 mb-8 scroll-mt-24">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Pools Covered</h2>
-          <p className="text-gray-600 mb-6">Currently tracking busyness at {POOLS.length} pools in Scotland and The Netherlands</p>
+          <p className="text-gray-600 mb-6">Currently tracking busyness at {POOLS.length} pools across the UK & EU</p>
           
           <div className="grid md:grid-cols-2 gap-4">
             {POOLS.map((pool) => (
@@ -1286,7 +1289,7 @@ useEffect(() => {
         </div>
 
         {/* Feedback Form */}
-        <div id="homepage-feedback" className="bg-white rounded-2xl shadow-xl p-8 mb-8 scroll-mt-24">
+        <div id="homepage-feedback" className="bg-white pp-card p-8 mb-8 scroll-mt-24">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Share feedback</h2>
           <p className="text-gray-600 mb-6">
             Tell us what would make Pool Pulse more useful. Submit your feedback directly here.
@@ -1332,7 +1335,7 @@ useEffect(() => {
             <button
               type="submit"
               disabled={feedbackSubmitting}
-              className="bg-[#043A3D] text-white font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition"
+              className="bg-[#043A3D] text-white font-semibold px-6 py-3 rounded-[10px] hover:opacity-90 transition"
             >
               {feedbackSubmitting ? "Sending..." : "Send feedback"}
             </button>
@@ -1475,7 +1478,7 @@ useEffect(() => {
 
             <div className="max-w-4xl mx-auto px-4 py-6">
               {/* Recent check-ins */}
-              <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <div className="bg-white pp-card p-6 mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Recent check-ins</h2>
 
                 {checkinsLoading && <div className="text-gray-500">Loading…</div>}
@@ -1506,7 +1509,7 @@ useEffect(() => {
 
               {/* Lane status */}
               {poolStatus ? (
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div className="bg-white pp-card p-6 mb-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Activity className="w-5 h-5 text-teal-600" />
                     <h2 className="text-xl font-bold text-gray-900">Current Lane Status</h2>
@@ -1565,7 +1568,7 @@ useEffect(() => {
                   </div>
                 </div>
               ) : (
-                <div className="bg-white rounded-xl shadow-lg p-8 text-center mb-6">
+                <div className="bg-white pp-card p-8 text-center mb-6">
                   <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-xl font-bold text-gray-900 mb-2">No Check-Ins Yet</h3>
                   <p className="text-gray-600">Be the first to check in at this pool!</p>
@@ -1640,17 +1643,9 @@ useEffect(() => {
               </button>
 
               <div className="flex items-center gap-3 mb-2">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
-                  <div className="relative bg-white/10 backdrop-blur-sm p-2 rounded-2xl border-2 border-white/30 shadow-xl">
-                    <div className="w-10 h-10">
-                      <LogoMark />
-                    </div>
-                  </div>
-                </div>
                 <div>
-                  <h1 className="text-2xl font-bold">Pool Pulse</h1>
-                  <p className="text-teal-100 text-xs font-medium">Scotland & The Netherlands</p>
+                  <h1 className="mb-0.5"><LogoWordmark size="md" /></h1>
+                  <p className="text-teal-100 text-xs font-medium">UK & EU</p>
                 </div>
               </div>
 
@@ -1669,7 +1664,7 @@ useEffect(() => {
           <div className="max-w-4xl mx-auto px-4 py-6">
             
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        <div className="bg-white pp-card p-4 mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
               <input
@@ -1717,7 +1712,7 @@ useEffect(() => {
                     type="button"
                     key={pool.id}
                     aria-label={`View details for ${pool.name}`}
-                    className="w-full text-left bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    className="w-full text-left bg-white pp-card pp-card-hover overflow-hidden transition-shadow cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                     onClick={() => setViewingPool(pool.id)}
                     style={{ borderLeft: `6px solid ${pool.color}` }}
                   >
@@ -1801,11 +1796,8 @@ useEffect(() => {
             </div>
 
             {/* Check In box */}
-            <div className="bg-white rounded-xl shadow-lg p-6 sticky bottom-4">
+            <div className="bg-white pp-card p-6 sticky bottom-4">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-teal-50 border border-teal-100 rounded-xl p-1.5">
-                  <LogoMark />
-                </div>
                 <h2 className="text-xl font-bold text-gray-900">Check In</h2>
               </div>
 
@@ -1860,7 +1852,7 @@ useEffect(() => {
               {selectedPool && selectedLane && selectedPoolIsOpen && (
                 <button
                   onClick={handleSubmit}
-                  className="w-full bg-[#043A3D] text-white font-bold py-4 rounded-lg hover:opacity-90 transition-all shadow-md mt-4"
+                  className="w-full bg-[#043A3D] text-white font-bold py-4 rounded-[10px] hover:opacity-90 transition-all shadow-md mt-4"
                 >
                   I'm Swimming Here Now
                 </button>
