@@ -1091,6 +1091,12 @@ useEffect(() => {
         <div className="flex items-center gap-2">
           <span className="text-xs sm:text-sm text-teal-100">Hi, {authDisplayName}</span>
           <button
+            onClick={() => window.location.href = 'dashboard.html'}
+            className="px-3 py-1.5 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
+          >
+            My Dashboard
+          </button>
+          <button
             onClick={handleSignOut}
             disabled={authLoading}
             className="px-3 py-1.5 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-sm"
@@ -1100,7 +1106,7 @@ useEffect(() => {
         </div>
       ) : (
         <button
-          onClick={() => { setShowAuthModal(true); setAuthError(""); }}
+          onClick={() => window.location.href = 'dashboard.html'}
           className="px-4 py-2 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
         >
           Sign In
@@ -1399,16 +1405,24 @@ useEffect(() => {
               <div className="max-w-4xl mx-auto px-4 py-4">
                 <div className="flex justify-end mb-2">
                   {authUser ? (
-                    <button
-                      onClick={handleSignOut}
-                      disabled={authLoading}
-                      className="px-3 py-1 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-xs"
-                    >
-                      {authLoading ? "Signing out..." : "Sign Out"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => window.location.href = 'dashboard.html'}
+                        className="px-3 py-1 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-xs"
+                      >
+                        My Dashboard
+                      </button>
+                      <button
+                        onClick={handleSignOut}
+                        disabled={authLoading}
+                        className="px-3 py-1 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-xs"
+                      >
+                        {authLoading ? "Signing out..." : "Sign Out"}
+                      </button>
+                    </div>
                   ) : (
                     <button
-                      onClick={() => { setShowAuthModal(true); setAuthError(""); }}
+                      onClick={() => window.location.href = 'dashboard.html'}
                       className="px-3 py-1 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-xs"
                     >
                       Sign In
@@ -1595,6 +1609,12 @@ useEffect(() => {
                   <div className="flex items-center gap-2">
                     <span className="text-xs sm:text-sm text-teal-100">{authDisplayName}</span>
                     <button
+                      onClick={() => window.location.href = 'dashboard.html'}
+                      className="px-3 py-1.5 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
+                    >
+                      My Dashboard
+                    </button>
+                    <button
                       onClick={handleSignOut}
                       disabled={authLoading}
                       className="px-3 py-1.5 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-sm"
@@ -1604,7 +1624,7 @@ useEffect(() => {
                   </div>
                 ) : (
                   <button
-                    onClick={() => { setShowAuthModal(true); setAuthError(""); }}
+                    onClick={() => window.location.href = 'dashboard.html'}
                     className="px-4 py-2 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
                   >
                     Sign In
@@ -1868,7 +1888,7 @@ useEffect(() => {
                 <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <span>Sign in to unlock your personal dashboard (pool browsing + check-ins remain anonymous).</span>
                   <button
-                    onClick={() => { setShowAuthModal(true); setAuthError(""); }}
+                    onClick={() => window.location.href = 'dashboard.html'}
                     className="px-3 py-2 rounded-lg bg-[#1a4a47] text-white font-semibold hover:opacity-90"
                   >
                     Sign In
