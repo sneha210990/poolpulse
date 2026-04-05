@@ -318,8 +318,8 @@ const getPoolById = (id) => POOLS.find((p) => p.id === id);
     const status = { lanes: {}, totalUpdates: 0, lastUpdate: null };
 
     for (const r of rows) {
-      const laneId = r.lane;
-      const delta = typeof r.delta === "number" ? r.delta : 1;
+      const laneId = r.lane_type;
+      const delta = 1;
       const ts = r.created_at;
 
       if (!status.lanes[laneId]) status.lanes[laneId] = { checkInCount: 0, lastUpdate: null };
@@ -345,7 +345,7 @@ const loadRecentCheckins = async ({ silent = false } = {}) => {
 
   const { data, error } = await window.supa
     .from("checkins")
-    .select("id, created_at, pool_id, lane_type, lane, delta")
+    .select("id, created_at, pool_id, lane_type")
     .gte("created_at", sinceIso)
     .order("created_at", { ascending: false })
     .limit(50);
