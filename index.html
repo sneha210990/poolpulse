@@ -357,7 +357,7 @@ const loadRecentCheckins = async ({ silent = false } = {}) => {
   } else {
     const normalized = (data ?? []).map((row) => ({
       ...row,
-      lane: row.lane_type || row.lane,
+      lane: row.lane,
     }));
     setCheckinsError(null);
     setRecentCheckins(normalized);
