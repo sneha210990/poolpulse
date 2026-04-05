@@ -1139,6 +1139,18 @@
 </div>
 
 <script>
+// ---- SECURITY HELPERS ----
+// Escape user-supplied strings before injecting into innerHTML.
+function esc(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const SUPABASE_URL = "https://hygjskvfkucuwtcihbiw.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5Z2pza3Zma3VjdXd0Y2loYml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNjQ4OTMsImV4cCI6MjA4Njg0MDg5M30.SSrSE9J9-hs0kZNIzUMBCPST5T_JXZG5I68UF4ZjgLs";
 const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1275,7 +1287,7 @@ function renderGoal(goal) {
   document.getElementById('goalSection').innerHTML = `
     <div class="race-card">
       <div class="race-tag">Your Goal</div>
-      <div class="race-name">${goal.name.replace(/(\d+m)/i, '<em>$1</em>')}</div>
+      <div class="race-name">${esc(goal.name).replace(/(\d+m)/gi, '<em>$1</em>')}</div>
       <div class="race-stats">
         <div class="race-stat">
           <div class="race-stat-val">${daysLeft}</div>
@@ -1387,12 +1399,12 @@ function renderSwims() {
     <div class="entry">
       <div class="entry-icon" style="background:var(--teal-pale)">🏊</div>
       <div class="entry-body">
-        <div class="entry-title">${s.distance_m}m${s.duration_mins ? ' · ' + s.duration_mins + 'min' : ''}</div>
-        <div class="entry-detail">${s.pace ? s.pace + '/100m · ' : ''}${s.pool_name || ''}${s.feel ? ' · ' + s.feel : ''}</div>
-        ${s.notes ? `<div class="entry-detail">${s.notes}</div>` : ''}
+        <div class="entry-title">${esc(s.distance_m)}m${s.duration_mins ? ' · ' + esc(s.duration_mins) + 'min' : ''}</div>
+        <div class="entry-detail">${s.pace ? esc(s.pace) + '/100m · ' : ''}${esc(s.pool_name || '')}${s.feel ? ' · ' + esc(s.feel) : ''}</div>
+        ${s.notes ? `<div class="entry-detail">${esc(s.notes)}</div>` : ''}
         <div class="entry-date">${formatDate(s.date)}</div>
       </div>
-      <button class="entry-delete" onclick="deleteEntry('swim_sessions','${s.id}','swims')">✕</button>
+      <button class="entry-delete" onclick="deleteEntry('swim_sessions','${esc(s.id)}','swims')">✕</button>
     </div>`).join('');
 }
 
@@ -1440,12 +1452,12 @@ function renderMeals() {
     <div class="entry">
       <div class="entry-icon" style="background:${colors[m.meal_type]||'#eee'}">🍽</div>
       <div class="entry-body">
-        <div class="entry-title">${m.meal_type}</div>
-        <div class="entry-detail">${m.food}${m.feel ? ' · ' + m.feel : ''}</div>
-        ${m.notes ? `<div class="entry-detail">${m.notes}</div>` : ''}
+        <div class="entry-title">${esc(m.meal_type)}</div>
+        <div class="entry-detail">${esc(m.food)}${m.feel ? ' · ' + esc(m.feel) : ''}</div>
+        ${m.notes ? `<div class="entry-detail">${esc(m.notes)}</div>` : ''}
         <div class="entry-date">${formatDate(m.date)}</div>
       </div>
-      <button class="entry-delete" onclick="deleteEntry('nutrition_logs','${m.id}','meals')">✕</button>
+      <button class="entry-delete" onclick="deleteEntry('nutrition_logs','${esc(m.id)}','meals')">✕</button>
     </div>`).join('');
 }
 
@@ -1495,11 +1507,11 @@ function renderBody() {
     <div class="entry">
       <div class="entry-icon" style="background:#FFF3E0">📊</div>
       <div class="entry-body">
-        <div class="entry-title">${b.weight_kg ? b.weight_kg + 'kg' : ''}${b.weight_kg && b.sleep_hrs ? ' · ' : ''}${b.sleep_hrs ? b.sleep_hrs + 'h sleep' : ''}</div>
-        <div class="entry-detail">${b.energy || ''}${b.notes ? (b.energy ? ' · ' : '') + b.notes : ''}</div>
+        <div class="entry-title">${b.weight_kg ? esc(b.weight_kg) + 'kg' : ''}${b.weight_kg && b.sleep_hrs ? ' · ' : ''}${b.sleep_hrs ? esc(b.sleep_hrs) + 'h sleep' : ''}</div>
+        <div class="entry-detail">${esc(b.energy || '')}${b.notes ? (b.energy ? ' · ' : '') + esc(b.notes) : ''}</div>
         <div class="entry-date">${formatDate(b.date)}</div>
       </div>
-      <button class="entry-delete" onclick="deleteEntry('body_stats','${b.id}','body')">✕</button>
+      <button class="entry-delete" onclick="deleteEntry('body_stats','${esc(b.id)}','body')">✕</button>
     </div>`).join('');
 }
 
@@ -1529,8 +1541,8 @@ function updateHome() {
       <div class="entry">
         <div class="entry-icon" style="background:var(--teal-pale)">🏊</div>
         <div class="entry-body">
-          <div class="entry-title">${s.distance_m}m${s.pace ? ' · ' + s.pace + '/100m' : ''}</div>
-          <div class="entry-detail">${s.pool_name || ''}${s.feel ? (s.pool_name ? ' · ' : '') + s.feel : ''}</div>
+          <div class="entry-title">${esc(s.distance_m)}m${s.pace ? ' · ' + esc(s.pace) + '/100m' : ''}</div>
+          <div class="entry-detail">${esc(s.pool_name || '')}${s.feel ? (s.pool_name ? ' · ' : '') + esc(s.feel) : ''}</div>
           <div class="entry-date">${formatDate(s.date)}</div>
         </div>
       </div>`).join('');
@@ -1574,15 +1586,15 @@ function applyHairProfile(profile) {
   }
   document.getElementById('hairTipText').textContent = tipText || 'Add your hair type to see personalised tips.';
 
-  if (profile.clarifying) document.getElementById('clarifyingLabel').innerHTML = `Co-wash with <span class="product-name">${profile.clarifying}</span>`;
+  // Note: clarifyingLabel was previously set twice — second assignment was the intended one.
+  if (profile.clarifying) document.getElementById('clarifyingLabel').innerHTML = `<span class="product-name">${esc(profile.clarifying)}</span> clarifying shampoo`;
   if (profile.leaveIn) {
-    document.getElementById('leaveInLabel').innerHTML = `Apply <span class="product-name">${profile.leaveIn}</span>`;
-    document.getElementById('moistureLabel').innerHTML = `Apply <span class="product-name">${profile.leaveIn}</span>`;
+    document.getElementById('leaveInLabel').innerHTML = `Apply <span class="product-name">${esc(profile.leaveIn)}</span>`;
+    document.getElementById('moistureLabel').innerHTML = `Apply <span class="product-name">${esc(profile.leaveIn)}</span>`;
   }
-  if (profile.clarifying) document.getElementById('clarifyingLabel').innerHTML = `<span class="product-name">${profile.clarifying}</span> clarifying shampoo`;
-  if (profile.protein) document.getElementById('proteinLabel').innerHTML = `<span class="product-name">${profile.protein}</span> protein treatment`;
-  if (profile.mask) document.getElementById('deepCondLabel').innerHTML = `<span class="product-name">${profile.mask}</span> deep conditioning mask`;
-  if (profile.leaveIn) document.getElementById('coWashLabel').innerHTML = `Co-wash with <span class="product-name">${profile.clarifying || 'your shampoo'}</span>`;
+  if (profile.protein) document.getElementById('proteinLabel').innerHTML = `<span class="product-name">${esc(profile.protein)}</span> protein treatment`;
+  if (profile.mask) document.getElementById('deepCondLabel').innerHTML = `<span class="product-name">${esc(profile.mask)}</span> deep conditioning mask`;
+  if (profile.leaveIn) document.getElementById('coWashLabel').innerHTML = `Co-wash with <span class="product-name">${esc(profile.clarifying || 'your shampoo')}</span>`;
 }
 
 function openHairProfile() {
@@ -1628,7 +1640,12 @@ async function saveHairProfile() {
 
 // ---- UTILS ----
 async function deleteEntry(table, id, type) {
-  await supa.from(table).delete().eq('id', id);
+  const { error } = await supa.from(table).delete().eq('id', id).eq('user_id', currentUser.id);
+  if (error) {
+    console.error('deleteEntry error:', error);
+    showToast('Delete failed — try again');
+    return;
+  }
   if (type === 'swims') { await loadSwims(); updateHome(); }
   if (type === 'meals') await loadMeals();
   if (type === 'body') { await loadBody(); updateHome(); }
