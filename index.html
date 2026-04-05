@@ -600,12 +600,10 @@ const renderAuthModal = () => {
         );
 
         try {
-          const fetchPromise = window.supa
-            .from("checkins")
-            .select("pool_id, lane_type")
-            .gt("expires_at", new Date().toISOString());
-
-          const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+          const { data, error } = await supa
+            .from('checkins')
+            .select('pool_id, lane_type')
+            .gt('expires_at', new Date().toISOString());
 
           if (error || !data) {
             setBusynessError("error");
