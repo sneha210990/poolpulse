@@ -572,63 +572,73 @@ const renderAuthModal = () => {
         return "";
       };
 
-      const loadBusynessData = async ({ silent = false } = {}) => {
-        if (!silent) {
-          setBusynessLoading(true);
-        }
+      const updateBusynessUI = (busyness) => {
+        const agg = {};
+        const nowIso = new Date().toISOString();
 
-        const timeoutPromise = new Promise((resolve) => {
-          window.setTimeout(() => resolve({ timedOut: true }), 5000);
+        Object.entries(busyness || {}).forEach(([poolId, lanes]) => {
+          if (!poolId) return;
+          if (!agg[poolId]) agg[poolId] = { lanes: {}, totalUpdates: 0, lastUpdate: null };
+
+          Object.entries(lanes || {}).forEach(([laneType, count]) => {
+            const laneId = normalizeLaneId(laneType);
+            if (!laneId || !count) return;
+            agg[poolId].lanes[laneId] = { checkInCount: count, lastUpdate: nowIso };
+            agg[poolId].totalUpdates += count;
+            agg[poolId].lastUpdate = nowIso;
+          });
         });
 
+        setPoolData(agg);
+      };
+
+      async function loadAllBusyness() {
+        setBusynessLoading(true);
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), 5000)
+        );
+
         try {
-          const queryPromise = window.supa
+          const fetchPromise = window.supa
             .from("checkins")
             .select("pool_id, lane_type")
             .gt("expires_at", new Date().toISOString());
 
-          const result = await Promise.race([queryPromise, timeoutPromise]);
+          const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
-          if (result?.timedOut) {
-            setBusynessError("timeout");
+          if (error || !data) {
+            setBusynessError("error");
             setPoolData({});
             return;
           }
 
-          if (result.error) throw result.error;
-
-          const agg = {};
-          for (const row of result.data || []) {
+          // Group by pool_id and lane_type locally
+          const busyness = {};
+          data.forEach((row) => {
             const poolId = row.pool_id;
             const laneId = normalizeLaneId(row.lane_type);
-            if (!poolId || !laneId) continue;
-            if (!agg[poolId]) agg[poolId] = { lanes: {}, totalUpdates: 0, lastUpdate: null };
-            if (!agg[poolId].lanes[laneId]) agg[poolId].lanes[laneId] = { checkInCount: 0, lastUpdate: null };
+            if (!poolId || !laneId) return;
+            if (!busyness[poolId]) busyness[poolId] = {};
+            if (!busyness[poolId][laneId]) busyness[poolId][laneId] = 0;
+            busyness[poolId][laneId] += 1;
+          });
 
-            agg[poolId].lanes[laneId].checkInCount += 1;
-            agg[poolId].totalUpdates += 1;
-            agg[poolId].lastUpdate = new Date().toISOString();
-          }
-
+          // Update UI with calculated busyness
+          updateBusynessUI(busyness);
           setBusynessError(null);
-          setPoolData(agg);
         } catch (e) {
-          console.error("loadBusynessData error:", e);
-          setBusynessError("error");
+          // Timeout or error — pools already visible, just show no data
+          console.log("Busyness load failed or timed out");
+          setBusynessError("timeout");
           setPoolData({});
         } finally {
-          if (!silent) {
-            setBusynessLoading(false);
-          }
+          setBusynessLoading(false);
         }
-      };
+      }
 
       useEffect(() => {
-        loadBusynessData();
-        const t = setInterval(() => {
-          loadBusynessData({ silent: true });
-        }, 10000);
-        return () => clearInterval(t);
+        loadAllBusyness();
       }, []);
 
       useEffect(() => {
@@ -718,7 +728,7 @@ useEffect(() => {
           setSelectedPool("");
           setSelectedLane("");
 
-          await loadBusynessData();
+          await loadAllBusyness();
           if (viewingPool) {
             await loadRecentCheckins();
           }
