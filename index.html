@@ -268,7 +268,6 @@ const LogoMark = ({ className = "" }) => (
         setSelectedLane("");
       }, [selectedPool]);
       const [showSuccess, setShowSuccess] = useState(false);
-      const [loading, setLoading] = useState(true);
       const [viewingPool, setViewingPool] = useState(null);
 
       const [showHomepage, setShowHomepage] = useState(true);
@@ -301,6 +300,8 @@ const LogoMark = ({ className = "" }) => (
       const [recentCheckins, setRecentCheckins] = useState([]);
       const [checkinsLoading, setCheckinsLoading] = useState(true);
       const [checkinsError, setCheckinsError] = useState(null);
+      const [busynessLoading, setBusynessLoading] = useState(true);
+      const [busynessError, setBusynessError] = useState(null);
 const getPoolById = (id) => POOLS.find((p) => p.id === id);
   const selectedPoolObj = selectedPool ? getPoolById(selectedPool) : null;
   const selectedPoolIsOpen = selectedPoolObj ? isPoolOpen(selectedPoolObj) : false;
@@ -337,14 +338,14 @@ const loadRecentCheckins = async ({ silent = false } = {}) => {
     setCheckinsLoading(true);
   }
 
-  // Only show check-ins from the last CHECKIN_WINDOW_MINUTES
+  // Only load recent check-ins when needed (e.g. pool detail view)
   const sinceIso = new Date(
     Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
   ).toISOString();
 
   const { data, error } = await window.supa
     .from("checkins")
-    .select("id, created_at, pool_id, lane, delta")
+    .select("id, created_at, pool_id, lane_type, lane, delta")
     .gte("created_at", sinceIso)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -354,8 +355,12 @@ const loadRecentCheckins = async ({ silent = false } = {}) => {
     setCheckinsError(error.message);
     setRecentCheckins([]);
   } else {
+    const normalized = (data ?? []).map((row) => ({
+      ...row,
+      lane: row.lane_type || row.lane,
+    }));
     setCheckinsError(null);
-    setRecentCheckins(data ?? []);
+    setRecentCheckins(normalized);
   }
 
   if (!silent) {
@@ -557,66 +562,85 @@ const renderAuthModal = () => {
   );
 };
 
-      const loadData = async ({ silent = false } = {}) => {
+      const normalizeLaneId = (laneType) => {
+        if (!laneType) return "";
+        const value = String(laneType).toLowerCase();
+        if (value === "fast" || value === "medium" || value === "slow") return value;
+        if (value.includes("fast")) return "fast";
+        if (value.includes("medium")) return "medium";
+        if (value.includes("slow")) return "slow";
+        return "";
+      };
+
+      const loadBusynessData = async ({ silent = false } = {}) => {
+        if (!silent) {
+          setBusynessLoading(true);
+        }
+
+        const timeoutPromise = new Promise((resolve) => {
+          window.setTimeout(() => resolve({ timedOut: true }), 5000);
+        });
+
         try {
-          if (!silent) {
-            setLoading(true);
+          const queryPromise = window.supa
+            .from("checkins")
+            .select("pool_id, lane_type")
+            .gt("expires_at", new Date().toISOString());
+
+          const result = await Promise.race([queryPromise, timeoutPromise]);
+
+          if (result?.timedOut) {
+            setBusynessError("timeout");
+            setPoolData({});
+            return;
           }
 
-          const sinceIso = new Date(
-            Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
-          ).toISOString();
-
-          const { data, error } = await window.supa
-            .from("checkins")
-            .select("pool_id,lane,delta,created_at")
-            .gte("created_at", sinceIso);
-
-          if (error) throw error;
+          if (result.error) throw result.error;
 
           const agg = {};
-
-          for (const row of data || []) {
+          for (const row of result.data || []) {
             const poolId = row.pool_id;
-            const laneId = row.lane;
-            const delta = typeof row.delta === "number" ? row.delta : 1;
-            const ts = row.created_at;
-
+            const laneId = normalizeLaneId(row.lane_type);
+            if (!poolId || !laneId) continue;
             if (!agg[poolId]) agg[poolId] = { lanes: {}, totalUpdates: 0, lastUpdate: null };
-            agg[poolId].totalUpdates += delta;
-
             if (!agg[poolId].lanes[laneId]) agg[poolId].lanes[laneId] = { checkInCount: 0, lastUpdate: null };
-            agg[poolId].lanes[laneId].checkInCount += delta;
 
-            if (!agg[poolId].lanes[laneId].lastUpdate || ts > agg[poolId].lanes[laneId].lastUpdate) {
-              agg[poolId].lanes[laneId].lastUpdate = ts;
-            }
-            if (!agg[poolId].lastUpdate || ts > agg[poolId].lastUpdate) {
-              agg[poolId].lastUpdate = ts;
-            }
+            agg[poolId].lanes[laneId].checkInCount += 1;
+            agg[poolId].totalUpdates += 1;
+            agg[poolId].lastUpdate = new Date().toISOString();
           }
 
+          setBusynessError(null);
           setPoolData(agg);
         } catch (e) {
-          console.error("loadData error:", e);
+          console.error("loadBusynessData error:", e);
+          setBusynessError("error");
+          setPoolData({});
         } finally {
           if (!silent) {
-            setLoading(false);
+            setBusynessLoading(false);
           }
         }
       };
 
       useEffect(() => {
-        loadData();
+        loadBusynessData();
+        const t = setInterval(() => {
+          loadBusynessData({ silent: true });
+        }, 10000);
+        return () => clearInterval(t);
+      }, []);
+
+      useEffect(() => {
+        if (!viewingPool) return;
         loadRecentCheckins();
 
         const t = setInterval(() => {
-          loadData({ silent: true });
           loadRecentCheckins({ silent: true });
         }, 10000);
 
         return () => clearInterval(t);
-      }, []);
+      }, [viewingPool]);
 
       useEffect(() => {
         let mounted = true;
@@ -682,7 +706,7 @@ useEffect(() => {
         try {
           const { error } = await window.supa
             .from("checkins")
-            .insert([{ pool_id: poolId, lane, delta: 1 }]);
+            .insert([{ pool_id: poolId, lane_type: lane, lane, delta: 1 }]);
 
           if (error) throw error;
 
@@ -694,7 +718,10 @@ useEffect(() => {
           setSelectedPool("");
           setSelectedLane("");
 
-          await Promise.all([loadData(), loadRecentCheckins()]);
+          await loadBusynessData();
+          if (viewingPool) {
+            await loadRecentCheckins();
+          }
         } catch (e) {
           console.error("insert error:", e);
           alert("Failed to save check-in. Please try again.");
@@ -1348,23 +1375,6 @@ useEffect(() => {
 }
 
       // -----------------------
-      // Loading screen
-      // -----------------------
-      if (loading) {
-        return (
-          <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 flex items-center justify-center">
-            <div className="text-center">
-              <div className="relative inline-block">
-                <Waves className="w-16 h-16 text-teal-500 animate-pulse" />
-                <Droplets className="w-8 h-8 text-cyan-500 animate-bounce absolute top-0 right-0" />
-              </div>
-              <p className="text-gray-600 mt-4">Loading pool data...</p>
-            </div>
-          </div>
-        );
-      }
-
-      // -----------------------
       // Pool Detail View
       // -----------------------
       if (viewingPool) {
@@ -1718,6 +1728,7 @@ useEffect(() => {
                               const count = laneData?.checkInCount || 0;
                               const hasData = !!poolStatus && count > 0;
                               const busyness = hasData ? getLaneBusyness(count) : null;
+                              const showNoData = !hasData && !busynessLoading && !!busynessError;
 
                               return (
                                 <div key={lane.id} className="text-center">
@@ -1732,7 +1743,7 @@ useEffect(() => {
                                     </div>
                                   ) : (
                                     <div className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm font-bold flex items-center justify-center">
-                                      —
+                                      {showNoData ? "No data" : "—"}
                                     </div>
                                   )}
                                 </div>
@@ -1746,7 +1757,7 @@ useEffect(() => {
                               <span>
                                 {poolStatus?.lastUpdate
                                   ? `Updated ${getTimeSince(poolStatus.lastUpdate)} · ${poolStatus.totalUpdates || 0} check-ins`
-                                  : "No recent check-ins yet"}
+                                  : (busynessLoading ? "Loading busyness…" : (busynessError ? "No data" : "No recent check-ins yet"))}
                               </span>
                             </div>
                             <div className="font-semibold" style={{ color: pool.color }}>
