@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>My Dashboard — PoolPulse</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  :root {
+    --teal-dark: #0D4A4A;
+    --teal-mid: #1a6b6b;
+    --teal-bright: #4ecdc4;
+    --teal-pale: #E8F5F5;
+    --cream: #FDFAF6;
+    --text: #1a1a1a;
+    --text-light: #888;
+    --gold: #C9A84C;
+    --green: #66BB6A;
+    --red: #E57373;
+    --card: #ffffff;
+    --border: #eee;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+  }
+
+  /* AUTH SCREEN */
+  .auth-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    background: var(--teal-dark);
+  }
+
+  .auth-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    color: white;
+    margin-bottom: 8px;
+  }
+
+  .auth-logo em { color: var(--teal-bright); font-style: italic; }
+
+  .auth-subtitle {
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  .auth-card {
+    background: white;
+    border-radius: 20px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .auth-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--teal-dark);
+    margin-bottom: 4px;
+  }
+
+  .auth-card p {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 24px;
+  }
+
+  .auth-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+
+  .auth-input:focus { border-color: var(--teal-bright); }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--teal-dark);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+  }
+
+  .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+
+  .btn-google {
+    width: 100%;
+    background: white;
+    color: var(--teal-dark);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+  }
+
+  .btn-google:active { transform: scale(0.98); background: var(--teal-pale); }
+
+  .auth-divider {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 12px;
+    margin: 4px 0 12px;
+    position: relative;
+  }
+
+  .auth-error {
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .auth-back {
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    margin-top: 20px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--teal-dark);
+    padding: 48px 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(78,205,196,0.1);
+  }
+
+  .header-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--teal-bright);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    color: white;
+    line-height: 1.2;
+  }
+
+  .header h1 em { color: var(--teal-bright); font-style: italic; }
+
+  .header-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+  }
+
+  .header-actions {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn-back {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-signout {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: white;
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 4px 8px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    transition: all 0.2s;
+  }
+
+  .nav-icon { font-size: 20px; margin-bottom: 3px; }
+
+  .nav-label {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .nav-item.active .nav-label { color: var(--teal-bright); }
+  .nav-item.active .nav-icon { transform: scale(1.1); }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    margin: 0 16px 12px;
+    padding: 16px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+
+  .card-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--teal-dark);
+    margin-bottom: 12px;
+  }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 16px;
+    margin-bottom: 12px;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    color: var(--teal-dark);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-unit { font-size: 12px; color: var(--text-light); margin-left: 2px; }
+  .stat-label { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+
+  /* RACE CARD */
+  .race-card {
+    background: var(--teal-dark);
+    border-radius: 16px;
+    margin: 16px 16px 12px;
+    padding: 18px;
+  }
+
+  .race-tag {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+
+  .race-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: white;
+    margin-bottom: 14px;
+  }
+
+  .race-name em { color: var(--teal-bright); font-style: italic; }
+
+  .race-stats { display: flex; gap: 20px; margin-bottom: 14px; }
+
+  .race-stat-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--teal-bright);
+    font-weight: 700;
+  }
+
+  .race-stat-label { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+  .progress-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal-mid), var(--teal-bright));
+    border-radius: 10px;
+    transition: width 0.6s ease;
+  }
+
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+
+  .progress-labels span { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+  /* NO GOAL */
+  .no-goal {
+    background: white;
+    border-radius: 16px;
+    margin: 16px 16px 12px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+
+  .no-goal-icon { font-size: 32px; margin-bottom: 12px; }
+  .no-goal-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--teal-dark); margin-bottom: 6px; }
+  .no-goal-sub { font-size: 13px; color: var(--text-light); margin-bottom: 16px; }
+
+  /* FORMS */
+  .section-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    font-weight: 600;
+    padding: 20px 16px 10px;
+  }
+
+  .form-group { margin-bottom: 12px; }
+
+  .form-label {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .form-input {
+    width: 100%;
+    background: var(--teal-pale);
+    border: none;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+  }
+
+  .form-input:focus { box-shadow: 0 0 0 2px var(--teal-bright); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .form-select {
+    width: 100%;
+    background: var(--teal-pale);
+    border: none;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    appearance: none;
+  }
+
+  textarea.form-input { resize: vertical; min-height: 70px; }
+
+  .feel-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .feel-btn {
+    padding: 7px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+
+  .feel-btn.selected {
+    border-color: var(--teal-bright);
+    background: var(--teal-pale);
+    color: var(--teal-dark);
+    font-weight: 600;
+  }
+
+  .btn-submit {
+    width: 100%;
+    background: var(--teal-dark);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: all 0.2s;
+  }
+
+  .btn-submit:active { transform: scale(0.98); }
+
+  /* LOG ENTRIES */
+  .entry {
+    background: white;
+    border-radius: 14px;
+    margin: 0 16px 10px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .entry-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .entry-body { flex: 1; min-width: 0; }
+  .entry-title { font-weight: 600; font-size: 13px; color: var(--teal-dark); }
+  .entry-detail { font-size: 12px; color: var(--text-light); margin-top: 2px; line-height: 1.4; }
+  .entry-date { font-size: 10px; color: var(--text-light); margin-top: 4px; }
+
+  .entry-delete {
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text-light);
+    padding: 4px;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+  }
+
+  /* HAIR CHECKLIST */
+  .hair-toggle {
+    display: flex;
+    background: white;
+    border-radius: 12px;
+    padding: 4px;
+    margin: 0 16px 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .hair-toggle-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-light);
+  }
+
+  .hair-toggle-btn.active { background: var(--teal-dark); color: white; font-weight: 600; }
+
+  .check-item {
+    background: white;
+    border-radius: 12px;
+    padding: 13px 14px;
+    margin: 0 16px 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    border: 1.5px solid transparent;
+  }
+
+  .check-item.checked { border-color: var(--teal-bright); background: var(--teal-pale); }
+
+  .check-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: transparent;
+    transition: all 0.2s;
+  }
+
+  .check-item.checked .check-circle {
+    background: var(--teal-bright);
+    border-color: var(--teal-bright);
+    color: white;
+  }
+
+  .check-text { font-size: 13px; font-weight: 500; }
+  .check-item.checked .check-text { text-decoration: line-through; color: var(--text-light); }
+  .check-sub { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+  .week-tag {
+    display: inline-block;
+    background: var(--teal-pale);
+    color: var(--teal-mid);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin: 12px 16px 8px;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--teal-dark);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--text-light);
+  }
+
+  .empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--teal-dark); margin-bottom: 4px; }
+  .empty-sub { font-size: 12px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal {
+    background: white;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px 40px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--teal-dark);
+    margin-bottom: 4px;
+  }
+
+  .modal-sub { font-size: 13px; color: var(--text-light); margin-bottom: 20px; }
+
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-light);
+  }
+
+  .product-name {
+    color: var(--teal-mid);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" style="display:none">
+  <div class="auth-screen">
+    <div class="auth-logo">Pool<em>Pulse</em></div>
+    <div class="auth-subtitle">Sign in to access your personal dashboard</div>
+
+    <div class="auth-card">
+      <h2>Welcome back</h2>
+      <p>Your swim log, nutrition, body stats and hair care — all in one place.</p>
+
+      <div id="authError" class="auth-error" style="display:none"></div>
+
+      <button class="btn-google" onclick="signInGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.31z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-divider">or</div>
+
+      <input type="email" class="auth-input" id="authEmail" placeholder="Email address">
+      <input type="password" class="auth-input" id="authPassword" placeholder="Password">
+
+      <button class="btn-primary" onclick="signInEmail()" id="signInBtn">Sign In</button>
+      <button class="btn-primary" onclick="signUpEmail()" id="signUpBtn" style="background:transparent;color:var(--teal-dark);border:1.5px solid var(--border);">Create account</button>
+    </div>
+
+    <a href="index.html" class="auth-back">← Back to PoolPulse</a>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-actions">
+      <a href="index.html" class="btn-back">← PoolPulse</a>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+    <div class="header-tag">Personal Dashboard</div>
+    <h1>Good <em id="greeting">morning</em>, <span id="userName">swimmer</span></h1>
+    <div class="header-meta" id="todayDate"></div>
+  </div>
+
+  <!-- SCREEN: HOME -->
+  <div class="screen active" id="screen-home">
+
+    <!-- Race goal or no goal -->
+    <div id="goalSection"></div>
+
+    <!-- Week stats -->
+    <div class="section-title">This Week</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div><span class="stat-value" id="weekDist">0</span><span class="stat-unit">m</span></div>
+        <div class="stat-label">Distance swum</div>
+      </div>
+      <div class="stat-card">
+        <div><span class="stat-value" id="weekSessions">0</span></div>
+        <div class="stat-label">Sessions this week</div>
+      </div>
+      <div class="stat-card">
+        <div><span class="stat-value" id="bestPace">--</span></div>
+        <div class="stat-label">Best avg pace /100m</div>
+      </div>
+      <div class="stat-card">
+        <div><span class="stat-value" id="currentWeight">--</span><span class="stat-unit" id="weightUnit"></span></div>
+        <div class="stat-label">Current weight</div>
+      </div>
+    </div>
+
+    <!-- Recent sessions -->
+    <div class="section-title">Recent Sessions</div>
+    <div id="recentSessions">
+      <div class="empty">
+        <div class="empty-icon">🏊</div>
+        <div class="empty-title">No sessions yet</div>
+        <div class="empty-sub">Log your first swim in the Swim tab</div>
+      </div>
+    </div>
+
+    <!-- Set goal button if no goal -->
+    <div style="padding: 0 16px 16px" id="setGoalBtnWrap" style="display:none">
+      <button class="btn-submit" onclick="openGoalModal()">Set a race goal</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: SWIM -->
+  <div class="screen" id="screen-swim">
+    <div class="section-title">Log a Session</div>
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-input" id="swimDate">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Distance (m)</label>
+          <input type="number" class="form-input" id="swimDist" placeholder="2000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration (min)</label>
+          <input type="number" class="form-input" id="swimDuration" placeholder="40">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Avg Pace /100m</label>
+          <input type="text" class="form-input" id="swimPace" placeholder="2:05">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Strokes/length</label>
+          <input type="number" class="form-input" id="swimStrokes" placeholder="12.4" step="0.1">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pool</label>
+        <input type="text" class="form-input" id="swimPool" placeholder="e.g. Royal Commonwealth Pool">
+      </div>
+      <div class="form-group">
+        <label class="form-label">How did it feel?</label>
+        <div class="feel-buttons" id="swimFeelBtns">
+          <button class="feel-btn" onclick="selectFeel(this,'swimFeel','💀 Dead')">💀 Dead</button>
+          <button class="feel-btn" onclick="selectFeel(this,'swimFeel','😤 Hard')">😤 Hard</button>
+          <button class="feel-btn" onclick="selectFeel(this,'swimFeel','😊 Good')">😊 Good</button>
+          <button class="feel-btn" onclick="selectFeel(this,'swimFeel','🔥 Strong')">🔥 Strong</button>
+          <button class="feel-btn" onclick="selectFeel(this,'swimFeel','⚡ Easy')">⚡ Easy</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-input" id="swimNotes" placeholder="Lane conditions, what worked, what didn't..."></textarea>
+      </div>
+      <button class="btn-submit" onclick="logSwim()">Log Session</button>
+    </div>
+
+    <div class="section-title">All Sessions</div>
+    <div id="allSessions">
+      <div class="empty">
+        <div class="empty-icon">🏊</div>
+        <div class="empty-title">No sessions yet</div>
+        <div class="empty-sub">Log your first swim above</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: FOOD -->
+  <div class="screen" id="screen-food">
+    <div class="section-title">Log a Meal</div>
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-input" id="nutDate">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Meal type</label>
+        <select class="form-select" id="nutType">
+          <option>Pre-swim snack</option>
+          <option>Post-swim meal</option>
+          <option>Breakfast</option>
+          <option>Lunch</option>
+          <option>Dinner</option>
+          <option>Late night 😅</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">What did you eat?</label>
+        <textarea class="form-input" id="nutFood" placeholder="e.g. chicken and roti, Maggi, mutton achar..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">How was it?</label>
+        <div class="feel-buttons" id="nutFeelBtns">
+          <button class="feel-btn" onclick="selectFeel(this,'nutFeel','✅ On plan')">✅ On plan</button>
+          <button class="feel-btn" onclick="selectFeel(this,'nutFeel','😬 Oops')">😬 Oops</button>
+          <button class="feel-btn" onclick="selectFeel(this,'nutFeel','🍽 Balanced')">🍽 Balanced</button>
+          <button class="feel-btn" onclick="selectFeel(this,'nutFeel','😭 Maggi')">😭 Maggi</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input type="text" class="form-input" id="nutNotes" placeholder="e.g. ate late, was ravenous after swim...">
+      </div>
+      <button class="btn-submit" onclick="logNutrition()">Log Meal</button>
+    </div>
+
+    <div class="section-title">Recent Meals</div>
+    <div id="allMeals">
+      <div class="empty">
+        <div class="empty-icon">🍽</div>
+        <div class="empty-title">No meals logged yet</div>
+        <div class="empty-sub">Track what you eat around training</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: BODY -->
+  <div class="screen" id="screen-body">
+    <div class="section-title">Log Today</div>
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-input" id="bodyDate">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Weight (kg)</label>
+          <input type="number" class="form-input" id="bodyWeight" placeholder="95.0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sleep (hrs)</label>
+          <input type="number" class="form-input" id="bodySleep" placeholder="7.5" step="0.5">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Energy level</label>
+        <div class="feel-buttons" id="bodyFeelBtns">
+          <button class="feel-btn" onclick="selectFeel(this,'bodyFeel','💀 Wrecked')">💀 Wrecked</button>
+          <button class="feel-btn" onclick="selectFeel(this,'bodyFeel','😴 Tired')">😴 Tired</button>
+          <button class="feel-btn" onclick="selectFeel(this,'bodyFeel','😊 Fine')">😊 Fine</button>
+          <button class="feel-btn" onclick="selectFeel(this,'bodyFeel','⚡ Great')">⚡ Great</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input type="text" class="form-input" id="bodyNotes" placeholder="Sore legs, shoulder twinge, feeling strong...">
+      </div>
+      <p style="font-size:12px;color:var(--text-light);margin-bottom:12px">💡 Weigh yourself on rest days only for consistent data.</p>
+      <button class="btn-submit" onclick="logBody()">Log Stats</button>
+    </div>
+
+    <div class="section-title">History</div>
+    <div id="allBody">
+      <div class="empty">
+        <div class="empty-icon">📊</div>
+        <div class="empty-title">No stats yet</div>
+        <div class="empty-sub">Weigh yourself on rest days only</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: HAIR -->
+  <div class="screen" id="screen-hair">
+    <div style="padding: 16px 16px 0; display:flex; justify-content:space-between; align-items:center">
+      <div class="section-title" style="padding:0">Today's routine</div>
+      <button onclick="openHairProfile()" style="font-size:12px;color:var(--teal-mid);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;">Edit hair profile ✏️</button>
+    </div>
+
+    <div class="hair-toggle">
+      <button class="hair-toggle-btn active" id="swimDayBtn" onclick="showHairMode('swim')">🏊 Swim Day</button>
+      <button class="hair-toggle-btn" id="restDayBtn" onclick="showHairMode('rest')">💤 Rest Day</button>
+    </div>
+
+    <div id="swimDayRoutine">
+      <div class="week-tag">Before swimming</div>
+      <div class="check-item" onclick="toggleCheck(this,'wet_hair')">
+        <div class="check-circle">✓</div>
+        <div>
+          <div class="check-text">Soak hair in fresh water</div>
+          <div class="check-sub">Until fully saturated — wet curls absorb less chlorine</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this,'conditioner_barrier')">
+        <div class="check-circle">✓</div>
+        <div>
+          <div class="check-text">Apply conditioner barrier</div>
+          <div class="check-sub">Generous amount through all hair before cap</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this,'cap_on')">
+        <div class="check-circle">✓</div>
+        <div>
+          <div class="check-text">Put your swim cap on</div>
+          <div class="check-sub">Check seal at hairline</div>
+        </div>
+      </div>
+
+      <div class="week-tag">After swimming</div>
+      <div class="check-item" onclick="toggleCheck(this,'rinse')">
+        <div class="check-circle">✓</div>
+        <div>
+          <div class="check-text">Rinse immediately</div>
+          <div class="check-sub">Hair first, everything else after</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this,'co_wash')">
+        <div class="check-circle">✓</div>
+        <div>
+          <div class="check-text" id="coWashLabel">Co-wash</div>
+          <div class="check-sub">Conditioner only on swim days — no shampoo</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this,'leave_in')">
+        <div class="check-circle">✓</div>
+        <div>
+          <div class="check-text" id="leaveInLabel">Apply leave-in conditioner</div>
+          <div class="check-sub">While wet — scrunch in, don't rub</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this,'dry')">
+        <div class="check-circle">✓</div>
+        <div>
+          <div class="check-text">Air dry or diffuse</div>
+          <div class="check-sub">Never towel rub your hair</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="restDayRoutine" style="display:none">
+      <div class="week-tag">Daily moisture</div>
+      <div class="check-item" onclick="toggleCheck(this,'moisture')">
+        <div class="check-circle">✓</div>
+        <div>
+          <div class="check-text" id="moistureLabel">Apply moisturiser</div>
+          <div class="check-sub">General hydration maintenance</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="week-tag" style="margin-top:20px">Weekly treatments — alternate, never both same week</div>
+    <div class="check-item" onclick="toggleCheck(this,'clarifying')">
+      <div class="check-circle">✓</div>
+      <div>
+        <div class="check-text" id="clarifyingLabel">Clarifying shampoo</div>
+        <div class="check-sub">Once a week — removes chlorine buildup</div>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this,'protein')">
+      <div class="check-circle">✓</div>
+      <div>
+        <div class="check-text" id="proteinLabel">Protein treatment</div>
+        <div class="check-sub">Alternate weeks — replaces what chlorine strips</div>
+      </div>
+    </div>
+    <div class="check-item" onclick="toggleCheck(this,'deep_conditioning')">
+      <div class="check-circle">✓</div>
+      <div>
+        <div class="check-text" id="deepCondLabel">Deep conditioning mask</div>
+        <div class="check-sub">20-30 minutes before washing</div>
+      </div>
+    </div>
+
+    <div id="hairTips" style="margin: 16px 16px 0; padding: 14px; background: white; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+      <div style="font-size:12px;font-weight:600;color:var(--teal-dark);margin-bottom:6px">Tips for your hair type</div>
+      <div id="hairTipText" style="font-size:12px;color:var(--text-light);line-height:1.5"></div>
+    </div>
+
+    <div style="padding: 16px">
+      <button class="btn-submit" onclick="resetHair()" style="background:transparent;color:var(--text-light);border:1.5px solid var(--border)">Reset today's routine</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="showScreen('home',this)">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+    </button>
+    <button class="nav-item" onclick="showScreen('swim',this)">
+      <div class="nav-icon">🏊</div>
+      <div class="nav-label">Swim</div>
+    </button>
+    <button class="nav-item" onclick="showScreen('food',this)">
+      <div class="nav-icon">🍽</div>
+      <div class="nav-label">Food</div>
+    </button>
+    <button class="nav-item" onclick="showScreen('body',this)">
+      <div class="nav-icon">📊</div>
+      <div class="nav-label">Body</div>
+    </button>
+    <button class="nav-item" onclick="showScreen('hair',this)">
+      <div class="nav-icon">💁</div>
+      <div class="nav-label">Hair</div>
+    </button>
+  </nav>
+</div>
+
+<!-- GOAL MODAL -->
+<div class="modal-overlay" id="goalModal" style="display:none" onclick="if(event.target===this)closeGoalModal()">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeGoalModal()">✕</button>
+    <div class="modal-title">Set your race goal</div>
+    <div class="modal-sub">Optional — helps track your training progress</div>
+    <div class="form-group">
+      <label class="form-label">Event name</label>
+      <input type="text" class="form-input" id="goalName" placeholder="e.g. Scurry Swims LochOre 3800m">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Race date</label>
+      <input type="date" class="form-input" id="goalDate">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Distance (m)</label>
+        <input type="number" class="form-input" id="goalDist" placeholder="3800">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Training start</label>
+        <input type="date" class="form-input" id="goalStart">
+      </div>
+    </div>
+    <button class="btn-submit" onclick="saveGoal()">Save Goal</button>
+  </div>
+</div>
+
+<!-- HAIR PROFILE MODAL -->
+<div class="modal-overlay" id="hairModal" style="display:none" onclick="if(event.target===this)closeHairProfile()">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeHairProfile()">✕</button>
+    <div class="modal-title">Hair profile</div>
+    <div class="modal-sub">Your products will appear in your routine checklist</div>
+    <div class="form-group">
+      <label class="form-label">Hair type</label>
+      <div class="feel-buttons" id="hairTypeBtns">
+        <button class="feel-btn" onclick="selectFeel(this,'hairType','Straight')">Straight</button>
+        <button class="feel-btn" onclick="selectFeel(this,'hairType','Wavy')">Wavy</button>
+        <button class="feel-btn" onclick="selectFeel(this,'hairType','Curly')">Curly</button>
+        <button class="feel-btn" onclick="selectFeel(this,'hairType','Coily')">Coily</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Colour treated?</label>
+      <div class="feel-buttons" id="colourBtns">
+        <button class="feel-btn" onclick="selectFeel(this,'colourTreated','Yes')">Yes</button>
+        <button class="feel-btn" onclick="selectFeel(this,'colourTreated','No')">No</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Clarifying shampoo</label>
+      <input type="text" class="form-input" id="hairClarifying" placeholder="e.g. UltraSwim">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Leave-in conditioner</label>
+      <input type="text" class="form-input" id="hairLeaveIn" placeholder="e.g. Cantu">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Protein treatment</label>
+      <input type="text" class="form-input" id="hairProtein" placeholder="e.g. Aphogee">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Deep conditioning mask</label>
+      <input type="text" class="form-input" id="hairMask" placeholder="e.g. Shea Moisture Manuka Honey">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ingredients to avoid (optional)</label>
+      <input type="text" class="form-input" id="hairAvoid" placeholder="e.g. sulphates, silicones">
+    </div>
+    <button class="btn-submit" onclick="saveHairProfile()">Save Profile</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://hygjskvfkucuwtcihbiw.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5Z2pza3Zma3VjdXd0Y2loYml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNjQ4OTMsImV4cCI6MjA4Njg0MDg5M30.SSrSE9J9-hs0kZNIzUMBCPST5T_JXZG5I68UF4ZjgLs";
+const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let userProfile = null;
+let feels = {};
+let checkedItems = new Set();
+let data = { swims: [], meals: [], body: [] };
+
+// ---- INIT ----
+async function init() {
+  const { data: { session } } = await supa.auth.getSession();
+  if (session?.user) {
+    currentUser = session.user;
+    await loadApp();
+  } else {
+    document.getElementById('authScreen').style.display = 'block';
+  }
+
+  supa.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session?.user) {
+      currentUser = session.user;
+      document.getElementById('authScreen').style.display = 'none';
+      await loadApp();
+    }
+    if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      document.getElementById('mainApp').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'block';
+    }
+  });
+}
+
+async function loadApp() {
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('authScreen').style.display = 'none';
+
+  // Set greeting
+  const hour = new Date().getHours();
+  document.getElementById('greeting').textContent = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-GB', {weekday:'long',day:'numeric',month:'long'});
+
+  // Set default dates
+  const today = new Date().toISOString().split('T')[0];
+  ['swimDate','nutDate','bodyDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = today;
+  });
+
+  // Load user profile
+  await loadProfile();
+
+  // Load data
+  await Promise.all([loadSwims(), loadMeals(), loadBody()]);
+
+  updateHome();
+}
+
+async function loadProfile() {
+  const { data: profile } = await supa
+    .from('user_profiles')
+    .select('*')
+    .eq('id', currentUser.id)
+    .single();
+
+  userProfile = profile;
+
+  const name = currentUser.user_metadata?.full_name ||
+               currentUser.user_metadata?.name ||
+               currentUser.email?.split('@')[0] || 'swimmer';
+  document.getElementById('userName').textContent = name.split(' ')[0];
+
+  if (profile?.hair_profile) applyHairProfile(profile.hair_profile);
+  if (profile?.goal) renderGoal(profile.goal);
+  else renderNoGoal();
+}
+
+// ---- AUTH ----
+async function signInGoogle() {
+  const { error } = await supa.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (error) showAuthError(error.message);
+}
+
+async function signInEmail() {
+  const email = document.getElementById('authEmail').value;
+  const password = document.getElementById('authPassword').value;
+  if (!email || !password) { showAuthError('Please enter email and password'); return; }
+  document.getElementById('signInBtn').textContent = 'Signing in...';
+  const { error } = await supa.auth.signInWithPassword({ email, password });
+  document.getElementById('signInBtn').textContent = 'Sign In';
+  if (error) showAuthError(error.message);
+}
+
+async function signUpEmail() {
+  const email = document.getElementById('authEmail').value;
+  const password = document.getElementById('authPassword').value;
+  if (!email || !password) { showAuthError('Please enter email and password'); return; }
+  document.getElementById('signUpBtn').textContent = 'Creating account...';
+  const { error } = await supa.auth.signUp({ email, password });
+  document.getElementById('signUpBtn').textContent = 'Create account';
+  if (error) showAuthError(error.message);
+  else showAuthError('Check your email to confirm your account!', true);
+}
+
+async function signOut() {
+  await supa.auth.signOut();
+}
+
+function showAuthError(msg, isSuccess = false) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.background = isSuccess ? '#efffef' : '#fee';
+  el.style.borderColor = isSuccess ? '#cfc' : '#fcc';
+  el.style.color = isSuccess ? '#363' : '#c33';
+}
+
+// ---- GOAL ----
+function renderGoal(goal) {
+  if (!goal?.name) { renderNoGoal(); return; }
+  const now = new Date();
+  const race = new Date(goal.date);
+  const start = new Date(goal.start || goal.date);
+  const daysLeft = Math.max(0, Math.ceil((race - now) / 86400000));
+  const weeksLeft = Math.max(0, Math.ceil(daysLeft / 7));
+  const totalDays = Math.ceil((race - start) / 86400000);
+  const elapsed = Math.ceil((now - start) / 86400000);
+  const pct = Math.min(100, Math.max(0, Math.round(elapsed / totalDays * 100)));
+
+  document.getElementById('goalSection').innerHTML = `
+    <div class="race-card">
+      <div class="race-tag">Your Goal</div>
+      <div class="race-name">${goal.name.replace(/(\d+m)/i, '<em>$1</em>')}</div>
+      <div class="race-stats">
+        <div class="race-stat">
+          <div class="race-stat-val">${daysLeft}</div>
+          <div class="race-stat-label">days to go</div>
+        </div>
+        <div class="race-stat">
+          <div class="race-stat-val">${weeksLeft}</div>
+          <div class="race-stat-label">weeks left</div>
+        </div>
+        <div class="race-stat">
+          <div class="race-stat-val">${data.swims.length}</div>
+          <div class="race-stat-label">sessions logged</div>
+        </div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="progress-labels">
+        <span>${formatDate(goal.start || goal.date)}</span>
+        <span>${pct}% of plan</span>
+        <span>${formatDate(goal.date)}</span>
+      </div>
+    </div>
+  `;
+  document.getElementById('setGoalBtnWrap') && (document.getElementById('setGoalBtnWrap').style.display = 'none');
+}
+
+function renderNoGoal() {
+  document.getElementById('goalSection').innerHTML = `
+    <div class="no-goal">
+      <div class="no-goal-icon">🏊</div>
+      <div class="no-goal-title">Set a race goal</div>
+      <div class="no-goal-sub">Track your progress toward your next open water swim or race</div>
+      <button class="btn-submit" onclick="openGoalModal()">Set a goal</button>
+    </div>
+  `;
+}
+
+function openGoalModal() {
+  if (userProfile?.goal?.name) {
+    document.getElementById('goalName').value = userProfile.goal.name || '';
+    document.getElementById('goalDate').value = userProfile.goal.date || '';
+    document.getElementById('goalDist').value = userProfile.goal.dist || '';
+    document.getElementById('goalStart').value = userProfile.goal.start || '';
+  }
+  document.getElementById('goalModal').style.display = 'flex';
+}
+
+function closeGoalModal() { document.getElementById('goalModal').style.display = 'none'; }
+
+async function saveGoal() {
+  const goal = {
+    name: document.getElementById('goalName').value,
+    date: document.getElementById('goalDate').value,
+    dist: document.getElementById('goalDist').value,
+    start: document.getElementById('goalStart').value
+  };
+  if (!goal.name || !goal.date) { showToast('Add event name and date'); return; }
+  await supa.from('user_profiles').upsert({ id: currentUser.id, goal });
+  userProfile = { ...userProfile, goal };
+  renderGoal(goal);
+  closeGoalModal();
+  showToast('Goal saved! 🎯');
+}
+
+// ---- SWIM ----
+async function loadSwims() {
+  const { data: rows } = await supa
+    .from('swim_sessions')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('date', { ascending: false })
+    .limit(50);
+  data.swims = rows || [];
+  renderSwims();
+}
+
+async function logSwim() {
+  const dist = document.getElementById('swimDist').value;
+  if (!dist) { showToast('Add a distance!'); return; }
+  const entry = {
+    user_id: currentUser.id,
+    date: document.getElementById('swimDate').value,
+    distance_m: parseInt(dist),
+    duration_mins: document.getElementById('swimDuration').value ? parseInt(document.getElementById('swimDuration').value) : null,
+    pace: document.getElementById('swimPace').value || null,
+    strokes_per_length: document.getElementById('swimStrokes').value ? parseFloat(document.getElementById('swimStrokes').value) : null,
+    pool_name: document.getElementById('swimPool').value || null,
+    feel: feels.swimFeel || null,
+    notes: document.getElementById('swimNotes').value || null
+  };
+  const { error } = await supa.from('swim_sessions').insert([entry]);
+  if (error) { showToast('Error saving — try again'); return; }
+  ['swimDist','swimDuration','swimPace','swimStrokes','swimPool','swimNotes'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('#swimFeelBtns .feel-btn').forEach(b => b.classList.remove('selected'));
+  feels.swimFeel = null;
+  await loadSwims();
+  updateHome();
+  showToast('Session logged! 🏊');
+}
+
+function renderSwims() {
+  const c = document.getElementById('allSessions');
+  if (!data.swims.length) {
+    c.innerHTML = '<div class="empty"><div class="empty-icon">🏊</div><div class="empty-title">No sessions yet</div><div class="empty-sub">Log your first swim above</div></div>';
+    return;
+  }
+  c.innerHTML = data.swims.map(s => `
+    <div class="entry">
+      <div class="entry-icon" style="background:var(--teal-pale)">🏊</div>
+      <div class="entry-body">
+        <div class="entry-title">${s.distance_m}m${s.duration_mins ? ' · ' + s.duration_mins + 'min' : ''}</div>
+        <div class="entry-detail">${s.pace ? s.pace + '/100m · ' : ''}${s.pool_name || ''}${s.feel ? ' · ' + s.feel : ''}</div>
+        ${s.notes ? `<div class="entry-detail">${s.notes}</div>` : ''}
+        <div class="entry-date">${formatDate(s.date)}</div>
+      </div>
+      <button class="entry-delete" onclick="deleteEntry('swim_sessions','${s.id}','swims')">✕</button>
+    </div>`).join('');
+}
+
+// ---- NUTRITION ----
+async function loadMeals() {
+  const { data: rows } = await supa
+    .from('nutrition_logs')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('date', { ascending: false })
+    .limit(50);
+  data.meals = rows || [];
+  renderMeals();
+}
+
+async function logNutrition() {
+  const food = document.getElementById('nutFood').value;
+  if (!food) { showToast('What did you eat?'); return; }
+  const entry = {
+    user_id: currentUser.id,
+    date: document.getElementById('nutDate').value,
+    meal_type: document.getElementById('nutType').value,
+    food,
+    feel: feels.nutFeel || null,
+    notes: document.getElementById('nutNotes').value || null
+  };
+  const { error } = await supa.from('nutrition_logs').insert([entry]);
+  if (error) { showToast('Error saving — try again'); return; }
+  document.getElementById('nutFood').value = '';
+  document.getElementById('nutNotes').value = '';
+  document.querySelectorAll('#nutFeelBtns .feel-btn').forEach(b => b.classList.remove('selected'));
+  feels.nutFeel = null;
+  await loadMeals();
+  showToast('Meal logged! 🍽');
+}
+
+function renderMeals() {
+  const c = document.getElementById('allMeals');
+  if (!data.meals.length) {
+    c.innerHTML = '<div class="empty"><div class="empty-icon">🍽</div><div class="empty-title">No meals logged yet</div><div class="empty-sub">Track what you eat around training</div></div>';
+    return;
+  }
+  const colors = {'Pre-swim snack':'#E3F2FD','Post-swim meal':'#E8F5E9','Breakfast':'#FFF8E1','Lunch':'#F3E5F5','Dinner':'#FCE4EC','Late night 😅':'#FFF3E0'};
+  c.innerHTML = data.meals.map(m => `
+    <div class="entry">
+      <div class="entry-icon" style="background:${colors[m.meal_type]||'#eee'}">🍽</div>
+      <div class="entry-body">
+        <div class="entry-title">${m.meal_type}</div>
+        <div class="entry-detail">${m.food}${m.feel ? ' · ' + m.feel : ''}</div>
+        ${m.notes ? `<div class="entry-detail">${m.notes}</div>` : ''}
+        <div class="entry-date">${formatDate(m.date)}</div>
+      </div>
+      <button class="entry-delete" onclick="deleteEntry('nutrition_logs','${m.id}','meals')">✕</button>
+    </div>`).join('');
+}
+
+// ---- BODY ----
+async function loadBody() {
+  const { data: rows } = await supa
+    .from('body_stats')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('date', { ascending: false })
+    .limit(50);
+  data.body = rows || [];
+  renderBody();
+}
+
+async function logBody() {
+  const weight = document.getElementById('bodyWeight').value;
+  const sleep = document.getElementById('bodySleep').value;
+  if (!weight && !sleep) { showToast('Add weight or sleep hours'); return; }
+  const entry = {
+    user_id: currentUser.id,
+    date: document.getElementById('bodyDate').value,
+    weight_kg: weight ? parseFloat(weight) : null,
+    sleep_hrs: sleep ? parseFloat(sleep) : null,
+    energy: feels.bodyFeel || null,
+    notes: document.getElementById('bodyNotes').value || null
+  };
+  const { error } = await supa.from('body_stats').insert([entry]);
+  if (error) { showToast('Error saving — try again'); return; }
+  document.getElementById('bodyWeight').value = '';
+  document.getElementById('bodySleep').value = '';
+  document.getElementById('bodyNotes').value = '';
+  document.querySelectorAll('#bodyFeelBtns .feel-btn').forEach(b => b.classList.remove('selected'));
+  feels.bodyFeel = null;
+  await loadBody();
+  updateHome();
+  showToast('Stats logged! 📊');
+}
+
+function renderBody() {
+  const c = document.getElementById('allBody');
+  if (!data.body.length) {
+    c.innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">No stats yet</div><div class="empty-sub">Weigh yourself on rest days only</div></div>';
+    return;
+  }
+  c.innerHTML = data.body.map(b => `
+    <div class="entry">
+      <div class="entry-icon" style="background:#FFF3E0">📊</div>
+      <div class="entry-body">
+        <div class="entry-title">${b.weight_kg ? b.weight_kg + 'kg' : ''}${b.weight_kg && b.sleep_hrs ? ' · ' : ''}${b.sleep_hrs ? b.sleep_hrs + 'h sleep' : ''}</div>
+        <div class="entry-detail">${b.energy || ''}${b.notes ? (b.energy ? ' · ' : '') + b.notes : ''}</div>
+        <div class="entry-date">${formatDate(b.date)}</div>
+      </div>
+      <button class="entry-delete" onclick="deleteEntry('body_stats','${b.id}','body')">✕</button>
+    </div>`).join('');
+}
+
+// ---- HOME STATS ----
+function updateHome() {
+  const weekAgo = new Date(Date.now() - 7*86400000);
+  const weekSwims = data.swims.filter(s => new Date(s.date) >= weekAgo);
+  const weekDist = weekSwims.reduce((a,s) => a + (s.distance_m||0), 0);
+  document.getElementById('weekDist').textContent = weekDist >= 1000 ? (weekDist/1000).toFixed(1)+'k' : weekDist;
+  document.getElementById('weekSessions').textContent = weekSwims.length;
+
+  const paces = weekSwims.filter(s=>s.pace).map(s=>s.pace);
+  document.getElementById('bestPace').textContent = paces.length ? paces.sort()[0] : '--';
+
+  const latestBody = data.body[0];
+  if (latestBody?.weight_kg) {
+    document.getElementById('currentWeight').textContent = latestBody.weight_kg;
+    document.getElementById('weightUnit').textContent = 'kg';
+  }
+
+  const recent = data.swims.slice(0,3);
+  const c = document.getElementById('recentSessions');
+  if (!recent.length) {
+    c.innerHTML = '<div class="empty"><div class="empty-icon">🏊</div><div class="empty-title">No sessions yet</div><div class="empty-sub">Tap the Swim tab to log your first session</div></div>';
+  } else {
+    c.innerHTML = recent.map(s => `
+      <div class="entry">
+        <div class="entry-icon" style="background:var(--teal-pale)">🏊</div>
+        <div class="entry-body">
+          <div class="entry-title">${s.distance_m}m${s.pace ? ' · ' + s.pace + '/100m' : ''}</div>
+          <div class="entry-detail">${s.pool_name || ''}${s.feel ? (s.pool_name ? ' · ' : '') + s.feel : ''}</div>
+          <div class="entry-date">${formatDate(s.date)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  if (userProfile?.goal) renderGoal(userProfile.goal);
+}
+
+// ---- HAIR ----
+function showHairMode(mode) {
+  document.getElementById('swimDayRoutine').style.display = mode === 'swim' ? 'block' : 'none';
+  document.getElementById('restDayRoutine').style.display = mode === 'rest' ? 'block' : 'none';
+  document.getElementById('swimDayBtn').classList.toggle('active', mode === 'swim');
+  document.getElementById('restDayBtn').classList.toggle('active', mode === 'rest');
+}
+
+function toggleCheck(el, id) {
+  if (checkedItems.has(id)) checkedItems.delete(id);
+  else checkedItems.add(id);
+  el.classList.toggle('checked', checkedItems.has(id));
+}
+
+function resetHair() {
+  checkedItems.clear();
+  document.querySelectorAll('.check-item').forEach(el => el.classList.remove('checked'));
+  showToast('Routine reset');
+}
+
+function applyHairProfile(profile) {
+  const tips = {
+    'Curly': 'Scrunch in products — never rub. Diffuse on low heat to preserve curl pattern.',
+    'Coily': 'Seal in moisture immediately after swimming. Use the LOC method — liquid, oil, cream.',
+    'Wavy': 'Use a microfibre towel to reduce frizz. Scrunch, don\'t rub.',
+    'Straight': 'Chlorine strips oils faster on straight hair — don\'t skip the leave-in.',
+    'Colour-treated': 'Use a colour-safe clarifying shampoo. Chlorine fades colour quickly.'
+  };
+
+  let tipText = tips[profile.hairType] || '';
+  if (profile.colourTreated === 'Yes' && profile.hairType !== 'Colour-treated') {
+    tipText += (tipText ? ' ' : '') + tips['Colour-treated'];
+  }
+  document.getElementById('hairTipText').textContent = tipText || 'Add your hair type to see personalised tips.';
+
+  if (profile.clarifying) document.getElementById('clarifyingLabel').innerHTML = `Co-wash with <span class="product-name">${profile.clarifying}</span>`;
+  if (profile.leaveIn) {
+    document.getElementById('leaveInLabel').innerHTML = `Apply <span class="product-name">${profile.leaveIn}</span>`;
+    document.getElementById('moistureLabel').innerHTML = `Apply <span class="product-name">${profile.leaveIn}</span>`;
+  }
+  if (profile.clarifying) document.getElementById('clarifyingLabel').innerHTML = `<span class="product-name">${profile.clarifying}</span> clarifying shampoo`;
+  if (profile.protein) document.getElementById('proteinLabel').innerHTML = `<span class="product-name">${profile.protein}</span> protein treatment`;
+  if (profile.mask) document.getElementById('deepCondLabel').innerHTML = `<span class="product-name">${profile.mask}</span> deep conditioning mask`;
+  if (profile.leaveIn) document.getElementById('coWashLabel').innerHTML = `Co-wash with <span class="product-name">${profile.clarifying || 'your shampoo'}</span>`;
+}
+
+function openHairProfile() {
+  const p = userProfile?.hair_profile || {};
+  document.getElementById('hairClarifying').value = p.clarifying || '';
+  document.getElementById('hairLeaveIn').value = p.leaveIn || '';
+  document.getElementById('hairProtein').value = p.protein || '';
+  document.getElementById('hairMask').value = p.mask || '';
+  document.getElementById('hairAvoid').value = p.avoid || '';
+  if (p.hairType) {
+    document.querySelectorAll('#hairTypeBtns .feel-btn').forEach(b => {
+      b.classList.toggle('selected', b.textContent === p.hairType);
+      if (b.classList.contains('selected')) feels.hairType = p.hairType;
+    });
+  }
+  if (p.colourTreated) {
+    document.querySelectorAll('#colourBtns .feel-btn').forEach(b => {
+      b.classList.toggle('selected', b.textContent === p.colourTreated);
+      if (b.classList.contains('selected')) feels.colourTreated = p.colourTreated;
+    });
+  }
+  document.getElementById('hairModal').style.display = 'flex';
+}
+
+function closeHairProfile() { document.getElementById('hairModal').style.display = 'none'; }
+
+async function saveHairProfile() {
+  const profile = {
+    hairType: feels.hairType || null,
+    colourTreated: feels.colourTreated || null,
+    clarifying: document.getElementById('hairClarifying').value || null,
+    leaveIn: document.getElementById('hairLeaveIn').value || null,
+    protein: document.getElementById('hairProtein').value || null,
+    mask: document.getElementById('hairMask').value || null,
+    avoid: document.getElementById('hairAvoid').value || null,
+  };
+  await supa.from('user_profiles').upsert({ id: currentUser.id, hair_profile: profile });
+  userProfile = { ...userProfile, hair_profile: profile };
+  applyHairProfile(profile);
+  closeHairProfile();
+  showToast('Hair profile saved! 💁');
+}
+
+// ---- UTILS ----
+async function deleteEntry(table, id, type) {
+  await supa.from(table).delete().eq('id', id);
+  if (type === 'swims') { await loadSwims(); updateHome(); }
+  if (type === 'meals') await loadMeals();
+  if (type === 'body') { await loadBody(); updateHome(); }
+  showToast('Deleted');
+}
+
+function selectFeel(btn, key, val) {
+  btn.closest('.feel-buttons').querySelectorAll('.feel-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  feels[key] = val;
+}
+
+function showScreen(name, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+init();
+</script>
+</body>
+</html>
