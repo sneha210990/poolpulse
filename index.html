@@ -316,6 +316,9 @@ const LogoMark = ({ className = "" }) => (
       const mapContainerRef = useRef(null);
       const leafletMapRef = useRef(null);
       const leafletMarkersRef = useRef([]);
+      const homepageMapContainerRef = useRef(null);
+      const homepageLeafletMapRef = useRef(null);
+      const homepageLeafletMarkersRef = useRef([]);
 
       // Feedback form
       const FEEDBACK_EMAIL = "snehasindhu2109@gmail.com";
@@ -841,6 +844,27 @@ useEffect(() => {
         };
       }, [showHomepage]);
 
+      useEffect(() => {
+        if (!showHomepage) return;
+        if (!homepageMapContainerRef.current || homepageLeafletMapRef.current || !window.L) return;
+
+        const map = window.L.map(homepageMapContainerRef.current, { zoomControl: false }).setView([56.5, -4.0], 6);
+        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(map);
+        setTimeout(() => map.invalidateSize(), 0);
+
+        homepageLeafletMapRef.current = map;
+
+        return () => {
+          homepageLeafletMarkersRef.current.forEach((marker) => marker.remove());
+          homepageLeafletMarkersRef.current = [];
+          map.remove();
+          homepageLeafletMapRef.current = null;
+        };
+      }, [showHomepage]);
+
       const getOpenStatusText = (pool) => {
         const now = new Date();
         const day = now.getDay(); // 0 = Sunday, 6 = Saturday
@@ -920,6 +944,59 @@ useEffect(() => {
 
         leafletMarkersRef.current = markers;
       }, [poolsToRender]);
+
+      useEffect(() => {
+        if (!showHomepage) return;
+        if (!homepageLeafletMapRef.current || !window.L) return;
+
+        homepageLeafletMarkersRef.current.forEach((marker) => marker.remove());
+        homepageLeafletMarkersRef.current = [];
+
+        const map = homepageLeafletMapRef.current;
+        const poolsWithCoords = POOLS.filter(
+          (pool) => typeof pool.lat === "number" && typeof pool.lng === "number"
+        );
+
+        const markers = poolsWithCoords.map((pool) => {
+          const marker = window.L.marker([pool.lat, pool.lng], {
+            icon: window.L.divIcon({
+              className: "",
+              html: '<span style="display:block;width:18px;height:18px;border-radius:9999px;background:#4ecdc4;border:3px solid #0f766e;box-shadow:0 2px 6px rgba(0,0,0,0.35);"></span>',
+              iconSize: [18, 18],
+              iconAnchor: [9, 9],
+            }),
+          });
+
+          const popupContainer = document.createElement("div");
+          popupContainer.className = "min-w-[200px]";
+          popupContainer.innerHTML = `
+            <div style="font-weight:700;margin-bottom:4px;">${pool.name}</div>
+            <div style="font-size:13px;color:#4b5563;margin-bottom:10px;">${cityOf(pool)}</div>
+          `;
+
+          const viewButton = document.createElement("button");
+          viewButton.type = "button";
+          viewButton.textContent = "View pool";
+          viewButton.className = "px-3 py-1.5 text-xs font-semibold rounded-md bg-teal-600 text-white hover:bg-teal-700";
+          viewButton.onclick = () => {
+            setViewingPool(pool.id);
+            setShowHomepage(false);
+            map.closePopup();
+          };
+          popupContainer.appendChild(viewButton);
+
+          marker.bindPopup(popupContainer);
+          marker.addTo(map);
+          return marker;
+        });
+
+        homepageLeafletMarkersRef.current = markers;
+
+        if (markers.length) {
+          const bounds = window.L.latLngBounds(markers.map((marker) => marker.getLatLng()));
+          map.fitBounds(bounds, { padding: [30, 30], maxZoom: 10 });
+        }
+      }, [showHomepage]);
 
       function isPoolOpen(pool) {
         const now = new Date();
@@ -1339,26 +1416,26 @@ useEffect(() => {
         <div id="homepage-pools-covered" className="bg-white rounded-2xl shadow-xl p-8 mb-8 scroll-mt-24">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Pools Covered</h2>
           <p className="text-gray-600 mb-6">Currently tracking busyness at {POOLS.length} pools in Scotland and The Netherlands</p>
-          
-          <div className="grid md:grid-cols-2 gap-4">
+
+          <div className="rounded-xl overflow-hidden border border-teal-100 mb-4">
+            <div ref={homepageMapContainerRef} className="w-full h-[420px] min-h-[320px]" />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-3">
             {POOLS.map((pool) => (
-              <div
+              <button
                 key={pool.id}
-                className="border-l-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                type="button"
+                onClick={() => {
+                  setViewingPool(pool.id);
+                  setShowHomepage(false);
+                }}
+                className="text-left border-l-4 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
                 style={{ borderColor: pool.color }}
               >
-                <h3 className="font-bold text-lg text-gray-900 mb-1">{pool.name}</h3>
-                <div className="flex items-center gap-1 text-gray-600 text-sm">
-                  <MapPin className="w-4 h-4" />
-                  <span>{pool.location}</span>
-                </div>
-                <div className="flex items-center gap-1 text-gray-600 text-sm mt-2">
-                  <Clock className="w-4 h-4" />
-                  <span className="text-sm">
-                    {pool.hours.weekday.open} - {pool.hours.weekday.close}
-                  </span>
-                </div>
-              </div>
+                <h3 className="font-semibold text-gray-900">{pool.name}</h3>
+                <p className="text-sm text-gray-600">{pool.location}</p>
+              </button>
             ))}
           </div>
 
