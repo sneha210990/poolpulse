@@ -609,15 +609,21 @@ const renderAuthModal = () => {
       async function loadAllBusyness() {
         setBusynessLoading(true);
 
+        const sinceIso = new Date(
+          Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
+        ).toISOString();
+
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error("timeout")), 5000)
         );
 
         try {
-          const { data, error } = await supa
+          const queryPromise = supa
             .from('checkins')
             .select('pool_id, lane')
-            .gt('expires_at', new Date().toISOString());
+            .gte('created_at', sinceIso);
+
+          const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
           if (error || !data) {
             setBusynessError("error");
