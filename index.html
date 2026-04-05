@@ -318,7 +318,7 @@ const getPoolById = (id) => POOLS.find((p) => p.id === id);
     const status = { lanes: {}, totalUpdates: 0, lastUpdate: null };
 
     for (const r of rows) {
-      const laneId = r.lane_type;
+      const laneId = r.lane;
       const delta = 1;
       const ts = r.created_at;
 
@@ -345,7 +345,7 @@ const loadRecentCheckins = async ({ silent = false } = {}) => {
 
   const { data, error } = await window.supa
     .from("checkins")
-    .select("id, created_at, pool_id, lane_type")
+    .select("id, created_at, pool_id, lane")
     .gte("created_at", sinceIso)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -357,7 +357,7 @@ const loadRecentCheckins = async ({ silent = false } = {}) => {
   } else {
     const normalized = (data ?? []).map((row) => ({
       ...row,
-      lane: row.lane_type,
+      lane: row.lane,
     }));
     setCheckinsError(null);
     setRecentCheckins(normalized);
@@ -602,7 +602,7 @@ const renderAuthModal = () => {
         try {
           const { data, error } = await supa
             .from('checkins')
-            .select('pool_id, lane_type')
+            .select('pool_id, lane')
             .gt('expires_at', new Date().toISOString());
 
           if (error || !data) {
@@ -615,7 +615,7 @@ const renderAuthModal = () => {
           const busyness = {};
           data.forEach((row) => {
             const poolId = row.pool_id;
-            const laneId = normalizeLaneId(row.lane_type);
+            const laneId = normalizeLaneId(row.lane);
             if (!poolId || !laneId) return;
             if (!busyness[poolId]) busyness[poolId] = {};
             if (!busyness[poolId][laneId]) busyness[poolId][laneId] = 0;
@@ -714,7 +714,7 @@ useEffect(() => {
         try {
           const { error } = await window.supa
             .from("checkins")
-            .insert([{ pool_id: poolId, lane_type: lane, delta: 1 }]);
+            .insert([{ pool_id: poolId, lane, delta: 1 }]);
 
           if (error) throw error;
 
