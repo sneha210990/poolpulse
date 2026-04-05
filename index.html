@@ -1090,7 +1090,13 @@ useEffect(() => {
     <div className="flex justify-end mb-4">
       {authUser ? (
         <div className="flex items-center gap-2">
-          <span className="text-xs sm:text-sm text-teal-100">Hi, {authDisplayName}</span>
+        <span className="text-xs sm:text-sm text-teal-100">Hi, {authDisplayName}</span>
+          <button
+            onClick={() => setShowDashboard(true)}
+            className="px-3 py-1.5 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
+          >
+            My Dashboard
+          </button>
           <button
             onClick={handleSignOut}
             disabled={authLoading}
