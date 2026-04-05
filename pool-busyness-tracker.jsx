@@ -7,6 +7,7 @@ const POOLS = [
     id: 'royal-commonwealth', 
     name: 'Royal Commonwealth Pool', 
     location: 'Dalkeith Road',
+    city: 'Edinburgh',
     lat: 55.9366,
     lng: -3.1627,
     color: '#0EA5E9', // Sky blue for the flagship
@@ -22,6 +23,7 @@ const POOLS = [
     id: 'warrender', 
     name: 'Warrender Swim Centre', 
     location: 'Thirlestane Road',
+    city: 'Edinburgh',
     lat: 55.9352,
     lng: -3.1876,
     color: '#8B5CF6', // Purple
@@ -35,6 +37,7 @@ const POOLS = [
     id: 'glenogle', 
     name: 'Glenogle Swim Centre', 
     location: 'Glenogle Road',
+    city: 'Edinburgh',
     lat: 55.9578,
     lng: -3.2021,
     color: '#10B981', // Emerald green
@@ -48,6 +51,7 @@ const POOLS = [
     id: 'leith-victoria', 
     name: 'Leith Victoria Swim Centre', 
     location: 'Junction Place',
+    city: 'Edinburgh',
     lat: 55.9752,
     lng: -3.1654,
     color: '#F59E0B', // Amber
@@ -61,6 +65,7 @@ const POOLS = [
     id: 'dalry', 
     name: 'Dalry Swim Centre', 
     location: 'Caledonian Crescent',
+    city: 'Edinburgh',
     lat: 55.9434,
     lng: -3.2196,
     color: '#EF4444', // Red
@@ -74,6 +79,7 @@ const POOLS = [
     id: 'portobello', 
     name: 'Portobello Swim Centre', 
     location: 'Bellfield Street',
+    city: 'Edinburgh',
     lat: 55.954,
     lng: -3.1069,
     color: '#EC4899', // Pink
@@ -87,6 +93,7 @@ const POOLS = [
     id: 'ainslie-park', 
     name: 'Ainslie Park Leisure Centre', 
     location: 'Pilton Drive',
+    city: 'Edinburgh',
     lat: 55.9739,
     lng: -3.2334,
     color: '#6366F1', // Indigo
@@ -100,6 +107,7 @@ const POOLS = [
     id: 'glasgow-club-bellahouston',
     name: 'Glasgow Club Bellahouston',
     location: 'Glasgow (Bellahouston)',
+    city: 'Glasgow',
     lat: 55.8455,
     lng: -4.3089,
     color: '#14B8A6',
@@ -113,6 +121,7 @@ const POOLS = [
     id: 'glasgow-club-castlemilk',
     name: 'Glasgow Club Castlemilk',
     location: 'Glasgow (Castlemilk)',
+    city: 'Glasgow',
     lat: 55.8089,
     lng: -4.2334,
     color: '#F97316',
@@ -126,6 +135,7 @@ const POOLS = [
     id: 'glasgow-club-easterhouse',
     name: 'Glasgow Club Easterhouse',
     location: 'Glasgow (Easterhouse)',
+    city: 'Glasgow',
     lat: 55.8651,
     lng: -4.1234,
     color: '#38BDF8',
@@ -143,6 +153,7 @@ const POOLS = [
     id: 'glasgow-club-gorbals',
     name: 'Glasgow Club Gorbals',
     location: 'Glasgow (Gorbals)',
+    city: 'Glasgow',
     lat: 55.8489,
     lng: -4.2567,
     color: '#F43F5E',
@@ -156,6 +167,7 @@ const POOLS = [
     id: 'glasgow-club-north-woodside',
     name: 'Glasgow Club North Woodside',
     location: 'Glasgow (North Woodside)',
+    city: 'Glasgow',
     lat: 55.8734,
     lng: -4.2678,
     color: '#8B5CF6',
@@ -173,6 +185,7 @@ const POOLS = [
     id: 'glasgow-club-scotstoun',
     name: 'Glasgow Club Scotstoun',
     location: 'Glasgow (Scotstoun)',
+    city: 'Glasgow',
     lat: 55.8734,
     lng: -4.3456,
     color: '#0EA5E9',
@@ -186,6 +199,7 @@ const POOLS = [
     id: 'glasgow-club-springburn',
     name: 'Glasgow Club Springburn',
     location: 'Glasgow (Springburn)',
+    city: 'Glasgow',
     lat: 55.8834,
     lng: -4.2345,
     color: '#10B981',
@@ -199,6 +213,7 @@ const POOLS = [
     id: 'tollcross-international-swimming-centre',
     name: 'Tollcross International Swimming Centre',
     location: 'Glasgow (Tollcross)',
+    city: 'Glasgow',
     lat: 55.8537,
     lng: -4.2193,
     color: '#06B6D4',
@@ -212,6 +227,7 @@ const POOLS = [
     id: 'glasgow-club-whitehill',
     name: 'Glasgow Club Whitehill',
     location: 'Glasgow (Whitehill)',
+    city: 'Glasgow',
     lat: 55.8567,
     lng: -4.2123,
     color: '#84CC16',
@@ -229,6 +245,7 @@ const POOLS = [
   id: "western-baths-club",
   name: "Western Baths Club",
   location: "Glasgow (Hillhead / West End)",
+  city: "Glasgow",
   lat: 55.8751,
   lng: -4.2813,
   color: "#A855F7", // Purple
@@ -242,6 +259,7 @@ const POOLS = [
     id: 'glasgow-club-drumchapel',
     name: 'Glasgow Club Drumchapel',
     location: 'Glasgow (Drumchapel)',
+    city: 'Glasgow',
     lat: 55.9012,
     lng: -4.3789,
     color: '#D97706',
@@ -255,6 +273,7 @@ const POOLS = [
     id: 'glasgow-club-ibrox',
     name: 'Glasgow Club Ibrox',
     location: 'Glasgow (Ibrox)',
+    city: 'Glasgow',
     lat: 55.8534,
     lng: -4.3123,
     color: '#7C3AED',
@@ -268,6 +287,7 @@ const POOLS = [
     id: 'glasgow-club-maryhill',
     name: 'Glasgow Club Maryhill',
     location: 'Glasgow (Maryhill)',
+    city: 'Glasgow',
     lat: 55.8934,
     lng: -4.2934,
     color: '#DC2626',
@@ -285,6 +305,7 @@ const POOLS = [
     id: 'glasgow-club-milton',
     name: 'Glasgow Club Milton',
     location: 'Glasgow (Milton)',
+    city: 'Glasgow',
     lat: 55.9123,
     lng: -4.2567,
     color: '#2563EB',
@@ -298,6 +319,7 @@ const POOLS = [
     id: 'glasgow-club-pollok',
     name: 'Glasgow Club Pollok',
     location: 'Glasgow (Pollok)',
+    city: 'Glasgow',
     lat: 55.8234,
     lng: -4.3234,
     color: '#DB2777',
@@ -311,6 +333,7 @@ const POOLS = [
     id: 'glasgow-club-shettleston',
     name: 'Glasgow Club Shettleston',
     location: 'Glasgow (Shettleston)',
+    city: 'Glasgow',
     lat: 55.8534,
     lng: -4.1789,
     color: '#0891B2',
@@ -392,6 +415,66 @@ const BUSYNESS_LEVELS = [
   { value: 4, label: 'Busy', color: 'bg-orange-500', emoji: '😬' },
   { value: 5, label: 'Packed', color: 'bg-red-500', emoji: '😰' },
 ];
+
+function PoolMap({ pools, onViewPool }) {
+  const mapRef = React.useRef(null);
+  const mapInstanceRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current || !window.L) return;
+
+    const map = window.L.map(mapRef.current).setView([56.5, -4.0], 6);
+    mapInstanceRef.current = map;
+
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    pools.forEach((pool) => {
+      if (!pool.lat || !pool.lng) return;
+
+      const marker = window.L.circleMarker([pool.lat, pool.lng], {
+        radius: 8,
+        fillColor: '#4ecdc4',
+        color: '#1a4a47',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.9
+      }).addTo(map);
+
+      const city = pool.city || pool.location;
+
+      marker.bindPopup(`
+        <div style="font-family:sans-serif;min-width:160px">
+          <div style="font-weight:700;color:#1a4a47;margin-bottom:4px">${pool.name}</div>
+          <div style="font-size:12px;color:#666;margin-bottom:8px">${city}</div>
+          <button
+            onclick="window.viewPool('${pool.id}')"
+            style="background:#1a4a47;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;width:100%"
+          >
+            View pool →
+          </button>
+        </div>
+      `);
+    });
+
+    window.viewPool = (poolId) => {
+      onViewPool(poolId);
+    };
+
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, []);
+
+  return (
+    <div
+      ref={mapRef}
+      style={{ height: '340px', width: '100%', borderRadius: '12px', zIndex: 0 }}
+    />
+  );
+}
 
 export default function PoolBusynessTracker() {
   const appLogo = './assets/poolpulse_app_icon_color.svg';
@@ -946,6 +1029,19 @@ export default function PoolBusynessTracker() {
               <p className="mt-4 text-sm text-teal-800">
                 Check-ins are anonymous and never linked to your account. Sign in is optional and only needed for your personal dashboard.
               </p>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1a4a47', marginBottom: '12px' }}>
+                Pools we cover
+              </h3>
+              <PoolMap
+                pools={POOLS}
+                onViewPool={(id) => {
+                  setViewingPool(id);
+                  setShowHomepage(false);
+                }}
+              />
             </div>
 
             <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-3">
