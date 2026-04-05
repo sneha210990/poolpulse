@@ -318,7 +318,7 @@ const getPoolById = (id) => POOLS.find((p) => p.id === id);
     const status = { lanes: {}, totalUpdates: 0, lastUpdate: null };
 
     for (const r of rows) {
-      const laneId = r.lane_type;
+      const laneId = r.lane;
       const delta = 1;
       const ts = r.created_at;
 
@@ -345,7 +345,7 @@ const loadRecentCheckins = async ({ silent = false } = {}) => {
 
   const { data, error } = await window.supa
     .from("checkins")
-    .select("id, created_at, pool_id, lane_type")
+    .select("id, created_at, pool_id, lane")
     .gte("created_at", sinceIso)
     .order("created_at", { ascending: false })
     .limit(50);
