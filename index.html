@@ -1132,64 +1132,42 @@ useEffect(() => {
 </div>
 
 <div className="max-w-4xl mx-auto px-4 py-12">
-        {/* Main CTA */}
+        {/* Hero Section */}
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Never waste a walk to a crowded pool again
             </h2>
-            <p className="text-lg text-gray-600 max-w-4xl mx-auto">
-              Pool Pulse shows lane busyness using community check-ins so you can plan your swim better.
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Real-time lane busyness for pools across the UK and Europe — powered by anonymous community check-ins.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <div className="text-center">
-              <div className="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-teal-600" />
-              </div>
-              <h3 className="font-bold text-lg mb-2">1. Check Before You Go</h3>
-              <p className="text-gray-600 text-sm">See lane busyness estimates</p>
+          {/* How It Works */}
+          <div className="bg-[#edf8f6] border border-[#4ecdc4] rounded-xl p-5 mb-8">
+            <h3 className="text-xl font-bold text-[#1a4a47] mb-4">How it works</h3>
+            <div className="space-y-3 text-sm sm:text-base text-[#1a4a47]">
+              <p>🏊 <span className="font-semibold">Check the pool</span> — See real-time lane busyness before you leave</p>
+              <p>✅ <span className="font-semibold">Check in when you arrive</span> — Takes 2 seconds, no account needed, fully anonymous</p>
+              <p>📊 <span className="font-semibold">Track your swimming</span> — Optional: sign in to log sessions and personal stats</p>
             </div>
-
-            <div className="text-center">
-              <div className="bg-cyan-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <MapPin className="w-8 h-8 text-cyan-600" />
-              </div>
-              <h3 className="font-bold text-lg mb-2">2. Pick Your Pool</h3>
-              <p className="text-gray-600 text-sm">Check opening times & status</p>
-            </div>
-
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Droplets className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="font-bold text-lg mb-2">3. Check In</h3>
-              <p className="text-gray-600 text-sm">Takes 2 seconds, helps everyone</p>
-            </div>
+            <p className="mt-4 text-sm text-teal-800">
+              Check-ins are anonymous and never linked to your account. Sign in is optional and only needed for your personal dashboard.
+            </p>
           </div>
 
-          <div className="text-center">
+          <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={() => setShowHomepage(false)}
-              className="bg-[#043A3D] text-white font-bold px-10 py-4 rounded-xl hover:opacity-90 transition-all shadow-lg text-lg"
+              className="w-full sm:w-auto bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold px-10 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg text-lg"
             >
-              View All Pools and Check in
-            </button>
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={() => document.getElementById("homepage-pools-covered")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="px-4 py-2 rounded-full border border-teal-200 text-teal-800 bg-teal-50 text-sm font-semibold hover:bg-teal-100"
-            >
-              Jump to pools covered
+              View All Pools
             </button>
             <button
-              onClick={() => document.getElementById("homepage-feedback")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="px-4 py-2 rounded-full border border-cyan-200 text-cyan-800 bg-cyan-50 text-sm font-semibold hover:bg-cyan-100"
+              onClick={() => { setShowAuthModal(true); setAuthError(""); }}
+              className="bg-white border border-[#4ecdc4] text-[#1a4a47] font-semibold px-5 py-2.5 rounded-xl hover:bg-[#edf8f6] transition-colors shadow-sm text-sm"
             >
-              Jump to feedback
+              Sign In (Optional)
             </button>
           </div>
         </div>
