@@ -1,0 +1,1 @@
+<button className="bg-white text-[#1a4a47] font-semibold px-4 py-2 rounded-lg text-sm hover:bg-[#edf8f6]" onClick={() => { setShowDashboard(true); setShowHomepage(false); }}>My Dashboard</button>
