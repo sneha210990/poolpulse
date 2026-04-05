@@ -46,7 +46,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    const { useState, useEffect } = React;
 
     // -----------------------
     // Supabase
@@ -249,24 +249,6 @@ const LogoMark = ({ className = "" }) => (
       { id: "slow", label: "Slow Lane", icon: "🐢", color: "bg-green-100 border-green-300 text-green-800" },
     ];
 
-    const HAIR_TYPES = ["Straight", "Wavy", "Curly", "Coily"];
-    const HAIR_TREATMENTS = ["Colour-treated", "Natural"];
-    const SWIM_DAY_STEPS = [
-      { id: "wet_hair", label: "Soak hair in fresh water" },
-      { id: "conditioner_barrier", label: "Apply conditioner barrier" },
-      { id: "cap_on", label: "Put your swim cap on" },
-      { id: "rinse", label: "Rinse hair immediately" },
-      { id: "co_wash", label: "Co-wash" },
-      { id: "leave_in", label: "Apply leave-in conditioner" },
-      { id: "dry", label: "Air dry or diffuse — never rub" },
-    ];
-    const REST_DAY_STEPS = [{ id: "moisture", label: "Apply moisturiser" }];
-    const WEEKLY_TREATMENTS = [
-      { id: "clarifying", label: "Clarifying shampoo" },
-      { id: "protein", label: "Protein treatment" },
-      { id: "deep_conditioning", label: "Deep conditioning mask" },
-    ];
-
     const laneLabel = (laneId) => {
       const l = LANES.find((x) => x.id === laneId);
       return l ? l.label : laneId;
@@ -299,26 +281,6 @@ const LogoMark = ({ className = "" }) => (
       const [authPassword, setAuthPassword] = useState("");
       const [authLoading, setAuthLoading] = useState(false);
       const [authError, setAuthError] = useState("");
-      const [activeTab, setActiveTab] = useState("pools");
-      const [userProfile, setUserProfile] = useState(null);
-      const [showHairProfileSetup, setShowHairProfileSetup] = useState(false);
-      const [hairProfileLoading, setHairProfileLoading] = useState(false);
-      const [dashboardLoading, setDashboardLoading] = useState(false);
-      const [routineType, setRoutineType] = useState("swim_day");
-      const [stepsCompleted, setStepsCompleted] = useState([]);
-      const [weeklyTreatment, setWeeklyTreatment] = useState(null);
-      const saveGuardRef = useRef(false);
-
-      const blankHairProfile = {
-        hair_type: "",
-        hair_treatment: "",
-        clarifying_shampoo: "",
-        leave_in_conditioner: "",
-        deep_conditioner_mask: "",
-        protein_treatment: "",
-        ingredients_to_avoid: "",
-      };
-      const [hairProfileForm, setHairProfileForm] = useState(blankHairProfile);
 
       // Pools list filters (beta)
       const [openNowOnly, setOpenNowOnly] = useState(true);
@@ -507,95 +469,7 @@ const handleSignOut = async () => {
   setAuthLoading(false);
 };
 
-const loadUserProfileAndLog = async (user) => {
-  if (!user?.id) return;
-  setHairProfileLoading(true);
-  setDashboardLoading(true);
-  const today = getTodayDate();
-  const [{ data: profileRow }, { data: existingLog }] = await Promise.all([
-    window.supa.from("user_profiles").select("id, display_name, email, hair_profile").eq("id", user.id).maybeSingle(),
-    window.supa.from("hair_care_logs").select("routine_type, steps_completed, weekly_treatment").eq("user_id", user.id).eq("date", today).maybeSingle(),
-  ]);
-  const mergedProfile = parseHairProfile(profileRow?.hair_profile);
-  setUserProfile({
-    id: user.id,
-    display_name: profileRow?.display_name || user.user_metadata?.full_name || user.user_metadata?.name || user.email,
-    email: profileRow?.email || user.email || "",
-    hair_profile: mergedProfile,
-  });
-  setHairProfileForm(mergedProfile);
-  setShowHairProfileSetup(!hasHairProfile(profileRow?.hair_profile));
-  saveGuardRef.current = true;
-  setRoutineType(existingLog?.routine_type || "swim_day");
-  setStepsCompleted(Array.isArray(existingLog?.steps_completed) ? existingLog.steps_completed : []);
-  setWeeklyTreatment(existingLog?.weekly_treatment || null);
-  setTimeout(() => { saveGuardRef.current = false; }, 0);
-  setHairProfileLoading(false);
-  setDashboardLoading(false);
-};
-
-const saveHairProfile = async () => {
-  if (!authUser?.id) return;
-  setHairProfileLoading(true);
-  const payload = {
-    id: authUser.id,
-    email: authUser.email || userProfile?.email || null,
-    display_name: userProfile?.display_name || authDisplayName,
-    hair_profile: hairProfileForm,
-  };
-  const { error } = await window.supa.from("user_profiles").upsert(payload, { onConflict: "id" });
-  if (error) {
-    setAuthError(error.message || "Couldn't save your hair profile.");
-    setHairProfileLoading(false);
-    return;
-  }
-  setUserProfile((prev) => ({ ...(prev || {}), ...payload }));
-  setShowHairProfileSetup(false);
-  setHairProfileLoading(false);
-};
-
-const saveDashboardLog = async (next) => {
-  if (!authUser?.id || saveGuardRef.current) return;
-  const { error } = await window.supa.from("hair_care_logs").upsert({
-    user_id: authUser.id,
-    date: getTodayDate(),
-    routine_type: next.routine_type,
-    steps_completed: next.steps_completed,
-    weekly_treatment: next.weekly_treatment,
-  }, { onConflict: "user_id,date" });
-  if (error) console.error("saveDashboardLog error:", error);
-};
-
 const authDisplayName = authUser?.user_metadata?.full_name || authUser?.user_metadata?.name || authUser?.email || "Signed in";
-
-const getTodayDate = () => new Date().toISOString().slice(0, 10);
-const hasHairProfile = (profile) => !!profile && Object.keys(profile).length > 0;
-const parseHairProfile = (profile) => ({ ...blankHairProfile, ...(profile || {}) });
-
-const displayLabel = (step, profile) => {
-  if (step.id === "co_wash" && profile?.clarifying_shampoo) return `Co-wash with ${profile.clarifying_shampoo}`;
-  if (step.id === "leave_in" && profile?.leave_in_conditioner) return `Apply ${profile.leave_in_conditioner}`;
-  if (step.id === "moisture" && profile?.leave_in_conditioner) return `Apply ${profile.leave_in_conditioner}`;
-  return step.label;
-};
-
-const weeklyLabel = (item, profile) => {
-  if (item.id === "clarifying" && profile?.clarifying_shampoo) return profile.clarifying_shampoo;
-  if (item.id === "protein" && profile?.protein_treatment) return profile.protein_treatment;
-  if (item.id === "deep_conditioning" && profile?.deep_conditioner_mask) return profile.deep_conditioner_mask;
-  return item.label;
-};
-
-const tipsForProfile = (profile) => {
-  const tips = [];
-  if (profile?.hair_type === "Curly" || profile?.hair_type === "Coily") {
-    tips.push("Scrunch in products — never rub. Diffuse on low heat.");
-  }
-  if (profile?.hair_type === "Wavy") tips.push("Use a microfibre towel to reduce frizz.");
-  if (profile?.hair_type === "Straight") tips.push("Chlorine strips oils faster on straight hair — don’t skip the leave-in.");
-  if (profile?.hair_treatment === "Colour-treated") tips.push("Use a colour-safe clarifying shampoo. Chlorine fades colour quickly.");
-  return tips.slice(0, 3);
-};
 const renderAuthModal = () => {
   if (!showAuthModal) return null;
   return (
@@ -747,33 +621,17 @@ const renderAuthModal = () => {
       useEffect(() => {
         let mounted = true;
 
-        window.supa.auth.getUser().then(async ({ data }) => {
-          if (!mounted) return;
-          const currentUser = data?.user ?? null;
-          setAuthUser(currentUser);
-          if (currentUser) {
-            setShowHomepage(false);
-            setActiveTab("pools");
+        window.supa.auth.getSession().then(({ data }) => {
+          if (mounted) {
+            setAuthUser(data?.session?.user ?? null);
           }
         });
 
-        const { data: listener } = window.supa.auth.onAuthStateChange(async (_event, session) => {
-          const nextUser = session?.user ?? null;
-          setAuthUser(nextUser);
+        const { data: listener } = window.supa.auth.onAuthStateChange((_event, session) => {
+          setAuthUser(session?.user ?? null);
           setAuthLoading(false);
           setAuthError("");
           setShowAuthModal(false);
-          if (nextUser) {
-            setShowHomepage(false);
-            setActiveTab("pools");
-          } else {
-            setActiveTab("pools");
-            setUserProfile(null);
-            setShowHairProfileSetup(false);
-            setHairProfileForm(blankHairProfile);
-            setStepsCompleted([]);
-            setWeeklyTreatment(null);
-          }
         });
 
         return () => {
@@ -1184,94 +1042,6 @@ useEffect(() => {
         );
       }
 
-      const toggleStep = (stepId) => {
-        setStepsCompleted((prev) => (prev.includes(stepId) ? prev.filter((id) => id !== stepId) : [...prev, stepId]));
-      };
-
-      const renderHairProfileSetup = () => (
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-5">
-          <h2 className="text-2xl font-bold text-[#1a4a47] mb-2">Set up your hair profile</h2>
-          <p className="text-sm text-gray-600 mb-5">Personalise your swimmer routine in under a minute. You can skip and edit later.</p>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">Hair type</p>
-              <div className="grid grid-cols-2 gap-2">
-                {HAIR_TYPES.map((type) => (
-                  <button key={type} onClick={() => setHairProfileForm((p) => ({ ...p, hair_type: type }))} className={`px-3 py-2 rounded-lg border font-semibold text-sm ${hairProfileForm.hair_type === type ? "bg-[#4ecdc4] border-[#1a4a47] text-[#1a4a47]" : "border-gray-200 text-gray-700"}`}>{type}</button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">Hair treatment</p>
-              <div className="grid grid-cols-2 gap-2">
-                {HAIR_TREATMENTS.map((type) => (
-                  <button key={type} onClick={() => setHairProfileForm((p) => ({ ...p, hair_treatment: type }))} className={`px-3 py-2 rounded-lg border font-semibold text-sm ${hairProfileForm.hair_treatment === type ? "bg-[#4ecdc4] border-[#1a4a47] text-[#1a4a47]" : "border-gray-200 text-gray-700"}`}>{type}</button>
-                ))}
-              </div>
-            </div>
-            {[
-              ["clarifying_shampoo", "My clarifying shampoo", "e.g. UltraSwim"],
-              ["leave_in_conditioner", "My leave-in conditioner", "e.g. Cantu"],
-              ["deep_conditioner_mask", "My deep conditioner / mask", "e.g. Shea Moisture"],
-              ["protein_treatment", "My protein treatment", "e.g. Aphogee"],
-              ["ingredients_to_avoid", "Ingredients to avoid (optional)", "e.g. sulfates"],
-            ].map(([key, label, placeholder]) => (
-              <label key={key} className="block">
-                <span className="text-sm font-semibold text-gray-700">{label}</span>
-                <input value={hairProfileForm[key]} onChange={(e) => setHairProfileForm((p) => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} className="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#4ecdc4]" />
-              </label>
-            ))}
-            <div className="flex gap-3 pt-2">
-              <button onClick={saveHairProfile} disabled={hairProfileLoading} className="px-4 py-2 rounded-lg bg-[#1a4a47] text-white font-semibold">{hairProfileLoading ? "Saving..." : "Save profile"}</button>
-              <button onClick={() => setShowHairProfileSetup(false)} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-semibold">Skip for now</button>
-            </div>
-          </div>
-        </div>
-      );
-
-      const renderDashboard = () => {
-        const profile = userProfile?.hair_profile || hairProfileForm;
-        const steps = routineType === "swim_day" ? SWIM_DAY_STEPS : REST_DAY_STEPS;
-        const today = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-        const tips = tipsForProfile(profile);
-
-        return (
-          <div className="max-w-4xl mx-auto px-4 py-6">
-            {showHairProfileSetup && renderHairProfileSetup()}
-            <div className="bg-white rounded-2xl shadow-xl p-6">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-[#1a4a47]">Hi {userProfile?.display_name || authDisplayName}</h2>
-                  <p className="text-sm text-gray-600">{today}</p>
-                </div>
-                <button onClick={() => setShowHairProfileSetup(true)} className="text-sm text-[#1a4a47] underline font-semibold">Edit hair profile</button>
-              </div>
-              <div className="grid grid-cols-2 gap-2 mb-5">
-                <button onClick={() => setRoutineType("swim_day")} className={`py-2 rounded-lg font-bold ${routineType === "swim_day" ? "bg-[#1a4a47] text-white" : "bg-[#edf8f6] text-[#1a4a47]"}`}>Swim Day</button>
-                <button onClick={() => setRoutineType("rest_day")} className={`py-2 rounded-lg font-bold ${routineType === "rest_day" ? "bg-[#1a4a47] text-white" : "bg-[#edf8f6] text-[#1a4a47]"}`}>Rest Day</button>
-              </div>
-              <div className="space-y-2 mb-5">
-                {steps.map((step) => {
-                  const checked = stepsCompleted.includes(step.id);
-                  const label = displayLabel(step, profile);
-                  return <button key={step.id} onClick={() => toggleStep(step.id)} className="w-full text-left p-3 rounded-lg border border-gray-200 flex items-center gap-3"><span className={`w-5 h-5 rounded-full border flex items-center justify-center ${checked ? "bg-[#4ecdc4] border-[#1a4a47] text-[#1a4a47]" : "border-gray-300 text-transparent"}`}>✓</span><span className={`${checked ? "line-through text-gray-500" : "text-gray-800"} text-sm`}>{label.split(" ").map((token, idx) => (<span key={`${step.id}-${idx}`} className={profile && Object.values(profile).includes(token.replace(",", "")) ? "text-[#1a4a47] font-semibold" : ""}>{token} </span>))}</span></button>;
-                })}
-              </div>
-              <h3 className="font-bold text-[#1a4a47] mb-2">Weekly treatment</h3>
-              <div className="grid gap-2 mb-5">
-                {WEEKLY_TREATMENTS.map((item) => <button key={item.id} onClick={() => setWeeklyTreatment((prev) => prev === item.id ? null : item.id)} className={`p-3 rounded-lg border text-left font-semibold ${weeklyTreatment === item.id ? "bg-[#4ecdc4] border-[#1a4a47] text-[#1a4a47]" : "border-gray-200 text-gray-700"}`}>{weeklyLabel(item, profile)}</button>)}
-              </div>
-              <div className="bg-[#edf8f6] border border-[#4ecdc4] rounded-xl p-4">
-                <h4 className="font-bold text-[#1a4a47] mb-2">Tips</h4>
-                <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                  {(tips.length ? tips : ["Keep hair wet before swimming and rinse immediately after your session.", "Protect your strands with gentle products and low heat styling."]).map((tip) => <li key={tip}>{tip}</li>)}
-                </ul>
-              </div>
-            </div>
-          </div>
-        );
-      };
-
       // -----------------------
       // Homepage View
       // -----------------------
@@ -1281,6 +1051,27 @@ useEffect(() => {
       {/* Header */}
      <div className="bg-[#043A3D] text-white shadow-lg">
   <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="flex justify-end mb-4">
+      {authUser ? (
+        <div className="flex items-center gap-2">
+          <span className="text-xs sm:text-sm text-teal-100">Hi, {authDisplayName}</span>
+          <button
+            onClick={handleSignOut}
+            disabled={authLoading}
+            className="px-3 py-1.5 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-sm"
+          >
+            {authLoading ? "Signing out..." : "Sign Out"}
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => { setShowAuthModal(true); setAuthError(""); }}
+          className="px-4 py-2 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
+        >
+          Sign In
+        </button>
+      )}
+    </div>
     <div className="flex items-center justify-center gap-4 mb-4">
       <div className="relative">
         <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl"></div>
@@ -1551,6 +1342,7 @@ useEffect(() => {
           </p>
         </div>
       </div>
+      {renderAuthModal()}
     </div>
   );
 }
@@ -1587,6 +1379,24 @@ useEffect(() => {
               className="bg-[#043A3D] text-white shadow-lg"
             >
               <div className="max-w-4xl mx-auto px-4 py-4">
+                <div className="flex justify-end mb-2">
+                  {authUser ? (
+                    <button
+                      onClick={handleSignOut}
+                      disabled={authLoading}
+                      className="px-3 py-1 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-xs"
+                    >
+                      {authLoading ? "Signing out..." : "Sign Out"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setShowAuthModal(true); setAuthError(""); }}
+                      className="px-3 py-1 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-xs"
+                    >
+                      Sign In
+                    </button>
+                  )}
+                </div>
                 <button
                   onClick={() => setViewingPool(null)}
                   className="flex items-center gap-2 text-white/80 hover:text-white mb-3 transition-colors"
@@ -1741,6 +1551,7 @@ useEffect(() => {
                 </button>
               </div>
             </div>
+            {renderAuthModal()}
           </div>
         );
       }
@@ -1761,6 +1572,27 @@ useEffect(() => {
         <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 pb-20">
           <div className="bg-[#043A3D] text-white shadow-lg">
             <div className="max-w-4xl mx-auto px-4 py-6">
+              <div className="flex justify-end mb-3">
+                {authUser ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs sm:text-sm text-teal-100">{authDisplayName}</span>
+                    <button
+                      onClick={handleSignOut}
+                      disabled={authLoading}
+                      className="px-3 py-1.5 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-sm"
+                    >
+                      {authLoading ? "Signing out..." : "Sign Out"}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setShowAuthModal(true); setAuthError(""); }}
+                    className="px-4 py-2 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
+                  >
+                    Sign In
+                  </button>
+                )}
+              </div>
               <button
                 onClick={() => setShowHomepage(true)}
                 className="flex items-center gap-2 text-teal-100 hover:text-white mb-3 transition-colors text-sm"
@@ -1787,14 +1619,6 @@ useEffect(() => {
               <p className="text-teal-50 text-sm">
                 Lane busyness based on anonymous check-ins in the last {CHECKIN_WINDOW_MINUTES} minutes
               </p>
-              <div className="mt-4 flex gap-2">
-                <button
-                  onClick={() => setActiveTab("pools")}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${activeTab === "pools" ? "bg-white text-[#1a4a47]" : "bg-white/10 text-teal-50 border border-white/30"}`}
-                >
-                  Pools
-                </button>
-              </div>
             </div>
           </div>
 
@@ -1805,7 +1629,7 @@ useEffect(() => {
           )}
 
           <div className="max-w-4xl mx-auto px-4 py-6">
-
+            
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
@@ -2014,11 +1838,32 @@ useEffect(() => {
               </div>
             </div>
 
+            <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Personal Dashboard</h2>
+              <p className="text-sm text-gray-600 mb-4">Coming soon: your saved pools and swim activity.</p>
+              {authUser ? (
+                <p className="text-sm text-teal-800 bg-teal-50 border border-teal-200 rounded-lg p-3">
+                  You're signed in as <strong>{authDisplayName}</strong>. Dashboard features will appear here soon.
+                </p>
+              ) : (
+                <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <span>Sign in to unlock your personal dashboard (pool browsing + check-ins remain anonymous).</span>
+                  <button
+                    onClick={() => { setShowAuthModal(true); setAuthError(""); }}
+                    className="px-3 py-2 rounded-lg bg-[#1a4a47] text-white font-semibold hover:opacity-90"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="mt-6 text-center text-gray-500 text-sm">
               <p>Community-powered lane tracking for swimmers</p>
               <p className="mt-1">Check in when you arrive • See estimated lane busyness</p>
             </div>
           </div>
+          {renderAuthModal()}
         </div>
       );
     }
