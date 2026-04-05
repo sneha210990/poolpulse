@@ -807,8 +807,7 @@ export default function PoolBusynessTracker() {
                 Never waste a walk to a crowded pool again
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                We've all been there - you walk to the pool in the rain, change into your kit, only to find every lane packed. 
-                Pool Pulse shows you real-time lane busyness so you can pick the perfect time to swim.
+                Real-time lane busyness for pools across the UK and Europe — powered by anonymous community check-ins.
               </p>
             </div>
 
@@ -828,13 +827,13 @@ export default function PoolBusynessTracker() {
             <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
                 onClick={() => setShowHomepage(false)}
-                className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold px-10 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg text-lg"
+                className="w-full sm:w-auto bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold px-10 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg text-lg"
               >
                 View All Pools
               </button>
               <div className="relative flex items-center gap-2">
                 <button
-                  className="bg-white border border-[#4ecdc4] text-[#1a4a47] font-semibold px-6 py-3 rounded-xl hover:bg-[#edf8f6] transition-colors shadow-sm"
+                  className="bg-white border border-[#4ecdc4] text-[#1a4a47] font-semibold px-5 py-2.5 rounded-xl hover:bg-[#edf8f6] transition-colors shadow-sm text-sm"
                 >
                   Sign In
                 </button>
@@ -855,78 +854,6 @@ export default function PoolBusynessTracker() {
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Features */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="font-bold text-xl mb-3 text-gray-900">🏊 Available Pools</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>• Royal Commonwealth Pool</li>
-                <li>• Warrender Swim Centre</li>
-                <li>• Glenogle Swim Centre</li>
-                <li>• Leith Victoria Swim Centre</li>
-                <li>• Dalry Swim Centre</li>
-                <li>• Portobello Swim Centre</li>
-                <li>• Ainslie Park Leisure Centre</li>
-              </ul>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="font-bold text-xl mb-3 text-gray-900">✨ What You Get</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>• Live busyness status for each lane</li>
-                <li>• Fast, Medium, and Slow lane tracking</li>
-                <li>• Real opening hours</li>
-                <li>• Open/Closed indicators</li>
-                <li>• Completely anonymous check-ins</li>
-                <li>• Built by swimmers, for swimmers</li>
-                <li>• Free forever</li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Why No Login Section */}
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-md p-8 mb-8 border-2 border-gray-200">
-            <h3 className="font-bold text-2xl mb-4 text-gray-900">Why no login?</h3>
-            <p className="text-gray-700 mb-4 leading-relaxed">
-              Pool Pulse is built on trust. We don't collect emails, track devices, or store personal data. 
-              Your check-ins are completely anonymous - we only count swimmers per lane, nothing else.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              If spam becomes a problem, we'll add optional verification - but only if needed. 
-              For now, we're keeping it simple. This is a community tool made by a swimmer who got 
-              frustrated with crowded lanes, not a data collection project.
-            </p>
-          </div>
-
-          {/* About Section */}
-          <div className="bg-gradient-to-br from-teal-600 to-cyan-600 rounded-2xl shadow-xl p-8 text-white">
-            <h3 className="font-bold text-2xl mb-4">My Story</h3>
-            <p className="text-teal-50 mb-4 leading-relaxed">
-              Hi, I'm Sneha! Last year, I was training for the Three GoSwim Scottish loch swims - and I quickly learned 
-              that consistent training means showing up to the pool multiple times a week. The problem? I'd walk to my 
-              local pool (sometimes in the freezing rain, sometimes in the rare Scottish sun), get changed, walk out to 
-              the pool deck... only to find every single lane packed with swimmers. It was incredibly frustrating.
-            </p>
-            <p className="text-teal-50 mb-4 leading-relaxed">
-              After trudging home disappointed one too many times, I thought: there has to be a better way. What if I 
-              could check how busy each lane was before braving the elements? That's when I built Pool Pulse.
-            </p>
-            <p className="text-teal-50 mb-4 leading-relaxed">
-              Everything here is completely anonymous - I only track how many people check into each lane, nothing else. 
-              No accounts, no tracking, no surveillance. Just helpful information shared between swimmers like you and me.
-            </p>
-            <h3 className="font-bold text-xl mb-3 mt-6">What's Next?</h3>
-            <p className="text-teal-50 mb-3 leading-relaxed">
-              I'm starting in Edinburgh because that's where I swim, but the plan is to expand across Scotland - 
-              Glasgow next, then other cities. Eventually, I'd love to cover pools across the UK.
-            </p>
-            <p className="text-teal-50 leading-relaxed">
-              I'm also building native iOS and Android apps so you can check pool busyness on the go. 
-              Long-term, I hope to partner with Edinburgh Leisure and other operators to get official capacity data, 
-              making this even more accurate and useful for all of us.
-            </p>
           </div>
 
           {/* Privacy Note */}
