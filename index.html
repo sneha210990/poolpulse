@@ -357,7 +357,7 @@ const loadRecentCheckins = async ({ silent = false } = {}) => {
   } else {
     const normalized = (data ?? []).map((row) => ({
       ...row,
-      lane: row.lane,
+      lane: row.lane_type,
     }));
     setCheckinsError(null);
     setRecentCheckins(normalized);
@@ -714,7 +714,7 @@ useEffect(() => {
         try {
           const { error } = await window.supa
             .from("checkins")
-            .insert([{ pool_id: poolId, lane_type: lane, lane, delta: 1 }]);
+            .insert([{ pool_id: poolId, lane_type: lane, delta: 1 }]);
 
           if (error) throw error;
 
