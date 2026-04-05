@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Droplets, Users, Clock, TrendingUp, MapPin, ArrowLeft, Activity, Waves, CircleHelp } from 'lucide-react';
+import { Droplets, Users, Clock, TrendingUp, MapPin, ArrowLeft, Activity, Waves } from 'lucide-react';
 
 // Edinburgh Leisure pools data with colors and opening hours
 const POOLS = [
@@ -354,7 +354,6 @@ export default function PoolBusynessTracker() {
   const [showHomepage, setShowHomepage] = useState(true);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [showSignInTooltip, setShowSignInTooltip] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -813,47 +812,45 @@ export default function PoolBusynessTracker() {
             </div>
 
             {/* How It Works */}
-            <div className="bg-[#edf8f6] border border-[#4ecdc4] rounded-xl p-5 mb-8">
-              <h3 className="text-xl font-bold text-[#1a4a47] mb-4">How it works</h3>
-              <div className="space-y-3 text-sm sm:text-base text-[#1a4a47]">
-                <p>🏊 <span className="font-semibold">Check the pool</span> — See real-time lane busyness before you leave</p>
-                <p>✅ <span className="font-semibold">Check in when you arrive</span> — Takes 2 seconds, no account needed, fully anonymous</p>
-                <p>📊 <span className="font-semibold">Track your swimming</span> — Optional: sign in to log sessions and personal stats</p>
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <div className="text-center">
+                <div className="bg-teal-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-teal-600" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">1. Check Before You Go</h3>
+                <p className="text-gray-600 text-sm">
+                  See if your lane is quiet, moderate, or busy right now
+                </p>
               </div>
-              <p className="mt-4 text-sm text-teal-800">
-                Check-ins are anonymous and never linked to your account. Sign in is optional and only needed for your personal dashboard.
-              </p>
+
+              <div className="text-center">
+                <div className="bg-cyan-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <MapPin className="w-8 h-8 text-cyan-600" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">2. Pick Your Pool</h3>
+                <p className="text-gray-600 text-sm">
+                  Check opening times and which pools are open now
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Droplets className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">3. Check In When You Arrive</h3>
+                <p className="text-gray-600 text-sm">
+                  Takes 2 seconds and helps other swimmers plan their visits
+                </p>
+              </div>
             </div>
 
-            <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="text-center">
               <button
                 onClick={() => setShowHomepage(false)}
                 className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold px-10 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg text-lg"
               >
                 View All Pools
               </button>
-              <div className="relative flex items-center gap-2">
-                <button
-                  className="bg-white border border-[#4ecdc4] text-[#1a4a47] font-semibold px-6 py-3 rounded-xl hover:bg-[#edf8f6] transition-colors shadow-sm"
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  aria-label="Why sign in?"
-                  onClick={() => setShowSignInTooltip((prev) => !prev)}
-                  onMouseEnter={() => setShowSignInTooltip(true)}
-                  onMouseLeave={() => setShowSignInTooltip(false)}
-                  className="text-[#1a4a47] hover:text-teal-700 transition-colors"
-                >
-                  <CircleHelp className="w-5 h-5" />
-                </button>
-                {showSignInTooltip && (
-                  <div className="absolute z-20 top-full right-0 mt-2 w-72 sm:w-80 text-left bg-white border border-[#4ecdc4] rounded-lg shadow-lg p-3 text-sm text-gray-700">
-                    Signing in is optional. You can check pool busyness and contribute check-ins without an account. Sign in only to access your personal dashboard.
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 
@@ -1349,17 +1346,12 @@ export default function PoolBusynessTracker() {
 
           {/* Submit Button */}
           {selectedPool && selectedLane && (
-            <div className="mt-4 space-y-3">
-              <div className="bg-[#edf8f6] border border-[#4ecdc4] rounded-lg px-3 py-2 text-xs sm:text-sm text-[#1a4a47]">
-                🔒 Check-ins are always anonymous — no account needed, ever.
-              </div>
-              <button
-                onClick={handleSubmit}
-                className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold py-4 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all shadow-md"
-              >
-                I'm Swimming Here Now
-              </button>
-            </div>
+            <button
+              onClick={handleSubmit}
+              className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold py-4 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all shadow-md mt-4"
+            >
+              I'm Swimming Here Now
+            </button>
           )}
 
           {!selectedPool && (
