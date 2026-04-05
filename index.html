@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Real-time busyness tracking for pools across Scotland and The Netherlands. Find the best time to swim." />
   <meta name="keywords" content="Scotland pools, Netherlands pools, swimming, pool busyness, Pool Pulse" />
-  <title>Pool Pulse - UK & EU Pool Busyness</title>
+  <title>Pool Pulse - Scotland & The Netherlands Pool Busyness</title>
 
   <!-- Prevent favicon 404 noise -->
   <link rel="icon" href="data:," />
@@ -274,7 +274,6 @@ const LogoMark = ({ className = "" }) => (
       const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
       const [showTerms, setShowTerms] = useState(false);
       const [authUser, setAuthUser] = useState(null);
-      const [showDashboard, setShowDashboard] = useState(false);
       const [showAuthModal, setShowAuthModal] = useState(false);
       const [authTab, setAuthTab] = useState("google");
       const [authEmail, setAuthEmail] = useState("");
@@ -319,7 +318,7 @@ const getPoolById = (id) => POOLS.find((p) => p.id === id);
     const status = { lanes: {}, totalUpdates: 0, lastUpdate: null };
 
     for (const r of rows) {
-      const laneId = r.lane;
+      const laneId = r.lane_type;
       const delta = 1;
       const ts = r.created_at;
 
@@ -346,7 +345,7 @@ const loadRecentCheckins = async ({ silent = false } = {}) => {
 
   const { data, error } = await window.supa
     .from("checkins")
-    .select("id, created_at, pool_id, lane")
+    .select("id, created_at, pool_id, lane_type")
     .gte("created_at", sinceIso)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -603,7 +602,7 @@ const renderAuthModal = () => {
         try {
           const { data, error } = await supa
             .from('checkins')
-            .select('pool_id, lane')
+            .select('pool_id, lane_type')
             .gt('expires_at', new Date().toISOString());
 
           if (error || !data) {
@@ -616,7 +615,7 @@ const renderAuthModal = () => {
           const busyness = {};
           data.forEach((row) => {
             const poolId = row.pool_id;
-            const laneId = normalizeLaneId(row.lane);
+            const laneId = normalizeLaneId(row.lane_type);
             if (!poolId || !laneId) return;
             if (!busyness[poolId]) busyness[poolId] = {};
             if (!busyness[poolId][laneId]) busyness[poolId][laneId] = 0;
@@ -715,7 +714,7 @@ useEffect(() => {
         try {
           const { error } = await window.supa
             .from("checkins")
-            .insert([{ pool_id: poolId, lane, delta: 1 }]);
+            .insert([{ pool_id: poolId, lane_type: lane, lane, delta: 1 }]);
 
           if (error) throw error;
 
@@ -1090,13 +1089,7 @@ useEffect(() => {
     <div className="flex justify-end mb-4">
       {authUser ? (
         <div className="flex items-center gap-2">
-        <span className="text-xs sm:text-sm text-teal-100">Hi, {authDisplayName}</span>
-          <button
-            onClick={() => setShowDashboard(true)}
-            className="px-3 py-1.5 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
-          >
-            My Dashboard
-          </button>
+          <span className="text-xs sm:text-sm text-teal-100">Hi, {authDisplayName}</span>
           <button
             onClick={handleSignOut}
             disabled={authLoading}
@@ -1128,13 +1121,11 @@ useEffect(() => {
 
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-1">Pool Pulse</h1>
-        <p className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-sm font-semibold text-white shadow-sm">
-          UK & EU Pool Busyness
-        </p>
+        <p className="text-white/80 text-sm font-medium">Scotland & The Netherlands</p>
       </div>
     </div>
 
-    <p className="text-center text-white/90 text-lg max-w-4xl mx-auto">
+    <p className="text-center text-white/85 text-lg max-w-4xl mx-auto">
       Know before you go! See how busy each lane is, based on anonymous check-ins.
     </p>
   </div>
@@ -1639,7 +1630,7 @@ useEffect(() => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold">Pool Pulse</h1>
-                  <p className="text-teal-100 text-xs font-medium">UK & EU</p>
+                  <p className="text-teal-100 text-xs font-medium">Scotland & The Netherlands</p>
                 </div>
               </div>
 
