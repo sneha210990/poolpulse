@@ -1877,26 +1877,6 @@ useEffect(() => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Personal Dashboard</h2>
-              <p className="text-sm text-gray-600 mb-4">Coming soon: your saved pools and swim activity.</p>
-              {authUser ? (
-                <p className="text-sm text-teal-800 bg-teal-50 border border-teal-200 rounded-lg p-3">
-                  You're signed in as <strong>{authDisplayName}</strong>. Dashboard features will appear here soon.
-                </p>
-              ) : (
-                <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <span>Sign in to unlock your personal dashboard (pool browsing + check-ins remain anonymous).</span>
-                  <button
-                    onClick={() => window.location.href = 'dashboard.html'}
-                    className="px-3 py-2 rounded-lg bg-[#1a4a47] text-white font-semibold hover:opacity-90"
-                  >
-                    Sign In
-                  </button>
-                </div>
-              )}
-            </div>
-
             <div className="mt-6 text-center text-gray-500 text-sm">
               <p>Community-powered lane tracking for swimmers</p>
               <p className="mt-1">Check in when you arrive • See estimated lane busyness</p>
