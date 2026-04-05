@@ -790,7 +790,7 @@ export default function PoolBusynessTracker() {
               </div>
               <div className="text-center">
                 <h1 className="text-4xl font-bold mb-1">Pool Pulse</h1>
-                <p className="text-teal-100 text-sm font-medium">Scotland &amp; The Netherlands</p>
+                <p className="text-teal-100 text-sm font-medium">UK & EU</p>
               </div>
             </div>
             <p className="text-center text-teal-50 text-lg max-w-2xl mx-auto">
