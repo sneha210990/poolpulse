@@ -1296,6 +1296,19 @@ export default function PoolBusynessTracker() {
           })}
         </div>
 
+        {/* How It Works */}
+        <div className="bg-[#edf8f6] border border-[#4ecdc4] rounded-xl p-5 mb-6">
+          <h3 className="text-xl font-bold text-[#1a4a47] mb-4">How it works</h3>
+          <div className="space-y-3 text-sm sm:text-base text-[#1a4a47]">
+            <p>🏊 <span className="font-semibold">Check the pool</span> — See real-time lane busyness before you leave</p>
+            <p>✅ <span className="font-semibold">Check in when you arrive</span> — Takes 2 seconds, no account needed, fully anonymous</p>
+            <p>📊 <span className="font-semibold">Track your swimming</span> — Optional: sign in to log sessions and personal stats</p>
+          </div>
+          <p className="mt-4 text-sm text-teal-800">
+            Check-ins are anonymous and never linked to your account. Sign in is optional and only needed for your personal dashboard.
+          </p>
+        </div>
+
         {/* Submit Update Section */}
         <div className="bg-white rounded-xl shadow-lg p-6 sticky bottom-4">
           <div className="flex items-center gap-3 mb-4">
@@ -1311,6 +1324,9 @@ export default function PoolBusynessTracker() {
           
           {/* Pool Selection */}
           <div className="mb-4">
+            <div className="mb-2 bg-[#edf8f6] border-l-4 border-[#4ecdc4] rounded-lg px-3 py-2 text-xs sm:text-sm text-[#1a4a47]">
+              🔒 Check-ins are always anonymous — no account needed, ever.
+            </div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Which pool are you at?</label>
             <select
               value={selectedPool || ''}
@@ -1349,10 +1365,7 @@ export default function PoolBusynessTracker() {
 
           {/* Submit Button */}
           {selectedPool && selectedLane && (
-            <div className="mt-4 space-y-3">
-              <div className="bg-[#edf8f6] border border-[#4ecdc4] rounded-lg px-3 py-2 text-xs sm:text-sm text-[#1a4a47]">
-                🔒 Check-ins are always anonymous — no account needed, ever.
-              </div>
+            <div className="mt-4">
               <button
                 onClick={handleSubmit}
                 className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold py-4 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all shadow-md"
