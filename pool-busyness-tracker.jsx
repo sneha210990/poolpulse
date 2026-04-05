@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Droplets, Users, Clock, TrendingUp, MapPin, ArrowLeft, Activity, Waves, CircleHelp } from 'lucide-react';
 
 // Edinburgh Leisure pools data with colors and opening hours
@@ -7,9 +7,6 @@ const POOLS = [
     id: 'royal-commonwealth', 
     name: 'Royal Commonwealth Pool', 
     location: 'Dalkeith Road',
-    city: 'Edinburgh',
-    lat: 55.9366,
-    lng: -3.1627,
     color: '#0EA5E9', // Sky blue for the flagship
     hours: {
       weekday: { open: '05:30', close: '22:00' },
@@ -23,9 +20,6 @@ const POOLS = [
     id: 'warrender', 
     name: 'Warrender Swim Centre', 
     location: 'Thirlestane Road',
-    city: 'Edinburgh',
-    lat: 55.9352,
-    lng: -3.1876,
     color: '#8B5CF6', // Purple
     hours: {
       weekday: { open: '06:30', close: '21:30' },
@@ -37,9 +31,6 @@ const POOLS = [
     id: 'glenogle', 
     name: 'Glenogle Swim Centre', 
     location: 'Glenogle Road',
-    city: 'Edinburgh',
-    lat: 55.9578,
-    lng: -3.2021,
     color: '#10B981', // Emerald green
     hours: {
       weekday: { open: '06:30', close: '21:30' },
@@ -51,9 +42,6 @@ const POOLS = [
     id: 'leith-victoria', 
     name: 'Leith Victoria Swim Centre', 
     location: 'Junction Place',
-    city: 'Edinburgh',
-    lat: 55.9752,
-    lng: -3.1654,
     color: '#F59E0B', // Amber
     hours: {
       weekday: { open: '06:30', close: '21:30' },
@@ -65,9 +53,6 @@ const POOLS = [
     id: 'dalry', 
     name: 'Dalry Swim Centre', 
     location: 'Caledonian Crescent',
-    city: 'Edinburgh',
-    lat: 55.9434,
-    lng: -3.2196,
     color: '#EF4444', // Red
     hours: {
       weekday: { open: '06:30', close: '21:30' },
@@ -79,9 +64,6 @@ const POOLS = [
     id: 'portobello', 
     name: 'Portobello Swim Centre', 
     location: 'Bellfield Street',
-    city: 'Edinburgh',
-    lat: 55.954,
-    lng: -3.1069,
     color: '#EC4899', // Pink
     hours: {
       weekday: { open: '06:30', close: '21:30' },
@@ -93,9 +75,6 @@ const POOLS = [
     id: 'ainslie-park', 
     name: 'Ainslie Park Leisure Centre', 
     location: 'Pilton Drive',
-    city: 'Edinburgh',
-    lat: 55.9739,
-    lng: -3.2334,
     color: '#6366F1', // Indigo
     hours: {
       weekday: { open: '06:30', close: '21:30' },
@@ -107,9 +86,6 @@ const POOLS = [
     id: 'glasgow-club-bellahouston',
     name: 'Glasgow Club Bellahouston',
     location: 'Glasgow (Bellahouston)',
-    city: 'Glasgow',
-    lat: 55.8455,
-    lng: -4.3089,
     color: '#14B8A6',
     hours: {
       weekday: { open: '06:00', close: '22:00' },
@@ -121,9 +97,6 @@ const POOLS = [
     id: 'glasgow-club-castlemilk',
     name: 'Glasgow Club Castlemilk',
     location: 'Glasgow (Castlemilk)',
-    city: 'Glasgow',
-    lat: 55.8089,
-    lng: -4.2334,
     color: '#F97316',
     hours: {
       weekday: { open: '08:00', close: '20:00' },
@@ -135,9 +108,6 @@ const POOLS = [
     id: 'glasgow-club-easterhouse',
     name: 'Glasgow Club Easterhouse',
     location: 'Glasgow (Easterhouse)',
-    city: 'Glasgow',
-    lat: 55.8651,
-    lng: -4.1234,
     color: '#38BDF8',
     hours: {
       monday: { open: '09:00', close: '14:30' },
@@ -153,9 +123,6 @@ const POOLS = [
     id: 'glasgow-club-gorbals',
     name: 'Glasgow Club Gorbals',
     location: 'Glasgow (Gorbals)',
-    city: 'Glasgow',
-    lat: 55.8489,
-    lng: -4.2567,
     color: '#F43F5E',
     hours: {
       weekday: { open: '06:00', close: '22:00' },
@@ -167,9 +134,6 @@ const POOLS = [
     id: 'glasgow-club-north-woodside',
     name: 'Glasgow Club North Woodside',
     location: 'Glasgow (North Woodside)',
-    city: 'Glasgow',
-    lat: 55.8734,
-    lng: -4.2678,
     color: '#8B5CF6',
     hours: {
       monday: { open: '15:00', close: '21:00' },
@@ -185,9 +149,6 @@ const POOLS = [
     id: 'glasgow-club-scotstoun',
     name: 'Glasgow Club Scotstoun',
     location: 'Glasgow (Scotstoun)',
-    city: 'Glasgow',
-    lat: 55.8734,
-    lng: -4.3456,
     color: '#0EA5E9',
     hours: {
       weekday: { open: '06:00', close: '22:00' },
@@ -199,9 +160,6 @@ const POOLS = [
     id: 'glasgow-club-springburn',
     name: 'Glasgow Club Springburn',
     location: 'Glasgow (Springburn)',
-    city: 'Glasgow',
-    lat: 55.8834,
-    lng: -4.2345,
     color: '#10B981',
     hours: {
       weekday: { open: '06:00', close: '21:00' },
@@ -213,9 +171,6 @@ const POOLS = [
     id: 'tollcross-international-swimming-centre',
     name: 'Tollcross International Swimming Centre',
     location: 'Glasgow (Tollcross)',
-    city: 'Glasgow',
-    lat: 55.8537,
-    lng: -4.2193,
     color: '#06B6D4',
     hours: {
       weekday: { open: '06:00', close: '22:00' },
@@ -227,9 +182,6 @@ const POOLS = [
     id: 'glasgow-club-whitehill',
     name: 'Glasgow Club Whitehill',
     location: 'Glasgow (Whitehill)',
-    city: 'Glasgow',
-    lat: 55.8567,
-    lng: -4.2123,
     color: '#84CC16',
     hours: {
       monday: { closed: true },
@@ -245,9 +197,6 @@ const POOLS = [
   id: "western-baths-club",
   name: "Western Baths Club",
   location: "Glasgow (Hillhead / West End)",
-  city: "Glasgow",
-  lat: 55.8751,
-  lng: -4.2813,
   color: "#A855F7", // Purple
   hours: {
     weekday: { open: "06:00", close: "21:30" },
@@ -259,9 +208,6 @@ const POOLS = [
     id: 'glasgow-club-drumchapel',
     name: 'Glasgow Club Drumchapel',
     location: 'Glasgow (Drumchapel)',
-    city: 'Glasgow',
-    lat: 55.9012,
-    lng: -4.3789,
     color: '#D97706',
     hours: {
       weekday: { open: '07:00', close: '21:00' },
@@ -273,9 +219,6 @@ const POOLS = [
     id: 'glasgow-club-ibrox',
     name: 'Glasgow Club Ibrox',
     location: 'Glasgow (Ibrox)',
-    city: 'Glasgow',
-    lat: 55.8534,
-    lng: -4.3123,
     color: '#7C3AED',
     hours: {
       weekday: { open: '07:00', close: '22:00' },
@@ -287,9 +230,6 @@ const POOLS = [
     id: 'glasgow-club-maryhill',
     name: 'Glasgow Club Maryhill',
     location: 'Glasgow (Maryhill)',
-    city: 'Glasgow',
-    lat: 55.8934,
-    lng: -4.2934,
     color: '#DC2626',
     hours: {
       monday: { open: '09:00', close: '21:00' },
@@ -305,9 +245,6 @@ const POOLS = [
     id: 'glasgow-club-milton',
     name: 'Glasgow Club Milton',
     location: 'Glasgow (Milton)',
-    city: 'Glasgow',
-    lat: 55.9123,
-    lng: -4.2567,
     color: '#2563EB',
     hours: {
       weekday: { open: '07:00', close: '21:00' },
@@ -319,9 +256,6 @@ const POOLS = [
     id: 'glasgow-club-pollok',
     name: 'Glasgow Club Pollok',
     location: 'Glasgow (Pollok)',
-    city: 'Glasgow',
-    lat: 55.8234,
-    lng: -4.3234,
     color: '#DB2777',
     hours: {
       weekday: { open: '06:30', close: '22:00' },
@@ -333,9 +267,6 @@ const POOLS = [
     id: 'glasgow-club-shettleston',
     name: 'Glasgow Club Shettleston',
     location: 'Glasgow (Shettleston)',
-    city: 'Glasgow',
-    lat: 55.8534,
-    lng: -4.1789,
     color: '#0891B2',
     hours: {
       weekday: { open: '07:00', close: '21:30' },
@@ -347,8 +278,6 @@ const POOLS = [
     id: 'the-peak-stirling',
     name: 'The PEAK',
     location: 'Stirling Sports Village',
-    lat: 56.1123,
-    lng: -3.9234,
     city: 'Stirling',
     address: 'Forthside Way, Stirling FK7 7QA',
     color: '#16A34A',
@@ -365,8 +294,6 @@ const POOLS = [
     id: 'zwembad-de-zijl',
     name: 'Zwembad De Zijl',
     location: 'Leiden, Netherlands',
-    lat: 52.1734,
-    lng: 4.4589,
     city: 'Leiden',
     country: 'NL',
     address: 'Paramaribostraat 66, 2315 VK Leiden',
@@ -383,8 +310,6 @@ const POOLS = [
     id: 'combibad-de-vliet',
     name: 'Combibad De Vliet',
     location: 'Leiden, Netherlands',
-    lat: 52.1823,
-    lng: 4.4234,
     city: 'Leiden',
     country: 'NL',
     address: 'Voorschoterweg 6, Leiden',
@@ -416,70 +341,10 @@ const BUSYNESS_LEVELS = [
   { value: 5, label: 'Packed', color: 'bg-red-500', emoji: '😰' },
 ];
 
-function PoolMap({ pools, onViewPool }) {
-  const mapRef = React.useRef(null);
-  const mapInstanceRef = React.useRef(null);
-
-  React.useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current || !window.L) return;
-
-    const map = window.L.map(mapRef.current).setView([56.5, -4.0], 6);
-    mapInstanceRef.current = map;
-
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    pools.forEach((pool) => {
-      if (!pool.lat || !pool.lng) return;
-
-      const marker = window.L.circleMarker([pool.lat, pool.lng], {
-        radius: 8,
-        fillColor: '#4ecdc4',
-        color: '#1a4a47',
-        weight: 2,
-        opacity: 1,
-        fillOpacity: 0.9
-      }).addTo(map);
-
-      const city = pool.city || pool.location;
-
-      marker.bindPopup(`
-        <div style="font-family:sans-serif;min-width:160px">
-          <div style="font-weight:700;color:#1a4a47;margin-bottom:4px">${pool.name}</div>
-          <div style="font-size:12px;color:#666;margin-bottom:8px">${city}</div>
-          <button
-            onclick="window.viewPool('${pool.id}')"
-            style="background:#1a4a47;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;width:100%"
-          >
-            View pool →
-          </button>
-        </div>
-      `);
-    });
-
-    window.viewPool = (poolId) => {
-      onViewPool(poolId);
-    };
-
-    return () => {
-      map.remove();
-      mapInstanceRef.current = null;
-    };
-  }, []);
-
-  return (
-    <div
-      ref={mapRef}
-      style={{ height: '340px', width: '100%', borderRadius: '12px', zIndex: 0 }}
-    />
-  );
-}
-
 export default function PoolBusynessTracker() {
   const appLogo = './assets/poolpulse_app_icon_color.svg';
   const [poolData, setPoolData] = useState({});
-  const [selectedRegion, setSelectedRegion] = useState('All');
+  const [selectedRegion, setSelectedRegion] = useState('Scotland');
   const [selectedPool, setSelectedPool] = useState(null);
   const [selectedLane, setSelectedLane] = useState(null);
   const [selectedBusyness, setSelectedBusyness] = useState(null);
@@ -490,9 +355,6 @@ export default function PoolBusynessTracker() {
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showSignInTooltip, setShowSignInTooltip] = useState(false);
-  const mapContainerRef = useRef(null);
-  const leafletMapRef = useRef(null);
-  const leafletMarkersRef = useRef([]);
 
   useEffect(() => {
     loadData();
@@ -625,9 +487,7 @@ export default function PoolBusynessTracker() {
     return 'Scotland';
   };
 
-  const filteredPools = POOLS.filter((pool) => (
-    selectedRegion === 'All' ? true : getRegionForPool(pool) === selectedRegion
-  ));
+  const filteredPools = POOLS.filter(pool => getRegionForPool(pool) === selectedRegion);
 
   useEffect(() => {
     if (selectedPool && !filteredPools.some(pool => pool.id === selectedPool)) {
@@ -635,73 +495,6 @@ export default function PoolBusynessTracker() {
       setSelectedLane(null);
     }
   }, [selectedRegion, selectedPool, filteredPools]);
-
-  useEffect(() => {
-    if (showHomepage) return;
-    if (!mapContainerRef.current || leafletMapRef.current || !window.L) return;
-
-    const map = window.L.map(mapContainerRef.current).setView([56.5, -4.0], 6);
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-    setTimeout(() => map.invalidateSize(), 0);
-
-    leafletMapRef.current = map;
-
-    return () => {
-      leafletMarkersRef.current.forEach((marker) => marker.remove());
-      leafletMarkersRef.current = [];
-      map.remove();
-      leafletMapRef.current = null;
-    };
-  }, [showHomepage]);
-
-  useEffect(() => {
-    if (!leafletMapRef.current || !window.L) return;
-
-    leafletMarkersRef.current.forEach((marker) => marker.remove());
-    leafletMarkersRef.current = [];
-
-    const map = leafletMapRef.current;
-    const poolsWithCoords = filteredPools.filter((pool) => typeof pool.lat === 'number' && typeof pool.lng === 'number');
-    const markers = poolsWithCoords.map((pool) => {
-      const isOpen = isPoolOpen(pool);
-      const city = getPoolCity(pool);
-      const marker = window.L.marker([pool.lat, pool.lng], {
-        icon: window.L.divIcon({
-          className: '',
-          html: '<span style=\"display:block;width:18px;height:18px;border-radius:9999px;background:#4ecdc4;border:3px solid #0f766e;box-shadow:0 2px 6px rgba(0,0,0,0.35);\"></span>',
-          iconSize: [18, 18],
-          iconAnchor: [9, 9]
-        })
-      });
-
-      const popupContainer = document.createElement('div');
-      popupContainer.className = 'min-w-[200px]';
-      popupContainer.innerHTML = `
-        <div style="font-weight:700;margin-bottom:4px;">${pool.name}</div>
-        <div style="font-size:13px;color:#4b5563;margin-bottom:6px;">${city}</div>
-        <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:${isOpen ? '#15803d' : '#b91c1c'};">
-          ${isOpen ? 'OPEN' : 'CLOSED'}
-        </div>
-      `;
-      const viewButton = document.createElement('button');
-      viewButton.type = 'button';
-      viewButton.textContent = 'View pool';
-      viewButton.className = 'px-3 py-1.5 text-xs font-semibold rounded-md bg-teal-600 text-white hover:bg-teal-700';
-      viewButton.onclick = () => {
-        setViewingPool(pool.id);
-        map.closePopup();
-      };
-      popupContainer.appendChild(viewButton);
-      marker.bindPopup(popupContainer);
-      marker.addTo(map);
-      return marker;
-    });
-
-    leafletMarkersRef.current = markers;
-  }, [filteredPools]);
 
   const getPoolStatus = (poolId) => {
     const data = poolData[poolId];
@@ -997,7 +790,7 @@ export default function PoolBusynessTracker() {
               </div>
               <div className="text-center">
                 <h1 className="text-4xl font-bold mb-1">Pool Pulse</h1>
-                <p className="text-teal-100 text-sm font-medium">UK & EU</p>
+                <p className="text-teal-100 text-sm font-medium">Scotland &amp; The Netherlands</p>
               </div>
             </div>
             <p className="text-center text-teal-50 text-lg max-w-2xl mx-auto">
@@ -1014,7 +807,8 @@ export default function PoolBusynessTracker() {
                 Never waste a walk to a crowded pool again
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Real-time lane busyness for pools across the UK and Europe — powered by anonymous community check-ins.
+                We've all been there - you walk to the pool in the rain, change into your kit, only to find every lane packed. 
+                Pool Pulse shows you real-time lane busyness so you can pick the perfect time to swim.
               </p>
             </div>
 
@@ -1031,29 +825,16 @@ export default function PoolBusynessTracker() {
               </p>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1a4a47', marginBottom: '12px' }}>
-                Pools we cover
-              </h3>
-              <PoolMap
-                pools={POOLS}
-                onViewPool={(id) => {
-                  setViewingPool(id);
-                  setShowHomepage(false);
-                }}
-              />
-            </div>
-
             <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
                 onClick={() => setShowHomepage(false)}
-                className="w-full sm:w-auto bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold px-10 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg text-lg"
+                className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold px-10 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg text-lg"
               >
                 View All Pools
               </button>
               <div className="relative flex items-center gap-2">
                 <button
-                  className="bg-white border border-[#4ecdc4] text-[#1a4a47] font-semibold px-5 py-2.5 rounded-xl hover:bg-[#edf8f6] transition-colors shadow-sm text-sm"
+                  className="bg-white border border-[#4ecdc4] text-[#1a4a47] font-semibold px-6 py-3 rounded-xl hover:bg-[#edf8f6] transition-colors shadow-sm"
                 >
                   Sign In
                 </button>
@@ -1074,6 +855,78 @@ export default function PoolBusynessTracker() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Features */}
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="font-bold text-xl mb-3 text-gray-900">🏊 Available Pools</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• Royal Commonwealth Pool</li>
+                <li>• Warrender Swim Centre</li>
+                <li>• Glenogle Swim Centre</li>
+                <li>• Leith Victoria Swim Centre</li>
+                <li>• Dalry Swim Centre</li>
+                <li>• Portobello Swim Centre</li>
+                <li>• Ainslie Park Leisure Centre</li>
+              </ul>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="font-bold text-xl mb-3 text-gray-900">✨ What You Get</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• Live busyness status for each lane</li>
+                <li>• Fast, Medium, and Slow lane tracking</li>
+                <li>• Real opening hours</li>
+                <li>• Open/Closed indicators</li>
+                <li>• Completely anonymous check-ins</li>
+                <li>• Built by swimmers, for swimmers</li>
+                <li>• Free forever</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Why No Login Section */}
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-md p-8 mb-8 border-2 border-gray-200">
+            <h3 className="font-bold text-2xl mb-4 text-gray-900">Why no login?</h3>
+            <p className="text-gray-700 mb-4 leading-relaxed">
+              Pool Pulse is built on trust. We don't collect emails, track devices, or store personal data. 
+              Your check-ins are completely anonymous - we only count swimmers per lane, nothing else.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              If spam becomes a problem, we'll add optional verification - but only if needed. 
+              For now, we're keeping it simple. This is a community tool made by a swimmer who got 
+              frustrated with crowded lanes, not a data collection project.
+            </p>
+          </div>
+
+          {/* About Section */}
+          <div className="bg-gradient-to-br from-teal-600 to-cyan-600 rounded-2xl shadow-xl p-8 text-white">
+            <h3 className="font-bold text-2xl mb-4">My Story</h3>
+            <p className="text-teal-50 mb-4 leading-relaxed">
+              Hi, I'm Sneha! Last year, I was training for the Three GoSwim Scottish loch swims - and I quickly learned 
+              that consistent training means showing up to the pool multiple times a week. The problem? I'd walk to my 
+              local pool (sometimes in the freezing rain, sometimes in the rare Scottish sun), get changed, walk out to 
+              the pool deck... only to find every single lane packed with swimmers. It was incredibly frustrating.
+            </p>
+            <p className="text-teal-50 mb-4 leading-relaxed">
+              After trudging home disappointed one too many times, I thought: there has to be a better way. What if I 
+              could check how busy each lane was before braving the elements? That's when I built Pool Pulse.
+            </p>
+            <p className="text-teal-50 mb-4 leading-relaxed">
+              Everything here is completely anonymous - I only track how many people check into each lane, nothing else. 
+              No accounts, no tracking, no surveillance. Just helpful information shared between swimmers like you and me.
+            </p>
+            <h3 className="font-bold text-xl mb-3 mt-6">What's Next?</h3>
+            <p className="text-teal-50 mb-3 leading-relaxed">
+              I'm starting in Edinburgh because that's where I swim, but the plan is to expand across Scotland - 
+              Glasgow next, then other cities. Eventually, I'd love to cover pools across the UK.
+            </p>
+            <p className="text-teal-50 leading-relaxed">
+              I'm also building native iOS and Android apps so you can check pool busyness on the go. 
+              Long-term, I hope to partner with Edinburgh Leisure and other operators to get official capacity data, 
+              making this even more accurate and useful for all of us.
+            </p>
           </div>
 
           {/* Privacy Note */}
@@ -1340,20 +1193,15 @@ export default function PoolBusynessTracker() {
       )}
 
       <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Pool Map */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden mb-4">
-          <div ref={mapContainerRef} className="w-full h-[60vh] min-h-[360px]" />
-        </div>
-
-        {/* Marker Filter */}
-        <div className="mb-6">
-          <p className="text-sm font-semibold text-gray-700 mb-2">Show markers</p>
-          <div className="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
-            {['All', 'Scotland', 'The Netherlands'].map((region) => (
+        {/* Region Filter */}
+        <div className="mb-4">
+          <p className="text-sm font-semibold text-gray-700 mb-2">Filter by region</p>
+          <div className="grid grid-cols-2 gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+            {['Scotland', 'The Netherlands'].map(region => (
               <button
                 key={region}
                 onClick={() => setSelectedRegion(region)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   selectedRegion === region
                     ? 'bg-teal-600 text-white shadow'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1363,6 +1211,89 @@ export default function PoolBusynessTracker() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Pool List */}
+        <div className="space-y-4 mb-6">
+          {filteredPools.map(pool => {
+            const poolStatus = getPoolStatus(pool.id);
+            const isOpen = isPoolOpen(pool);
+            const hoursText = getOpeningHoursText(pool);
+            
+            return (
+              <div 
+                key={pool.id} 
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setViewingPool(pool.id)}
+                style={{ borderLeft: `6px solid ${pool.color}` }}
+              >
+                <div className="p-5">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-lg text-gray-900">{pool.name}</h3>
+                        {isOpen ? (
+                          <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">
+                            OPEN
+                          </span>
+                        ) : (
+                          <span className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded-full">
+                            CLOSED
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 mb-1">{getPoolCityLabel(pool)}</p>
+                      <div className="flex items-center gap-1 text-gray-500 text-sm">
+                        <MapPin className="w-4 h-4" />
+                        <span>{pool.location}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-500 text-xs mt-1">
+                        <Clock className="w-3 h-3" />
+                        <span>Today: {hoursText}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {poolStatus ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        {LANES.map(lane => {
+                          const laneData = poolStatus.lanes[lane.id];
+                          const busyness = getLaneBusyness(laneData?.checkInCount || 0);
+                          
+                          return (
+                            <div key={lane.id} className="text-center">
+                              <div className="text-lg mb-1">{lane.icon}</div>
+                              <div 
+                                className={`${busyness.bgColor} ${busyness.textColor} px-2 py-1 rounded text-xs font-bold flex items-center justify-center gap-1`}
+                              >
+                                <span>{busyness.emoji}</span>
+                                <span>{busyness.label}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          <span>{getTimeSince(poolStatus.lastUpdate)}</span>
+                        </div>
+                        <div className="font-semibold" style={{ color: pool.color }}>
+                          Tap for details →
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-gray-400 text-sm italic">
+                      No check-ins yet - tap to view or be the first!
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Submit Update Section */}
