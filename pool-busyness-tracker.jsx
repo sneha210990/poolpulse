@@ -782,7 +782,7 @@ export default function PoolBusynessTracker() {
               ← Back to home
             </button>
             <h1 className="text-2xl font-bold">My Dashboard</h1>
-            <p className="text-teal-100 text-sm mt-1">{authUser?.email}</p>
+            <p className="text-teal-100 text-sm mt-1">Your personal swimming snapshot</p>
           </div>
         </div>
         <div className="max-w-2xl mx-auto px-4 py-8">
@@ -1185,14 +1185,12 @@ export default function PoolBusynessTracker() {
             <ArrowLeft className="w-4 h-4" />
             Back to home
           </button>
-          {authUser && (
-            <button
-              onClick={() => { setShowDashboard(true); setShowHomepage(false); setViewingPool(null); }}
-              className="bg-white text-[#1a4a47] font-semibold px-4 py-2 rounded-lg text-sm hover:bg-[#edf8f6] transition-colors"
-            >
-              My Dashboard
-            </button>
-          )}
+          <button
+            onClick={() => { setShowDashboard(true); setShowHomepage(false); setViewingPool(null); }}
+            className="bg-white text-[#1a4a47] font-semibold px-4 py-2 rounded-lg text-sm hover:bg-[#edf8f6] transition-colors"
+          >
+            My Dashboard
+          </button>
           <div className="flex items-center gap-3 mb-2">
             <div className="relative">
               <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
