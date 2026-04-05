@@ -26,6 +26,9 @@
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <style>
     body {
       font-family: "Avenir Next", Avenir, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -46,7 +49,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
     // -----------------------
     // Supabase
@@ -83,6 +86,8 @@ const LogoMark = ({ className = "" }) => (
         id: "royal-commonwealth",
         name: "Royal Commonwealth Pool",
         location: "Dalkeith Road",
+        lat: 55.9366,
+        lng: -3.1627,
         color: "#0EA5E9",
         hours: {
           weekday: { open: "05:30", close: "22:00" },
@@ -95,6 +100,8 @@ const LogoMark = ({ className = "" }) => (
         id: "warrender",
         name: "Warrender Swim Centre",
         location: "Thirlestane Road",
+        lat: 55.9352,
+        lng: -3.1876,
         color: "#8B5CF6",
         hours: {
           weekday: { open: "06:30", close: "21:30" },
@@ -106,6 +113,8 @@ const LogoMark = ({ className = "" }) => (
         id: "glenogle",
         name: "Glenogle Swim Centre",
         location: "Glenogle Road",
+        lat: 55.9578,
+        lng: -3.2021,
         color: "#10B981",
         hours: {
           weekday: { open: "06:30", close: "21:30" },
@@ -117,6 +126,8 @@ const LogoMark = ({ className = "" }) => (
         id: "leith-victoria",
         name: "Leith Victoria Swim Centre",
         location: "Junction Place",
+        lat: 55.9752,
+        lng: -3.1654,
         color: "#F59E0B",
         hours: {
           weekday: { open: "06:30", close: "21:30" },
@@ -128,6 +139,8 @@ const LogoMark = ({ className = "" }) => (
         id: "dalry",
         name: "Dalry Swim Centre",
         location: "Caledonian Crescent",
+        lat: 55.9434,
+        lng: -3.2196,
         color: "#EF4444",
         hours: {
           weekday: { open: "06:30", close: "21:30" },
@@ -139,6 +152,8 @@ const LogoMark = ({ className = "" }) => (
         id: "portobello",
         name: "Portobello Swim Centre",
         location: "Bellfield Street",
+        lat: 55.954,
+        lng: -3.1069,
         color: "#EC4899",
         hours: {
           weekday: { open: "06:30", close: "21:30" },
@@ -150,6 +165,8 @@ const LogoMark = ({ className = "" }) => (
         id: "ainslie-park",
         name: "Ainslie Park Leisure Centre",
         location: "Pilton Drive",
+        lat: 55.9739,
+        lng: -3.2334,
         color: "#6366F1",
         hours: {
           weekday: { open: "06:30", close: "21:30" },
@@ -161,6 +178,8 @@ const LogoMark = ({ className = "" }) => (
         id: "western-baths-club",
         name: "Western Baths Club",
         location: "Glasgow (Hillhead / West End)",
+        lat: 55.8751,
+        lng: -4.2813,
         color: "#A855F7",
         hours: {
           weekday: { open: "06:00", close: "21:30" },
@@ -172,6 +191,8 @@ const LogoMark = ({ className = "" }) => (
         id: "glasgow-club-bellahouston",
         name: "Glasgow Club Bellahouston",
         location: "Glasgow (Bellahouston)",
+        lat: 55.8455,
+        lng: -4.3089,
         color: "#14B8A6",
         hours: {
           weekday: { open: "06:00", close: "22:00" },
@@ -183,6 +204,8 @@ const LogoMark = ({ className = "" }) => (
         id: "glasgow-club-gorbals",
         name: "Glasgow Club Gorbals",
         location: "Glasgow (Gorbals)",
+        lat: 55.8489,
+        lng: -4.2567,
         color: "#F43F5E",
         hours: {
           weekday: { open: "06:00", close: "22:00" },
@@ -194,6 +217,8 @@ const LogoMark = ({ className = "" }) => (
         id: "the-peak-stirling",
         name: "The PEAK",
         location: "Stirling Sports Village",
+        lat: 56.1123,
+        lng: -3.9234,
         city: "Stirling",
         address: "Forthside Way, Stirling FK7 7QA",
         color: "#16A34A",
@@ -210,6 +235,8 @@ const LogoMark = ({ className = "" }) => (
         id: "zwembad-de-zijl",
         name: "Zwembad De Zijl",
         location: "Leiden, Netherlands",
+        lat: 52.1734,
+        lng: 4.4589,
         city: "Leiden",
         country: "NL",
         address: "Paramaribostraat 66, 2315 VK Leiden",
@@ -226,6 +253,8 @@ const LogoMark = ({ className = "" }) => (
         id: "combibad-de-vliet",
         name: "Combibad De Vliet",
         location: "Leiden, Netherlands",
+        lat: 52.1823,
+        lng: 4.4234,
         city: "Leiden",
         country: "NL",
         address: "Voorschoterweg 6, Leiden",
@@ -284,6 +313,9 @@ const LogoMark = ({ className = "" }) => (
       // Pools list filters (beta)
       const [openNowOnly, setOpenNowOnly] = useState(true);
       const [cityFilter, setCityFilter] = useState("All");
+      const mapContainerRef = useRef(null);
+      const leafletMapRef = useRef(null);
+      const leafletMarkersRef = useRef([]);
 
       // Feedback form
       const FEEDBACK_EMAIL = "snehasindhu2109@gmail.com";
@@ -788,6 +820,26 @@ useEffect(() => {
       const cityOf = (pool) => (pool.country === "NL" ? "The Netherlands" : "Scotland");
       const cityOptions = ["All", ...Array.from(new Set(POOLS.map((pool) => cityOf(pool))))];
 
+      useEffect(() => {
+        if (!mapContainerRef.current || leafletMapRef.current || !window.L) return;
+
+        const map = window.L.map(mapContainerRef.current).setView([56.5, -4.0], 6);
+        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(map);
+        setTimeout(() => map.invalidateSize(), 0);
+
+        leafletMapRef.current = map;
+
+        return () => {
+          leafletMarkersRef.current.forEach((marker) => marker.remove());
+          leafletMarkersRef.current = [];
+          map.remove();
+          leafletMapRef.current = null;
+        };
+      }, []);
+
       const getOpenStatusText = (pool) => {
         const now = new Date();
         const day = now.getDay(); // 0 = Sunday, 6 = Saturday
@@ -808,6 +860,65 @@ useEffect(() => {
 
         return isPoolOpen(pool) ? `Open until ${close}` : `Closed — opens ${open}`;
       };
+
+      const poolsToShow = POOLS
+        .filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter))
+        .filter((p) => (openNowOnly ? isPoolOpen(p) : true));
+
+      const showingNoneOpen = openNowOnly && poolsToShow.length === 0;
+      const poolsToRender = showingNoneOpen
+        ? POOLS.filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter))
+        : poolsToShow;
+
+      useEffect(() => {
+        if (!leafletMapRef.current || !window.L) return;
+
+        leafletMarkersRef.current.forEach((marker) => marker.remove());
+        leafletMarkersRef.current = [];
+
+        const map = leafletMapRef.current;
+        const poolsWithCoords = poolsToRender.filter(
+          (pool) => typeof pool.lat === "number" && typeof pool.lng === "number"
+        );
+
+        const markers = poolsWithCoords.map((pool) => {
+          const isOpen = isPoolOpen(pool);
+          const marker = window.L.marker([pool.lat, pool.lng], {
+            icon: window.L.divIcon({
+              className: "",
+              html: '<span style="display:block;width:18px;height:18px;border-radius:9999px;background:#4ecdc4;border:3px solid #0f766e;box-shadow:0 2px 6px rgba(0,0,0,0.35);"></span>',
+              iconSize: [18, 18],
+              iconAnchor: [9, 9],
+            }),
+          });
+
+          const popupContainer = document.createElement("div");
+          popupContainer.className = "min-w-[200px]";
+          popupContainer.innerHTML = `
+            <div style="font-weight:700;margin-bottom:4px;">${pool.name}</div>
+            <div style="font-size:13px;color:#4b5563;margin-bottom:6px;">${cityOf(pool)}</div>
+            <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:${isOpen ? "#15803d" : "#b91c1c"};">
+              ${isOpen ? "OPEN" : "CLOSED"}
+            </div>
+          `;
+
+          const viewButton = document.createElement("button");
+          viewButton.type = "button";
+          viewButton.textContent = "View pool";
+          viewButton.className = "px-3 py-1.5 text-xs font-semibold rounded-md bg-teal-600 text-white hover:bg-teal-700";
+          viewButton.onclick = () => {
+            setViewingPool(pool.id);
+            map.closePopup();
+          };
+          popupContainer.appendChild(viewButton);
+
+          marker.bindPopup(popupContainer);
+          marker.addTo(map);
+          return marker;
+        });
+
+        leafletMarkersRef.current = markers;
+      }, [poolsToRender]);
 
       function isPoolOpen(pool) {
         const now = new Date();
@@ -1555,15 +1666,6 @@ useEffect(() => {
       // -----------------------
       // Main Pool List View
       // -----------------------
-      const poolsToShow = POOLS
-        .filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter))
-        .filter((p) => (openNowOnly ? isPoolOpen(p) : true));
-
-      const showingNoneOpen = openNowOnly && poolsToShow.length === 0;
-      const poolsToRender = showingNoneOpen
-        ? POOLS.filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter))
-        : poolsToShow;
-
       return (
         <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 pb-20">
           <div className="bg-[#043A3D] text-white shadow-lg">
@@ -1627,7 +1729,7 @@ useEffect(() => {
           <div className="max-w-4xl mx-auto px-4 py-6">
             
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
               <input
@@ -1643,19 +1745,6 @@ useEffect(() => {
               Busyness is based on check-ins from the last {CHECKIN_WINDOW_MINUTES} minutes.
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Region</span>
-            <select
-              value={cityFilter}
-              onChange={(e) => setCityFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-            >
-              {cityOptions.map((city) => (
-                <option key={city} value={city}>{city}</option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {showingNoneOpen && (
@@ -1664,99 +1753,28 @@ useEffect(() => {
           </div>
         )}
 
-<div className="space-y-4 mb-6">
-              {poolsToRender.map((pool) => {
-                const poolStatus = getPoolStatus(pool.id) || buildStatusFromRecent(pool.id);
-                const isOpen = isPoolOpen(pool);
-                const hoursText = getOpeningHoursText(pool);
+        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden mb-4">
+          <div ref={mapContainerRef} className="w-full h-[60vh] min-h-[360px]" />
+        </div>
 
-                return (
-                  <button
-                    type="button"
-                    key={pool.id}
-                    aria-label={`View details for ${pool.name}`}
-                    className="w-full text-left bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-                    onClick={() => setViewingPool(pool.id)}
-                    style={{ borderLeft: `6px solid ${pool.color}` }}
-                  >
-                    <div className="p-5">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-lg text-gray-900">{pool.name}</h3>
-                            {isOpen ? (
-                              <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">OPEN</span>
-                            ) : (
-                              <span className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded-full">CLOSED</span>
-                            )}
-                          </div>
-
-                          <p className="text-sm text-gray-500 mb-1">{getPoolCityLabel(pool)}</p>
-
-                          <div className="flex items-center gap-1 text-gray-500 text-sm">
-                            <MapPin className="w-4 h-4" />
-                            <span>{pool.location}</span>
-                          </div>
-
-                          <div className="flex items-center gap-1 text-gray-500 text-sm mt-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{getOpenStatusText(pool)}</span>
-                            <span className="text-gray-400">· Today {hoursText}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {(
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-3 gap-2">
-                            {LANES.map((lane) => {
-                              const laneData = poolStatus?.lanes?.[lane.id];
-                              const count = laneData?.checkInCount || 0;
-                              const hasData = !!poolStatus && count > 0;
-                              const busyness = hasData ? getLaneBusyness(count) : null;
-                              const showNoData = !hasData && !busynessLoading && !!busynessError;
-
-                              return (
-                                <div key={lane.id} className="text-center">
-                                  <div className="text-lg mb-1">{lane.icon}</div>
-
-                                  {hasData ? (
-                                    <div
-                                      className={`${busyness.bgColor} ${busyness.textColor} px-2 py-1 rounded text-sm font-bold flex items-center justify-center gap-1`}
-                                    >
-                                      <span>{busyness.emoji}</span>
-                                      <span>{busyness.label}</span>
-                                    </div>
-                                  ) : (
-                                    <div className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm font-bold flex items-center justify-center">
-                                      {showNoData ? "No data" : "—"}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-4 h-4" />
-                              <span>
-                                {poolStatus?.lastUpdate
-                                  ? `Updated ${getTimeSince(poolStatus.lastUpdate)} · ${poolStatus.totalUpdates || 0} check-ins`
-                                  : (busynessLoading ? "Loading busyness…" : (busynessError ? "No data" : "No recent check-ins yet"))}
-                              </span>
-                            </div>
-                            <div className="font-semibold" style={{ color: pool.color }}>
-                              View →
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+        <div className="mb-6">
+          <p className="text-sm font-semibold text-gray-700 mb-2">Filter markers</p>
+          <div className="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+            {cityOptions.map((city) => (
+              <button
+                key={city}
+                onClick={() => setCityFilter(city)}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
+                  cityFilter === city
+                    ? "bg-teal-600 text-white shadow"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {city}
+              </button>
+            ))}
+          </div>
+        </div>
 
             {/* Check In box */}
             <div className="bg-white rounded-xl shadow-lg p-6 sticky bottom-4">
