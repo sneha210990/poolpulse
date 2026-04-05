@@ -341,6 +341,41 @@ const BUSYNESS_LEVELS = [
   { value: 5, label: 'Packed', color: 'bg-red-500', emoji: '😰' },
 ];
 
+function HowItWorks() {
+  return (
+    <div style={{background:'#ffffff', borderRadius:'12px', padding:'20px', margin:'16px 0', boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
+      <h3 style={{fontSize:'16px', fontWeight:'700', color:'#1a4a47', marginBottom:'16px'}}>How it works</h3>
+      <div style={{display:'flex', flexDirection:'column', gap:'12px'}}>
+        <div style={{display:'flex', alignItems:'flex-start', gap:'12px'}}>
+          <span style={{fontSize:'20px'}}>🏊</span>
+          <div>
+            <strong style={{color:'#1a4a47'}}>Check the pool</strong>
+            <br/>
+            <span style={{fontSize:'13px', color:'#666'}}>See real-time lane busyness before you leave</span>
+          </div>
+        </div>
+        <div style={{display:'flex', alignItems:'flex-start', gap:'12px'}}>
+          <span style={{fontSize:'20px'}}>✅</span>
+          <div>
+            <strong style={{color:'#1a4a47'}}>Check in when you arrive</strong>
+            <br/>
+            <span style={{fontSize:'13px', color:'#666'}}>Takes 2 seconds, no account needed, fully anonymous</span>
+          </div>
+        </div>
+        <div style={{display:'flex', alignItems:'flex-start', gap:'12px'}}>
+          <span style={{fontSize:'20px'}}>📊</span>
+          <div>
+            <strong style={{color:'#1a4a47'}}>Track your swimming</strong>
+            <br/>
+            <span style={{fontSize:'13px', color:'#666'}}>Optional: sign in to log sessions and personal stats</span>
+          </div>
+        </div>
+      </div>
+      <p style={{fontSize:'12px', color:'#888', marginTop:'16px', marginBottom:'0'}}>Check-ins are anonymous and never linked to your account. Sign in is optional and only needed for your personal dashboard.</p>
+    </div>
+  );
+}
+
 export default function PoolBusynessTracker() {
   const appLogo = './assets/poolpulse_app_icon_color.svg';
   const [poolData, setPoolData] = useState({});
@@ -1296,6 +1331,7 @@ export default function PoolBusynessTracker() {
           })}
         </div>
 
+        <HowItWorks />
         {/* Submit Update Section */}
         <div className="bg-white rounded-xl shadow-lg p-6 sticky bottom-4">
           <div className="flex items-center gap-3 mb-4">
