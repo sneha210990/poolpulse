@@ -352,6 +352,7 @@ export default function PoolBusynessTracker() {
   const [loading, setLoading] = useState(true);
   const [viewingPool, setViewingPool] = useState(null);
   const [showHomepage, setShowHomepage] = useState(true);
+  const [showDashboard, setShowDashboard] = useState(false);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
@@ -769,6 +770,28 @@ export default function PoolBusynessTracker() {
     );
   }
 
+  if (showDashboard) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50">
+        <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-lg">
+          <div className="max-w-2xl mx-auto px-4 py-6">
+            <button
+              onClick={() => { setShowDashboard(false); setShowHomepage(true); }}
+              className="flex items-center gap-2 text-teal-100 hover:text-white mb-3 transition-colors text-sm"
+            >
+              ← Back to home
+            </button>
+            <h1 className="text-2xl font-bold">My Dashboard</h1>
+            <p className="text-teal-100 text-sm mt-1">{authUser?.email}</p>
+          </div>
+        </div>
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <p className="text-gray-500 text-center">Dashboard coming soon...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Homepage View
   if (showHomepage) {
     return (
@@ -1162,6 +1185,14 @@ export default function PoolBusynessTracker() {
             <ArrowLeft className="w-4 h-4" />
             Back to home
           </button>
+          {authUser && (
+            <button
+              onClick={() => { setShowDashboard(true); setShowHomepage(false); setViewingPool(null); }}
+              className="bg-white text-[#1a4a47] font-semibold px-4 py-2 rounded-lg text-sm hover:bg-[#edf8f6] transition-colors"
+            >
+              My Dashboard
+            </button>
+          )}
           <div className="flex items-center gap-3 mb-2">
             <div className="relative">
               <div className="absolute inset-0 bg-white/20 rounded-full blur-lg"></div>
