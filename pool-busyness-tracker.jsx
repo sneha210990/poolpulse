@@ -554,6 +554,7 @@ export default function PoolBusynessTracker() {
   }, [selectedRegion, selectedPool, filteredPools]);
 
   useEffect(() => {
+    if (showHomepage) return;
     if (!mapContainerRef.current || leafletMapRef.current || !window.L) return;
 
     const map = window.L.map(mapContainerRef.current).setView([56.5, -4.0], 6);
@@ -571,7 +572,7 @@ export default function PoolBusynessTracker() {
       map.remove();
       leafletMapRef.current = null;
     };
-  }, []);
+  }, [showHomepage]);
 
   useEffect(() => {
     if (!leafletMapRef.current || !window.L) return;

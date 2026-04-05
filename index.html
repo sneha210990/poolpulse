@@ -821,6 +821,7 @@ useEffect(() => {
       const cityOptions = ["All", ...Array.from(new Set(POOLS.map((pool) => cityOf(pool))))];
 
       useEffect(() => {
+        if (showHomepage) return;
         if (!mapContainerRef.current || leafletMapRef.current || !window.L) return;
 
         const map = window.L.map(mapContainerRef.current).setView([56.5, -4.0], 6);
@@ -838,7 +839,7 @@ useEffect(() => {
           map.remove();
           leafletMapRef.current = null;
         };
-      }, []);
+      }, [showHomepage]);
 
       const getOpenStatusText = (pool) => {
         const now = new Date();
