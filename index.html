@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Real-time busyness tracking for pools across the UK & EU. Find the best time to swim." />
+  <meta name="keywords" content="UK pools, EU pools, swimming, pool busyness, Pool Pulse" />
+  <title>Pool Pulse - UK & EU Pool Busyness</title>
+
+  <!-- Prevent favicon 404 noise -->
+  <link rel="icon" href="data:," />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+
+  <!-- React -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- Supabase -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <style>
+    body {
+      font-family: "DM Sans", "Avenir Next", Avenir, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+
+    .pp-card {
+      border-radius: 16px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    .pp-card-hover:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // -----------------------
+    // Supabase
+    // -----------------------
+    const SUPABASE_URL = "https://hygjskvfkucuwtcihbiw.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5Z2pza3Zma3VjdXd0Y2loYml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNjQ4OTMsImV4cCI6MjA4Njg0MDg5M30.SSrSE9J9-hs0kZNIzUMBCPST5T_JXZG5I68UF4ZjgLs";
+    const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.supa = supa; // handy for debugging in console
+
+    // -----------------------
+    // Icons (Lucide)
+    // -----------------------
+const Droplets = (props) => <span {...props}>💧</span>;
+const Users = (props) => <span {...props}>👥</span>;
+const Clock = (props) => <span {...props}>⏰</span>;
+const MapPin = (props) => <span {...props}>📍</span>;
+const ArrowLeft = (props) => <span {...props}>⬅️</span>;
+const Activity = (props) => <span {...props}>📊</span>;
+const Waves = (props) => <span {...props}>🌊</span>;
+const LogoWordmark = ({ size = "lg" }) => {
+  const sizes = { sm: "text-xl", md: "text-2xl", lg: "text-4xl" };
+  return (
+    <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, letterSpacing: "-0.5px" }} className={sizes[size] || sizes.lg}>
+      <span style={{ color: "white" }}>Pool</span>
+      {" "}
+      <em style={{ color: "#4ecdc4", fontStyle: "italic" }}>Pulse</em>
+    </span>
+  );
+};
+    // -----------------------
+    // Data
+    // -----------------------
+    const POOLS = [
+      {
+        id: "royal-commonwealth",
+        name: "Royal Commonwealth Pool",
+        location: "Dalkeith Road",
+        color: "#0EA5E9",
+        hours: {
+          weekday: { open: "05:30", close: "22:00" },
+          saturday: { open: "05:30", close: "20:00" },
+          sunday: { open: "07:30", close: "20:00" },
+          wednesdayClosed: { start: "09:00", end: "10:00" },
+        },
+      },
+      {
+        id: "warrender",
+        name: "Warrender Swim Centre",
+        location: "Thirlestane Road",
+        color: "#8B5CF6",
+        hours: {
+          weekday: { open: "06:30", close: "21:30" },
+          saturday: { open: "08:00", close: "17:00" },
+          sunday: { open: "08:00", close: "17:00" },
+        },
+      },
+      {
+        id: "glenogle",
+        name: "Glenogle Swim Centre",
+        location: "Glenogle Road",
+        color: "#10B981",
+        hours: {
+          weekday: { open: "06:30", close: "21:30" },
+          saturday: { open: "08:00", close: "17:00" },
+          sunday: { open: "08:00", close: "17:00" },
+        },
+      },
+      {
+        id: "leith-victoria",
+        name: "Leith Victoria Swim Centre",
+        location: "Junction Place",
+        color: "#F59E0B",
+        hours: {
+          weekday: { open: "06:30", close: "21:30" },
+          saturday: { open: "08:00", close: "17:00" },
+          sunday: { open: "08:00", close: "17:00" },
+        },
+      },
+      {
+        id: "dalry",
+        name: "Dalry Swim Centre",
+        location: "Caledonian Crescent",
+        color: "#EF4444",
+        hours: {
+          weekday: { open: "06:30", close: "21:30" },
+          saturday: { open: "08:00", close: "17:00" },
+          sunday: { open: "08:00", close: "17:00" },
+        },
+      },
+      {
+        id: "portobello",
+        name: "Portobello Swim Centre",
+        location: "Bellfield Street",
+        color: "#EC4899",
+        hours: {
+          weekday: { open: "06:30", close: "21:30" },
+          saturday: { open: "08:00", close: "17:00" },
+          sunday: { open: "08:00", close: "17:00" },
+        },
+      },
+      {
+        id: "ainslie-park",
+        name: "Ainslie Park Leisure Centre",
+        location: "Pilton Drive",
+        color: "#6366F1",
+        hours: {
+          weekday: { open: "06:30", close: "21:30" },
+          saturday: { open: "08:00", close: "17:00" },
+          sunday: { open: "08:00", close: "17:00" },
+        },
+      },
+      {
+        id: "western-baths-club",
+        name: "Western Baths Club",
+        location: "Glasgow (Hillhead / West End)",
+        color: "#A855F7",
+        hours: {
+          weekday: { open: "06:00", close: "21:30" },
+          saturday: { open: "07:00", close: "19:30" },
+          sunday: { open: "08:00", close: "18:30" },
+        },
+      },
+      {
+        id: "glasgow-club-bellahouston",
+        name: "Glasgow Club Bellahouston",
+        location: "Glasgow (Bellahouston)",
+        color: "#14B8A6",
+        hours: {
+          weekday: { open: "06:00", close: "22:00" },
+          saturday: { open: "08:00", close: "18:00" },
+          sunday: { open: "08:00", close: "20:00" },
+        },
+      },
+      {
+        id: "glasgow-club-gorbals",
+        name: "Glasgow Club Gorbals",
+        location: "Glasgow (Gorbals)",
+        color: "#F43F5E",
+        hours: {
+          weekday: { open: "06:00", close: "22:00" },
+          saturday: { open: "08:00", close: "18:00" },
+          sunday: { open: "08:00", close: "20:00" },
+        },
+      },
+      {
+        id: "the-peak-stirling",
+        name: "The PEAK",
+        location: "Stirling Sports Village",
+        city: "Stirling",
+        address: "Forthside Way, Stirling FK7 7QA",
+        color: "#16A34A",
+        poolSize: "25m",
+        lanes: 6,
+        notes: "Book up to 7 days in advance via Active Stirling app. 6-lane 25m main pool.",
+        hours: {
+          weekday: { open: "06:00", close: "22:00" },
+          saturday: { open: "07:00", close: "20:00" },
+          sunday: { open: "07:00", close: "20:00" },
+        },
+      },
+      {
+        id: "zwembad-de-zijl",
+        name: "Zwembad De Zijl",
+        location: "Leiden, Netherlands",
+        city: "Leiden",
+        country: "NL",
+        address: "Paramaribostraat 66, 2315 VK Leiden",
+        color: "#FF6B35",
+        poolSize: "25m",
+        notes: "Indoor and outdoor pools. Triathlon training available. Main pool open year round.",
+        hours: {
+          weekday: { open: "07:00", close: "22:00" },
+          saturday: { open: "08:00", close: "18:00" },
+          sunday: { open: "08:00", close: "18:00" },
+        },
+      },
+      {
+        id: "combibad-de-vliet",
+        name: "Combibad De Vliet",
+        location: "Leiden, Netherlands",
+        city: "Leiden",
+        country: "NL",
+        address: "Voorschoterweg 6, Leiden",
+        color: "#0EA5E9",
+        poolSize: "50m",
+        notes: "Outdoor 50m pool open May to October. One of the longest pools in the Leiden area.",
+        seasonal: true,
+        seasonOpen: "05-01",
+        seasonClose: "10-31",
+        hours: {
+          weekday: { open: "07:00", close: "20:00" },
+          saturday: { open: "09:00", close: "17:30" },
+          sunday: { open: "09:00", close: "17:30" },
+        },
+      },
+    ];
+
+    const LANES = [
+      { id: "fast", label: "Fast Lane", icon: "🏃", color: "bg-red-100 border-red-300 text-red-800" },
+      { id: "medium", label: "Medium Lane", icon: "🚶", color: "bg-yellow-100 border-yellow-300 text-yellow-800" },
+      { id: "slow", label: "Slow Lane", icon: "🐢", color: "bg-green-100 border-green-300 text-green-800" },
+    ];
+
+    const laneLabel = (laneId) => {
+      const l = LANES.find((x) => x.id === laneId);
+      return l ? l.label : laneId;
+    };
+
+    // -----------------------
+    // App
+    // -----------------------
+    function PoolBusynessTracker() {
+      // Core UI state
+      const [poolData, setPoolData] = useState({});
+      const [selectedPool, setSelectedPool] = useState("");
+      const [selectedLane, setSelectedLane] = useState("");
+
+      // Reset lane whenever pool changes (prevents accidental check-ins when switching pools)
+      useEffect(() => {
+        setSelectedLane("");
+      }, [selectedPool]);
+      const [showSuccess, setShowSuccess] = useState(false);
+      const [viewingPool, setViewingPool] = useState(null);
+
+      const [showHomepage, setShowHomepage] = useState(true);
+      const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+      const [showTerms, setShowTerms] = useState(false);
+      const [authUser, setAuthUser] = useState(null);
+      const [showAuthModal, setShowAuthModal] = useState(false);
+      const [authTab, setAuthTab] = useState("google");
+      const [authEmail, setAuthEmail] = useState("");
+      const [authPassword, setAuthPassword] = useState("");
+      const [authLoading, setAuthLoading] = useState(false);
+      const [authError, setAuthError] = useState("");
+
+      // Pools list filters (beta)
+      const [openNowOnly, setOpenNowOnly] = useState(true);
+      const [cityFilter, setCityFilter] = useState("All");
+
+      // Feedback form
+      const FEEDBACK_EMAIL = "snehasindhu2109@gmail.com";
+      const [feedbackType, setFeedbackType] = useState("general");
+      const [feedbackMessage, setFeedbackMessage] = useState("");
+      const [feedbackContact, setFeedbackContact] = useState("");
+      const [feedbackSent, setFeedbackSent] = useState(false);
+      const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+      const [feedbackError, setFeedbackError] = useState("");
+      const [feedbackFallbackHref, setFeedbackFallbackHref] = useState("");
+
+      // Supabase check-ins state
+      const CHECKIN_WINDOW_MINUTES = 75; // short-lived check-ins
+      const [recentCheckins, setRecentCheckins] = useState([]);
+      const [checkinsLoading, setCheckinsLoading] = useState(true);
+      const [checkinsError, setCheckinsError] = useState(null);
+      const [busynessLoading, setBusynessLoading] = useState(true);
+      const [busynessError, setBusynessError] = useState(null);
+const getPoolById = (id) => POOLS.find((p) => p.id === id);
+  const selectedPoolObj = selectedPool ? getPoolById(selectedPool) : null;
+  const selectedPoolIsOpen = selectedPoolObj ? isPoolOpen(selectedPoolObj) : false;
+
+  const formatTime = (iso) => new Date(iso).toLocaleString();
+
+  const checkinsForPool = (poolId) =>
+    recentCheckins.filter((c) => c.pool_id === poolId).slice(0, 10);
+
+  const buildStatusFromRecent = (poolId) => {
+    const rows = checkinsForPool(poolId);
+    if (!rows || rows.length === 0) return null;
+
+    const status = { lanes: {}, totalUpdates: 0, lastUpdate: null };
+
+    for (const r of rows) {
+      const laneId = r.lane;
+      const delta = 1;
+      const ts = r.created_at;
+
+      if (!status.lanes[laneId]) status.lanes[laneId] = { checkInCount: 0, lastUpdate: null };
+      status.lanes[laneId].checkInCount += delta;
+      status.totalUpdates += delta;
+
+      if (!status.lanes[laneId].lastUpdate || ts > status.lanes[laneId].lastUpdate) status.lanes[laneId].lastUpdate = ts;
+      if (!status.lastUpdate || ts > status.lastUpdate) status.lastUpdate = ts;
+    }
+
+    return status;
+  };
+
+const loadRecentCheckins = async ({ silent = false } = {}) => {
+  if (!silent) {
+    setCheckinsLoading(true);
+  }
+
+  // Only load recent check-ins when needed (e.g. pool detail view)
+  const sinceIso = new Date(
+    Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
+  ).toISOString();
+
+  const { data, error } = await window.supa
+    .from("checkins")
+    .select("id, created_at, pool_id, lane")
+    .gte("created_at", sinceIso)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error("loadRecentCheckins error:", error);
+    setCheckinsError(error.message);
+    setRecentCheckins([]);
+  } else {
+    const normalized = (data ?? []).map((row) => ({
+      ...row,
+      lane: row.lane,
+    }));
+    setCheckinsError(null);
+    setRecentCheckins(normalized);
+  }
+
+  if (!silent) {
+    setCheckinsLoading(false);
+  }
+};
+
+const submitFeedback = async (e) => {
+  e.preventDefault();
+
+  if (!feedbackMessage.trim()) {
+    return;
+  }
+
+  setFeedbackSubmitting(true);
+  setFeedbackSent(false);
+  setFeedbackError("");
+  setFeedbackFallbackHref("");
+
+  const payload = {
+    type: feedbackType,
+    message: feedbackMessage.trim(),
+    contact: feedbackContact.trim() || null,
+  };
+
+  const { error } = await window.supa
+    .from("feedback")
+    .insert(payload);
+
+  if (error) {
+    console.error("submitFeedback error:", error);
+    const subject = `[Pool Pulse feedback] ${feedbackType}`;
+    const body = [
+      `Type: ${feedbackType}`,
+      "",
+      feedbackMessage.trim(),
+      "",
+      `Contact: ${feedbackContact.trim() || "(not provided)"}`,
+    ].join("\n");
+    const mailtoHref = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    setFeedbackFallbackHref(mailtoHref);
+    setFeedbackError(`Sorry, we couldn't send your feedback right now (${error.message || "unknown error"}). Please try again or email ${FEEDBACK_EMAIL}.`);
+    setFeedbackSubmitting(false);
+    return;
+  }
+
+setFeedbackSent(true);
+  setFeedbackMessage("");
+  setFeedbackContact("");
+  setFeedbackSubmitting(false);
+};
+
+const handleGoogleSignIn = async () => {
+  setAuthLoading(true);
+  setAuthError("");
+  const { error } = await window.supa.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.href },
+  });
+  if (error) {
+    setAuthError(error.message || "We couldn't sign you in with Google. Please try again.");
+    setAuthLoading(false);
+  }
+};
+
+const handleEmailSignIn = async () => {
+  if (!authEmail || !authPassword) {
+    setAuthError("Please enter your email and password.");
+    return;
+  }
+  setAuthLoading(true);
+  setAuthError("");
+  const { error } = await window.supa.auth.signInWithPassword({
+    email: authEmail.trim(),
+    password: authPassword,
+  });
+  if (error) {
+    setAuthError(error.message || "Login failed. Please check your details and try again.");
+    setAuthLoading(false);
+  }
+};
+
+const handleEmailSignUp = async () => {
+  if (!authEmail || !authPassword) {
+    setAuthError("Please enter your email and password.");
+    return;
+  }
+  setAuthLoading(true);
+  setAuthError("");
+  const { error } = await window.supa.auth.signUp({
+    email: authEmail.trim(),
+    password: authPassword,
+  });
+  if (error) {
+    setAuthError(error.message || "Sign up failed. Please try again.");
+    setAuthLoading(false);
+    return;
+  }
+  setAuthLoading(false);
+  setAuthError("Account created. Please check your email to confirm, then sign in.");
+};
+
+const handleSignOut = async () => {
+  setAuthLoading(true);
+  setAuthError("");
+  const { error } = await window.supa.auth.signOut();
+  if (error) {
+    setAuthError(error.message || "Couldn't sign out. Please try again.");
+  }
+  setAuthLoading(false);
+};
+
+const authDisplayName = authUser?.user_metadata?.full_name || authUser?.user_metadata?.name || authUser?.email || "Signed in";
+const renderAuthModal = () => {
+  if (!showAuthModal) return null;
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-md pp-card shadow-2xl border border-teal-100 p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-[#1a4a47]">Welcome to Pool Pulse</h2>
+            <p className="text-sm text-gray-600">Sign in for your personal dashboard.</p>
+          </div>
+          <button
+            onClick={() => { if (!authLoading) setShowAuthModal(false); }}
+            className="text-gray-400 hover:text-gray-700 text-xl leading-none"
+            aria-label="Close auth modal"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setAuthTab("google")}
+            className={`flex-1 py-2 rounded-lg text-sm font-semibold border ${authTab === "google" ? "bg-teal-50 border-teal-300 text-[#1a4a47]" : "border-gray-200 text-gray-600"}`}
+          >
+            Google
+          </button>
+          <button
+            onClick={() => setAuthTab("email")}
+            className={`flex-1 py-2 rounded-lg text-sm font-semibold border ${authTab === "email" ? "bg-teal-50 border-teal-300 text-[#1a4a47]" : "border-gray-200 text-gray-600"}`}
+          >
+            Email & Password
+          </button>
+        </div>
+
+        {authTab === "google" ? (
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={authLoading}
+            className="w-full bg-[#043A3D] text-white font-semibold rounded-[10px] py-3 hover:opacity-90 disabled:opacity-70"
+          >
+            {authLoading ? "Redirecting..." : "Continue with Google"}
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <input
+              type="email"
+              placeholder="Email"
+              value={authEmail}
+              onChange={(e) => setAuthEmail(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={authPassword}
+              onChange={(e) => setAuthPassword(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={handleEmailSignIn}
+                disabled={authLoading}
+                className="bg-[#043A3D] text-white font-semibold rounded-[10px] py-2.5 hover:opacity-90 disabled:opacity-70"
+              >
+                {authLoading ? "Please wait..." : "Sign In"}
+              </button>
+              <button
+                onClick={handleEmailSignUp}
+                disabled={authLoading}
+                className="bg-[#4ecdc4] text-[#1a4a47] font-semibold rounded-lg py-2.5 hover:opacity-90 disabled:opacity-70"
+              >
+                {authLoading ? "Please wait..." : "Sign Up"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {authError && (
+          <p className={`text-sm mt-4 rounded-lg p-2.5 border ${authError.includes("Account created") ? "text-teal-700 bg-teal-50 border-teal-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>
+            {authError}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+      const normalizeLaneId = (laneType) => {
+        if (!laneType) return "";
+        const value = String(laneType).toLowerCase();
+        if (value === "fast" || value === "medium" || value === "slow") return value;
+        if (value.includes("fast")) return "fast";
+        if (value.includes("medium")) return "medium";
+        if (value.includes("slow")) return "slow";
+        return "";
+      };
+
+      const updateBusynessUI = (busyness) => {
+        const agg = {};
+        const nowIso = new Date().toISOString();
+
+        Object.entries(busyness || {}).forEach(([poolId, lanes]) => {
+          if (!poolId) return;
+          if (!agg[poolId]) agg[poolId] = { lanes: {}, totalUpdates: 0, lastUpdate: null };
+
+          Object.entries(lanes || {}).forEach(([laneType, count]) => {
+            const laneId = normalizeLaneId(laneType);
+            if (!laneId || !count) return;
+            agg[poolId].lanes[laneId] = { checkInCount: count, lastUpdate: nowIso };
+            agg[poolId].totalUpdates += count;
+            agg[poolId].lastUpdate = nowIso;
+          });
+        });
+
+        setPoolData(agg);
+      };
+
+      async function loadAllBusyness() {
+        setBusynessLoading(true);
+
+        const sinceIso = new Date(
+          Date.now() - CHECKIN_WINDOW_MINUTES * 60 * 1000
+        ).toISOString();
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), 5000)
+        );
+
+        try {
+          const queryPromise = supa
+            .from('checkins')
+            .select('pool_id, lane')
+            .gte('created_at', sinceIso);
+
+          const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+
+          if (error || !data) {
+            setBusynessError("error");
+            setPoolData({});
+            return;
+          }
+
+          // Group by pool_id and lane_type locally
+          const busyness = {};
+          data.forEach((row) => {
+            const poolId = row.pool_id;
+            const laneId = normalizeLaneId(row.lane);
+            if (!poolId || !laneId) return;
+            if (!busyness[poolId]) busyness[poolId] = {};
+            if (!busyness[poolId][laneId]) busyness[poolId][laneId] = 0;
+            busyness[poolId][laneId] += 1;
+          });
+
+          // Update UI with calculated busyness
+          updateBusynessUI(busyness);
+          setBusynessError(null);
+        } catch (e) {
+          // Timeout or error — pools already visible, just show no data
+          console.log("Busyness load failed or timed out");
+          setBusynessError("timeout");
+          setPoolData({});
+        } finally {
+          setBusynessLoading(false);
+        }
+      }
+
+      useEffect(() => {
+        loadAllBusyness();
+      }, []);
+
+      useEffect(() => {
+        if (!viewingPool) return;
+        loadRecentCheckins();
+
+        const t = setInterval(() => {
+          loadRecentCheckins({ silent: true });
+        }, 10000);
+
+        return () => clearInterval(t);
+      }, [viewingPool]);
+
+      useEffect(() => {
+        let mounted = true;
+
+        window.supa.auth.getSession().then(({ data }) => {
+          if (mounted) {
+            setAuthUser(data?.session?.user ?? null);
+          }
+        });
+
+        const { data: listener } = window.supa.auth.onAuthStateChange((_event, session) => {
+          setAuthUser(session?.user ?? null);
+          setAuthLoading(false);
+          setAuthError("");
+          setShowAuthModal(false);
+        });
+
+        return () => {
+          mounted = false;
+          listener?.subscription?.unsubscribe();
+        };
+      }, []);
+      // Handle browser back button
+useEffect(() => {
+  const handlePopState = () => {
+    setShowHomepage(true);
+    setShowPrivacyPolicy(false);
+    setShowTerms(false);
+    setViewingPool(null);
+  };
+
+  window.addEventListener('popstate', handlePopState);
+  return () => window.removeEventListener('popstate', handlePopState);
+}, []);
+      
+   // Re-render Lucide icons after React updates
+useEffect(() => {
+  if (window.lucide && window.lucide.createIcons) {
+    try {
+      window.lucide.createIcons();
+    } catch (e) {
+      console.error("Lucide error:", e);
+    }
+  }
+}, []);
+
+      const savePoolUpdate = async (poolId, lane) => {
+        // UX throttling: 1 check-in per hour per browser (server-side controls still required)
+        const lastCheckInKey = "lastCheckIn";
+        const lastCheckIn = localStorage.getItem(lastCheckInKey);
+
+        if (lastCheckIn) {
+          const timeSinceLastCheckIn = Date.now() - parseInt(lastCheckIn, 10);
+          const oneHour = 60 * 60 * 1000;
+
+          if (timeSinceLastCheckIn < oneHour) {
+            const minutesLeft = Math.ceil((oneHour - timeSinceLastCheckIn) / 60000);
+            alert(`Please wait ${minutesLeft} minutes before checking in again.`);
+            return;
+          }
+        }
+
+        try {
+          const { error } = await window.supa
+            .from("checkins")
+            .insert([{ pool_id: poolId, lane, delta: 1 }]);
+
+          if (error) throw error;
+
+          localStorage.setItem(lastCheckInKey, Date.now().toString());
+
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 2000);
+
+          setSelectedPool("");
+          setSelectedLane("");
+
+          await loadAllBusyness();
+          if (viewingPool) {
+            await loadRecentCheckins();
+          }
+        } catch (e) {
+          console.error("insert error:", e);
+          alert("Failed to save check-in. Please try again.");
+        }
+      };
+
+     const handleSubmit = () => {
+  if (!selectedPool || !selectedLane) return;
+
+  const pool = POOLS.find((p) => p.id === selectedPool);
+  if (!pool) return;
+
+  if (!isPoolOpen(pool)) {
+    alert(`${pool.name} is currently closed. Check-ins are disabled outside opening hours.`);
+    return;
+  }
+
+  savePoolUpdate(selectedPool, selectedLane);
+};
+
+      const getTimeSince = (timestamp) => {
+        if (!timestamp) return "No data yet";
+        const now = new Date();
+        const then = new Date(timestamp);
+        const minutes = Math.floor((now - then) / 60000);
+
+        if (minutes < 1) return "Just now";
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        return `${Math.floor(hours / 24)}d ago`;
+      };
+
+      const getPoolStatus = (poolId) => {
+        const data = poolData[poolId];
+        if (!data || !data.lanes) return null;
+        if (Object.keys(data.lanes).length === 0) return null;
+        return data;
+      };
+
+      const getPoolCity = (pool) => {
+        if (pool.city) return pool.city;
+
+        const location = (pool.location || "").toLowerCase();
+        if (pool.country === "NL" || location.includes("leiden") || location.includes("netherlands")) return "Leiden";
+        if (location.includes("glasgow")) return "Glasgow";
+        if (location.includes("stirling") || pool.id === "the-peak-stirling") return "Stirling";
+        return "Edinburgh";
+      };
+
+      const getPoolCityLabel = (pool) => {
+        const city = getPoolCity(pool);
+        return pool.country === "NL" ? `${city} 🇳🇱` : city;
+      };
+
+      const cityOf = (pool) => (pool.country === "NL" ? "EU" : "UK");
+      const cityOptions = ["All", ...Array.from(new Set(POOLS.map((pool) => cityOf(pool))))];
+
+      const getOpenStatusText = (pool) => {
+        const now = new Date();
+        const day = now.getDay(); // 0 = Sunday, 6 = Saturday
+        const currentTime = now.toTimeString().slice(0, 5);
+
+        const hoursText = getOpeningHoursText(pool); // "HH:MM - HH:MM"
+        const [open, close] = hoursText.split(" - ");
+
+        // Handle Royal Commonwealth Wednesday training closure
+        if (day === 3 && pool.hours.wednesdayClosed) {
+          if (
+            currentTime >= pool.hours.wednesdayClosed.start &&
+            currentTime < pool.hours.wednesdayClosed.end
+          ) {
+            return `Closed — reopens ${pool.hours.wednesdayClosed.end}`;
+          }
+        }
+
+        return isPoolOpen(pool) ? `Open until ${close}` : `Closed — opens ${open}`;
+      };
+
+      function isPoolOpen(pool) {
+        const now = new Date();
+        const day = now.getDay(); // 0 Sunday, 6 Saturday
+        const currentTime = now.toTimeString().slice(0, 5);
+
+        let hours;
+        if (day === 0) hours = pool.hours.sunday;
+        else if (day === 6) hours = pool.hours.saturday;
+        else {
+          hours = pool.hours.weekday;
+
+          if (day === 3 && pool.hours.wednesdayClosed) {
+            if (currentTime >= pool.hours.wednesdayClosed.start &&
+                currentTime < pool.hours.wednesdayClosed.end) {
+              return false;
+            }
+          }
+        }
+
+        return currentTime >= hours.open && currentTime < hours.close;
+      }
+
+      const getOpeningHoursText = (pool) => {
+        const now = new Date();
+        const day = now.getDay();
+
+        let hours;
+        if (day === 0) hours = pool.hours.sunday;
+        else if (day === 6) hours = pool.hours.saturday;
+        else hours = pool.hours.weekday;
+
+        return `${hours.open} - ${hours.close}`;
+      };
+
+      // Map recent check-in counts into a friendly label
+      const getLaneBusyness = (count) => {
+        const c = count || 0;
+        if (c === 0) return { label: "Empty", emoji: "😊", bgColor: "bg-green-100", textColor: "text-green-800" };
+        if (c <= 2) return { label: "Quiet", emoji: "🙂", bgColor: "bg-lime-100", textColor: "text-lime-800" };
+        if (c <= 4) return { label: "Moderate", emoji: "😐", bgColor: "bg-amber-100", textColor: "text-amber-800" };
+        if (c <= 6) return { label: "Busy", emoji: "😬", bgColor: "bg-orange-100", textColor: "text-orange-800" };
+        return { label: "Very Busy", emoji: "😰", bgColor: "bg-red-100", textColor: "text-red-800" };
+      };
+
+      // -----------------------
+      // Privacy Policy View
+      // -----------------------
+      if (showPrivacyPolicy) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50">
+            <div className="bg-[#043A3D] text-white shadow-lg">
+              <div className="max-w-4xl mx-auto px-4 py-6">
+                <button
+                  onClick={() => { setShowPrivacyPolicy(false); setShowHomepage(true); }}
+                  className="flex items-center gap-2 text-teal-100 hover:text-white mb-3 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to home
+                </button>
+                <h1 className="text-3xl font-bold">Privacy Policy</h1>
+              </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-4 py-12">
+              <div className="bg-white pp-card p-8">
+                <p className="text-gray-600 mb-6">Last updated: February 20, 2026</p>
+
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Privacy Policy</h2>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Pool Pulse is designed to be privacy-first. We do not ask you to create an account, and check-ins are
+                  submitted anonymously.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Who we are</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Pool Pulse (“we”, “us”) is an independent community project. Pool Pulse is not affiliated with, endorsed
+                  by, or sponsored by Edinburgh Leisure or any pool operator.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">What data we collect</h3>
+                <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
+                  <li>
+                    <strong>Anonymous check-ins:</strong> pool identifier, lane type, a numeric “delta” (used to adjust
+                    busyness), and a timestamp.
+                  </li>
+                  <li>
+                    <strong>Basic technical data:</strong> like most websites, our hosting and infrastructure providers may
+                    automatically receive standard log data (for example IP address, device/browser type, and request
+                    metadata) for security and operational purposes.
+                  </li>
+                </ul>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">What we do not collect</h3>
+                <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
+                  <li>No account credentials, profile accounts, or mandatory identity fields for browsing/check-ins.</li>
+                  <li>No precise location tracking, GPS data, or background location access.</li>
+                  <li>No cameras, biometrics, or surveillance.</li>
+                </ul>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">How we use the data</h3>
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  We use anonymous check-ins to calculate and display lane busyness for pools, based on recent check-ins
+                  from the last {CHECKIN_WINDOW_MINUTES} minutes.
+                </p>
+                <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
+                  <li>To show busyness snapshots (Quiet / OK / Busy) by lane type.</li>
+                  <li>To show “Updated X minutes ago” and recent check-in activity.</li>
+                  <li>To maintain reliability, prevent abuse, and debug issues.</li>
+                </ul>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Legal basis (UK GDPR)</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Where UK GDPR applies, we process anonymous check-in data on the basis of <strong>legitimate interests</strong>
+                  (providing a community service and keeping it accurate), and process limited technical/log data for
+                  <strong> security and service operation</strong>.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Data retention</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Check-ins are intended to be short-lived. The app’s busyness calculations use the most recent {CHECKIN_WINDOW_MINUTES} minutes of
+                  activity. Infrastructure logs (if any) are retained by providers for limited periods according to their
+                  standard practices.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Feedback data</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  If you submit feedback, we store your feedback type, message, and any optional contact email you provide.
+                  Optional contact details are only used to follow up on your feedback and are never sold.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Sharing and processors</h3>
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  We do not sell your data. We use service providers to run Pool Pulse:
+                </p>
+                <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
+                  <li>
+                    <strong>GitHub Pages</strong> for hosting the website.
+                  </li>
+                  <li>
+                    <strong>Supabase</strong> to store anonymous check-ins and retrieve recent check-ins.
+                  </li>
+                </ul>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Cookies and analytics</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  During the beta, Pool Pulse does not run Google Analytics (GA4) and does not set non-essential tracking
+                  cookies. Some essential technical storage may be used by your browser (for example caching).
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Security</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  We use reasonable technical measures to protect the service, but no internet transmission is 100% secure.
+                  Please avoid submitting personal information in any free-text fields (if present in future versions).
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Your rights</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  If any personal data is processed (for example in logs), you may have rights under UK data protection law,
+                  including access, correction, deletion, and objection. Because check-ins are anonymous and we do not
+                  collect identifiers, we may not be able to link records to a specific individual.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Contact</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  Questions or requests? Please contact the project maintainer via the Pool Pulse GitHub repository.
+                </p>
+
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // -----------------------
+      // Terms View
+      // -----------------------
+      if (showTerms) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50">
+            <div className="bg-[#043A3D] text-white shadow-lg">
+              <div className="max-w-4xl mx-auto px-4 py-6">
+                <button
+                  onClick={() => { setShowTerms(false); setShowHomepage(true); }}
+                  className="flex items-center gap-2 text-teal-100 hover:text-white mb-3 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to home
+                </button>
+                <h1 className="text-3xl font-bold">Terms of Service</h1>
+              </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-4 py-12">
+              <div className="bg-white pp-card p-8">
+                <p className="text-gray-600 mb-6">Last updated: February 20, 2026</p>
+
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Terms of Service</h2>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Pool Pulse is a free, community-built tool that helps swimmers estimate lane busyness using anonymous
+                  check-ins. By using the site, you agree to these Terms.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">1) Beta service</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Pool Pulse is in beta. Features may change, and the service may be unavailable or interrupted from time
+                  to time.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">2) No affiliation</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Pool Pulse is not affiliated with, endorsed by, or sponsored by Edinburgh Leisure or any pool operator.
+                  Opening times and availability may change without notice.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">3) Busyness estimates (no guarantees)</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Busyness is estimated from recent community check-ins (last {CHECKIN_WINDOW_MINUTES} minutes). It may not reflect exact current
+                  conditions. You should always use your own judgement when planning a visit.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">4) Acceptable use</h3>
+                <ul className="list-disc pl-6 text-gray-700 mb-6 leading-relaxed space-y-2">
+                  <li>Do not submit spam, fake, or malicious check-ins.</li>
+                  <li>Do not attempt to disrupt or overload the service.</li>
+                  <li>Do not reverse engineer, scrape excessively, or misuse the service.</li>
+                </ul>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">5) Safety</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  Pool Pulse does not provide safety advice. Always follow pool rules, lifeguard instructions, and local
+                  guidance.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">6) Intellectual property</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  The Pool Pulse name, logo, and site content are owned by Pool Pulse or its licensors. You may share links
+                  to the site, but you must not use our branding in a way that suggests endorsement.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">7) Limitation of liability</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  To the fullest extent permitted by law, Pool Pulse is provided “as is” and we exclude warranties and
+                  liability for any loss or damage arising from your use of the site or reliance on busyness estimates.
+                  Nothing in these Terms limits liability that cannot be limited under law.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">8) Changes</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  We may update these Terms from time to time. The “Last updated” date indicates the latest version.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">9) Governing law</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  These Terms are governed by the laws of Scotland, and the courts of Scotland will have jurisdiction,
+                  subject to any mandatory consumer protections that apply.
+                </p>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Contact</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  Questions or requests? Please contact the project maintainer via the Pool Pulse GitHub repository.
+                </p>
+
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // -----------------------
+      // Homepage View
+      // -----------------------
+     if (showHomepage) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50">
+      {/* Header */}
+     <div className="bg-[#043A3D] text-white shadow-lg">
+  <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="flex justify-end mb-4">
+      {authUser ? (
+        <div className="flex items-center gap-2">
+          <span className="text-xs sm:text-sm text-teal-100">Hi, {authDisplayName}</span>
+          <button
+            onClick={() => window.location.href = 'dashboard.html'}
+            className="px-3 py-1.5 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
+          >
+            My Dashboard
+          </button>
+          <button
+            onClick={handleSignOut}
+            disabled={authLoading}
+            className="px-3 py-1.5 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-sm"
+          >
+            {authLoading ? "Signing out..." : "Sign Out"}
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => window.location.href = 'dashboard.html'}
+          className="px-4 py-2 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
+        >
+          Sign In
+        </button>
+      )}
+    </div>
+    <div className="flex items-center justify-center mb-4">
+      <div className="text-center">
+        <h1 className="mb-1"><LogoWordmark size="lg" /></h1>
+        <p className="text-white/80 text-sm font-medium">UK & EU</p>
+      </div>
+    </div>
+
+    <p className="text-center text-white/85 text-lg max-w-4xl mx-auto">
+      Know before you go! See how busy each lane is, based on anonymous check-ins.
+    </p>
+  </div>
+</div>
+
+<div className="max-w-4xl mx-auto px-4 py-12">
+        {/* Hero */}
+        <div className="bg-white pp-card p-8 mb-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Swim smarter, not busier.
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Check lane busyness in seconds. Track your swims, recovery, and routines if you want more.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
+            <button
+              onClick={() => setShowHomepage(false)}
+              className="bg-[#043A3D] text-white font-bold px-8 py-3 rounded-[10px] hover:opacity-90 transition-all shadow-md text-base"
+            >
+              Check your pool
+            </button>
+            <a
+              href="dashboard.html"
+              className="px-8 py-3 rounded-[10px] border border-[#c9d7d5] text-[#043A3D] bg-white text-base font-semibold hover:bg-gray-50 transition text-center"
+            >
+              Open your dashboard →
+            </a>
+          </div>
+
+          <p className="text-center text-sm text-gray-500 max-w-2xl mx-auto">
+            No login needed to check your pool. Create an account only if you want to track your swims and routines.
+          </p>
+        </div>
+
+        {/* Built for Real Swimmers */}
+        <div className="mb-8">
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="bg-white pp-card p-6">
+              <div className="text-2xl mb-2">🏊‍♀️</div>
+              <h3 className="font-bold text-lg text-gray-900 mb-2">Check your pool</h3>
+              <p className="text-gray-600 text-sm">See how busy each lane is before you leave.</p>
+            </div>
+            <div className="bg-white pp-card p-6">
+              <div className="text-2xl mb-2">📈</div>
+              <h3 className="font-bold text-lg text-gray-900 mb-2">Track your swims</h3>
+              <p className="text-gray-600 text-sm">Log sessions, pace, and progress over time.</p>
+            </div>
+            <div className="bg-white pp-card p-6">
+              <div className="text-2xl mb-2">🧴</div>
+              <h3 className="font-bold text-lg text-gray-900 mb-2">Recover properly</h3>
+              <p className="text-gray-600 text-sm">Stay consistent with post-swim care and routines.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Product Flow */}
+        <div className="bg-white pp-card p-8 mb-8 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Check → Swim → Recover → Repeat</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            PoolPulse helps you plan the swim, do the session, and stay consistent afterwards.
+          </p>
+        </div>
+
+        {/* Dashboard Preview */}
+        <div className="bg-[#043A3D] text-white pp-card p-8 mb-8">
+          <h2 className="text-2xl font-bold mb-3">Your swim, your system</h2>
+          <p className="text-white/85 mb-6 max-w-2xl">
+            A personal dashboard for your swims, goals, nutrition, body stats, and post-swim routines.
+          </p>
+          <a
+            href="dashboard.html"
+            className="inline-flex items-center px-5 py-2.5 rounded-[10px] bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 transition"
+          >
+            View your dashboard →
+          </a>
+        </div>
+
+        <div className="mt-6 mb-8 flex flex-wrap items-center justify-center gap-3">
+          <button
+            onClick={() => document.getElementById("homepage-pools-covered")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className="px-4 py-2 rounded-[10px] border border-[#e5e7eb] text-[#043A3D] bg-white text-sm font-semibold hover:bg-gray-50"
+          >
+            Jump to pools covered
+          </button>
+          <button
+            onClick={() => document.getElementById("homepage-feedback")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className="px-4 py-2 rounded-[10px] border border-[#e5e7eb] text-[#043A3D] bg-white text-sm font-semibold hover:bg-gray-50"
+          >
+            Jump to feedback
+          </button>
+        </div>
+
+        {/* About Me Section */}
+        <div className="bg-white pp-card p-8 mb-8">
+          <div className="grid md:grid-cols-3 gap-8 items-center">
+            {/* Left side - Image/Avatar */}
+           <div className="text-center md:col-span-1">
+  <img
+    src="./assets/sneha.jpg"
+    alt="Sneha"
+    className="w-32 h-32 mx-auto rounded-full object-cover shadow-lg border-4 border-white"
+  />
+  <h3 className="text-xl font-bold text-gray-900 mt-4">Sneha</h3>
+  <p className="text-teal-600 font-semibold">Swimmer & Creator</p>
+</div>
+
+            {/* Right side - Bio */}
+            <div className="md:col-span-2">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">About Pool Pulse</h2>
+              <p className="text-gray-700 mb-4 leading-relaxed">
+                I'm a swimmer who got tired of wasting trips to crowded pools while training for open water swims in Scotland in 2025. I created <strong>Pool Pulse</strong> as a privacy-first way to check busyness quickly, then support swimmers who want to track progress and routines over time.
+              </p>
+              <p className="text-gray-700 mb-4 leading-relaxed">
+                Every swimmer contributes anonymously when they check in. No names, no location tracking, just clear lane busyness insights to help everyone choose a better swim time.
+              </p>
+              <p className="text-gray-700 leading-relaxed">
+                From the quick pool check to optional post-swim care and recovery habits, <strong>Pool Pulse</strong> is built to be a swimmer's companion. 🌊
+              </p>
+            </div>
+          </div>
+        </div>
+
+       {/* Swimming Gallery */}
+  <div className="bg-white pp-card p-8 mb-8">
+  <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+    Why Pool Pulse? 
+  </h2>
+
+  <ul className="space-y-3 text-gray-700 max-w-4xl mx-auto">
+    <li className="flex gap-3">
+      <span className="text-teal-600 font-bold">•</span>
+      <span><span className="font-semibold">Fast first step:</span> check lane busyness in seconds, no login needed.</span>
+    </li>
+    <li className="flex gap-3">
+      <span className="text-cyan-600 font-bold">•</span>
+      <span><span className="font-semibold">Swimmer dashboard (optional):</span> track swims, pace, goals, and routines when you want more.</span>
+    </li>
+    <li className="flex gap-3">
+      <span className="text-blue-600 font-bold">•</span>
+      <span><span className="font-semibold">Privacy first:</span> anonymous check-ins for pool status, with account features only if you choose them.</span>
+    </li>
+  </ul>
+</div>
+        {/* Pools Covered Section */}
+        <div id="homepage-pools-covered" className="bg-white pp-card p-8 mb-8 scroll-mt-24">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Pools Covered</h2>
+          <p className="text-gray-600 mb-6">Currently tracking busyness at {POOLS.length} pools across the UK & EU</p>
+
+          <div id="pp-map" style={{height: '340px', width: '100%', borderRadius: '12px', marginBottom: '24px', zIndex: 0}}></div>
+
+          <script dangerouslySetInnerHTML={{__html: `
+            (function() {
+              function initMap() {
+                if (!window.L || document.getElementById('pp-map').dataset.init) return;
+                document.getElementById('pp-map').dataset.init = '1';
+                var map = L.map('pp-map').setView([56.0, -3.5], 6);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                  attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                var pools = [
+                  {name:'Royal Commonwealth Pool',city:'Edinburgh',lat:55.9366,lng:-3.1627},
+                  {name:'Warrender Swim Centre',city:'Edinburgh',lat:55.9352,lng:-3.1876},
+                  {name:'Glenogle Swim Centre',city:'Edinburgh',lat:55.9578,lng:-3.2021},
+                  {name:'Leith Victoria Swim Centre',city:'Edinburgh',lat:55.9752,lng:-3.1654},
+                  {name:'Dalry Swim Centre',city:'Edinburgh',lat:55.9434,lng:-3.2196},
+                  {name:'Portobello Swim Centre',city:'Edinburgh',lat:55.9540,lng:-3.1069},
+                  {name:'Ainslie Park Leisure Centre',city:'Edinburgh',lat:55.9739,lng:-3.2334},
+                  {name:'Tollcross International Swimming Centre',city:'Glasgow',lat:55.8537,lng:-4.2193},
+                  {name:'Western Baths Club',city:'Glasgow',lat:55.8751,lng:-4.2813},
+                  {name:'Glasgow Club Bellahouston',city:'Glasgow',lat:55.8455,lng:-4.3089},
+                  {name:'Glasgow Club Pollok',city:'Glasgow',lat:55.8234,lng:-4.3234},
+                  {name:'Glasgow Club Gorbals',city:'Glasgow',lat:55.8489,lng:-4.2567},
+                  {name:'Glasgow Club Scotstoun',city:'Glasgow',lat:55.8734,lng:-4.3456},
+                  {name:'Glasgow Club Maryhill',city:'Glasgow',lat:55.8934,lng:-4.2934},
+                  {name:'The PEAK',city:'Stirling',lat:56.1123,lng:-3.9234},
+                  {name:'Zwembad De Zijl',city:'Leiden',lat:52.1734,lng:4.4589},
+                  {name:'Combibad De Vliet',city:'Leiden',lat:52.1823,lng:4.4234}
+                ];
+                pools.forEach(function(p) {
+                  L.circleMarker([p.lat, p.lng], {
+                    radius: 8, fillColor: '#4ecdc4', color: '#043A3D',
+                    weight: 2, opacity: 1, fillOpacity: 0.9
+                  }).addTo(map).bindPopup('<strong>' + p.name + '</strong><br><span style="color:#666;font-size:12px">' + p.city + '</span>');
+                });
+              }
+              if (document.readyState === 'complete') { setTimeout(initMap, 500); }
+              else { window.addEventListener('load', function() { setTimeout(initMap, 500); }); }
+            })();
+          `}} />
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {POOLS.map((pool) => (
+              <div
+                key={pool.id}
+                className="border-l-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                style={{ borderColor: pool.color }}
+              >
+                <h3 className="font-bold text-lg text-gray-900 mb-1">{pool.name}</h3>
+                <div className="flex items-center gap-1 text-gray-600 text-sm">
+                  <MapPin className="w-4 h-4" />
+                  <span>{pool.location}</span>
+                </div>
+                <div className="flex items-center gap-1 text-gray-600 text-sm mt-2">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm">
+                    {pool.hours.weekday.open} - {pool.hours.weekday.close}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-teal-50 border-2 border-teal-200 rounded-lg p-4 mt-6">
+            <p className="text-teal-900 text-sm">
+              <strong>🎯 Pilot Phase:</strong> More pools coming soon!
+            </p>
+          </div>
+        </div>
+
+        {/* Feedback Form */}
+        <div id="homepage-feedback" className="bg-white pp-card p-8 mb-8 scroll-mt-24">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Share feedback</h2>
+          <p className="text-gray-600 mb-6">
+            Tell us what would make Pool Pulse more useful. Submit your feedback directly here.
+          </p>
+
+          <form onSubmit={submitFeedback} className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
+              <select
+                value={feedbackType}
+                onChange={(e) => setFeedbackType(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <option value="general">General feedback</option>
+                <option value="bug">Bug report</option>
+                <option value="feature">Feature request</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Message</label>
+              <textarea
+                value={feedbackMessage}
+                onChange={(e) => setFeedbackMessage(e.target.value)}
+                placeholder="What could we improve?"
+                rows={4}
+                required
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Email (optional)</label>
+              <input
+                type="email"
+                value={feedbackContact}
+                onChange={(e) => setFeedbackContact(e.target.value)}
+                placeholder="name@example.com"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={feedbackSubmitting}
+              className="bg-[#043A3D] text-white font-semibold px-6 py-3 rounded-[10px] hover:opacity-90 transition"
+            >
+              {feedbackSubmitting ? "Sending..." : "Send feedback"}
+            </button>
+          </form>
+
+          {feedbackSent && (
+            <p className="text-sm text-green-700 mt-4">
+              Thanks for your feedback! Your message was sent successfully.
+            </p>
+          )}
+
+          {feedbackError && (
+            <div className="text-sm text-red-700 mt-4 space-y-2">
+              <p>{feedbackError}</p>
+              {feedbackFallbackHref && (
+                <a
+                  href={feedbackFallbackHref}
+                  className="underline font-medium"
+                >
+                  Send via email instead
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-12 text-center text-gray-500 text-sm">
+          <p>🔒 Anonymous check-ins • No accounts required • Privacy first</p>
+          <p className="mt-2">
+            Made with 💙 by Sneha •{" "}
+            the project maintainer via the Pool Pulse GitHub repository
+          </p>
+
+          <p className="mt-4">
+            <button
+              onClick={() => { setShowHomepage(false); setShowPrivacyPolicy(true); }}
+              className="text-gray-500 hover:text-gray-700 underline mr-4"
+            >
+              Privacy Policy
+            </button>
+            <button
+              onClick={() => { setShowHomepage(false); setShowTerms(true); }}
+              className="text-gray-500 hover:text-gray-700 underline"
+            >
+              Terms of Service
+            </button>
+          </p>
+        </div>
+      </div>
+      {renderAuthModal()}
+    </div>
+  );
+}
+
+      // -----------------------
+      // Pool Detail View
+      // -----------------------
+      if (viewingPool) {
+        const pool = POOLS.find((p) => p.id === viewingPool);
+        const poolStatus = getPoolStatus(viewingPool) || buildStatusFromRecent(viewingPool);
+        const isOpen = isPoolOpen(pool);
+        const hoursText = getOpeningHoursText(pool);
+
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 pb-20">
+            <div
+              className="bg-[#043A3D] text-white shadow-lg"
+            >
+              <div className="max-w-4xl mx-auto px-4 py-4">
+                <div className="flex justify-end mb-2">
+                  {authUser ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => window.location.href = 'dashboard.html'}
+                        className="px-3 py-1 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-xs"
+                      >
+                        My Dashboard
+                      </button>
+                      <button
+                        onClick={handleSignOut}
+                        disabled={authLoading}
+                        className="px-3 py-1 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-xs"
+                      >
+                        {authLoading ? "Signing out..." : "Sign Out"}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => window.location.href = 'dashboard.html'}
+                      className="px-3 py-1 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-xs"
+                    >
+                      Sign In
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={() => setViewingPool(null)}
+                  className="flex items-center gap-2 text-white/80 hover:text-white mb-3 transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  Back to all pools
+                </button>
+
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-white/20 rounded-full blur-md"></div>
+                    <div className="relative bg-white/10 backdrop-blur-sm p-2 rounded-2xl border-2 border-white/30">
+                      <Waves className="w-7 h-7" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h1 className="text-2xl font-bold">{pool.name}</h1>
+                      {isOpen ? (
+                        <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30">
+                          OPEN NOW
+                        </span>
+                      ) : (
+                        <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          CLOSED
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1 text-white/90 text-sm mt-1">
+                      <MapPin className="w-4 h-4" />
+                      <span>{pool.location}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-white/80 text-xs mt-1">
+                      <Clock className="w-3 h-3" />
+                      <span>Today: {hoursText}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-4 py-6">
+              {/* Recent check-ins */}
+              <div className="bg-white pp-card p-6 mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Recent check-ins</h2>
+
+                {checkinsLoading && <div className="text-gray-500">Loading…</div>}
+                {checkinsError && <div className="text-red-600">Error: {checkinsError}</div>}
+
+                {!checkinsLoading && !checkinsError && (
+                  <div className="space-y-2">
+                    {checkinsForPool(pool.id).length === 0 ? (
+                      <div className="text-gray-500">No check-ins yet.</div>
+                    ) : (
+                      checkinsForPool(pool.id).map((c) => (
+                        <div key={c.id} className="flex items-center justify-between border rounded-lg p-3">
+                          <div>
+                            <div className="font-medium">{laneLabel(c.lane)}</div>
+                            <div className="text-sm text-gray-600">{formatTime(c.created_at)}</div>
+                          </div>
+                          <div className="text-sm text-gray-700">+{c.delta ?? 1}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                <div className="text-xs text-gray-500 mt-4">
+                  Counts in the app are based on check-ins in the last {CHECKIN_WINDOW_MINUTES} minutes.
+                </div>
+              </div>
+
+              {/* Lane status */}
+              {poolStatus ? (
+                <div className="bg-white pp-card p-6 mb-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Activity className="w-5 h-5 text-teal-600" />
+                    <h2 className="text-xl font-bold text-gray-900">Current Lane Status</h2>
+                  </div>
+
+                  <div className="space-y-4">
+                    {LANES.map((lane) => {
+                      const laneData = poolStatus.lanes[lane.id];
+                      const count = laneData?.checkInCount || 0;
+                      const busyness = getLaneBusyness(count);
+
+                      return (
+                        <div key={lane.id} className={`border-2 rounded-lg p-4 ${lane.color}`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">{lane.icon}</span>
+                              <h3 className="font-bold text-lg">{lane.label}</h3>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <div className={`${busyness.bgColor} ${busyness.textColor} px-4 py-2 rounded-lg font-bold text-base flex items-center gap-2`}>
+                                <span>{busyness.emoji}</span>
+                                <span>{busyness.label}</span>
+                              </div>
+
+                              <div className="text-white px-3 py-2 rounded-lg font-bold text-sm" style={{ backgroundColor: pool.color }}>
+                                {count} check-ins
+                              </div>
+                            </div>
+                          </div>
+
+                          {laneData?.lastUpdate ? (
+                            <div className="flex items-center gap-1 text-sm mt-2">
+                              <Clock className="w-4 h-4" />
+                              <span>Last check-in {getTimeSince(laneData.lastUpdate)}</span>
+                            </div>
+                          ) : (
+                            <p className="text-sm italic opacity-70">No check-ins yet</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <div className="flex items-center justify-between text-sm text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        <span>Last updated {getTimeSince(poolStatus.lastUpdate)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        <span>{poolStatus.totalUpdates} check-ins (last {CHECKIN_WINDOW_MINUTES} mins)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white pp-card p-8 text-center mb-6">
+                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">No Check-Ins Yet</h3>
+                  <p className="text-gray-600">Be the first to check in at this pool!</p>
+                </div>
+              )}
+
+              <div className="text-center">
+                <button
+                  onClick={() => { if (!isOpen) return; setSelectedPool(viewingPool); setViewingPool(null); }}
+                  disabled={!isOpen}
+                  className={"text-white font-bold px-8 py-3 rounded-lg transition-all shadow-md" + (!isOpen ? " opacity-50 cursor-not-allowed" : " hover:opacity-90")}
+                  style={{ backgroundColor: pool.color }}
+                >
+                  {isOpen ? "Check In At This Pool" : "Pool Closed — Check-in disabled"}
+                </button>
+              </div>
+            </div>
+            {renderAuthModal()}
+          </div>
+        );
+      }
+
+      // -----------------------
+      // Main Pool List View
+      // -----------------------
+      const poolsToShow = POOLS
+        .filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter))
+        .filter((p) => (openNowOnly ? isPoolOpen(p) : true));
+
+      const showingNoneOpen = openNowOnly && poolsToShow.length === 0;
+      const poolsToRender = showingNoneOpen
+        ? POOLS.filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter))
+        : poolsToShow;
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 pb-20">
+          <div className="bg-[#043A3D] text-white shadow-lg">
+            <div className="max-w-4xl mx-auto px-4 py-6">
+              <div className="flex justify-end mb-3">
+                {authUser ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs sm:text-sm text-teal-100">{authDisplayName}</span>
+                    <button
+                      onClick={() => window.location.href = 'dashboard.html'}
+                      className="px-3 py-1.5 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
+                    >
+                      My Dashboard
+                    </button>
+                    <button
+                      onClick={handleSignOut}
+                      disabled={authLoading}
+                      className="px-3 py-1.5 rounded-lg border border-teal-300 text-teal-50 hover:bg-white/10 text-sm"
+                    >
+                      {authLoading ? "Signing out..." : "Sign Out"}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => window.location.href = 'dashboard.html'}
+                    className="px-4 py-2 rounded-lg bg-[#4ecdc4] text-[#1a4a47] font-semibold hover:opacity-90 text-sm"
+                  >
+                    Sign In
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={() => setShowHomepage(true)}
+                className="flex items-center gap-2 text-teal-100 hover:text-white mb-3 transition-colors text-sm"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to home
+              </button>
+
+              <div className="flex items-center gap-3 mb-2">
+                <div>
+                  <h1 className="mb-0.5"><LogoWordmark size="md" /></h1>
+                  <p className="text-teal-100 text-xs font-medium">UK & EU</p>
+                </div>
+              </div>
+
+              <p className="text-teal-50 text-sm">
+                Lane busyness based on anonymous check-ins in the last {CHECKIN_WINDOW_MINUTES} minutes
+              </p>
+            </div>
+          </div>
+
+          {showSuccess && (
+            <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce">
+              ✓ Checked in! Have a great swim
+            </div>
+          )}
+
+          <div className="max-w-4xl mx-auto px-4 py-6">
+            
+        {/* Filters */}
+        <div className="bg-white pp-card p-4 mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <input
+                type="checkbox"
+                checked={openNowOnly}
+                onChange={(e) => setOpenNowOnly(e.target.checked)}
+                className="h-4 w-4 accent-teal-600"
+              />
+              Open now
+            </label>
+
+            <div className="text-xs text-gray-500">
+              Busyness is based on check-ins from the last {CHECKIN_WINDOW_MINUTES} minutes.
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Region</span>
+            <select
+              value={cityFilter}
+              onChange={(e) => setCityFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              {cityOptions.map((city) => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {showingNoneOpen && (
+          <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            All pools are closed right now. Showing opening times so you can plan ahead.
+          </div>
+        )}
+
+<div className="space-y-4 mb-6">
+              {poolsToRender.map((pool) => {
+                const poolStatus = getPoolStatus(pool.id) || buildStatusFromRecent(pool.id);
+                const isOpen = isPoolOpen(pool);
+                const hoursText = getOpeningHoursText(pool);
+
+                return (
+                  <button
+                    type="button"
+                    key={pool.id}
+                    aria-label={`View details for ${pool.name}`}
+                    className="w-full text-left bg-white pp-card pp-card-hover overflow-hidden transition-shadow cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    onClick={() => setViewingPool(pool.id)}
+                    style={{ borderLeft: `6px solid ${pool.color}` }}
+                  >
+                    <div className="p-5">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-lg text-gray-900">{pool.name}</h3>
+                            {isOpen ? (
+                              <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full">OPEN</span>
+                            ) : (
+                              <span className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded-full">CLOSED</span>
+                            )}
+                          </div>
+
+                          <p className="text-sm text-gray-500 mb-1">{getPoolCityLabel(pool)}</p>
+
+                          <div className="flex items-center gap-1 text-gray-500 text-sm">
+                            <MapPin className="w-4 h-4" />
+                            <span>{pool.location}</span>
+                          </div>
+
+                          <div className="flex items-center gap-1 text-gray-500 text-sm mt-1">
+                            <Clock className="w-3 h-3" />
+                            <span>{getOpenStatusText(pool)}</span>
+                            <span className="text-gray-400">· Today {hoursText}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {(
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-3 gap-2">
+                            {LANES.map((lane) => {
+                              const laneData = poolStatus?.lanes?.[lane.id];
+                              const count = laneData?.checkInCount || 0;
+                              const hasData = !!poolStatus && count > 0;
+                              const busyness = hasData ? getLaneBusyness(count) : null;
+                              const showNoData = !hasData && !busynessLoading && !!busynessError;
+
+                              return (
+                                <div key={lane.id} className="text-center">
+                                  <div className="text-lg mb-1">{lane.icon}</div>
+
+                                  {hasData ? (
+                                    <div
+                                      className={`${busyness.bgColor} ${busyness.textColor} px-2 py-1 rounded text-sm font-bold flex items-center justify-center gap-1`}
+                                    >
+                                      <span>{busyness.emoji}</span>
+                                      <span>{busyness.label}</span>
+                                    </div>
+                                  ) : (
+                                    <div className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-sm font-bold flex items-center justify-center">
+                                      {showNoData ? "No data" : "—"}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              <span>
+                                {poolStatus?.lastUpdate
+                                  ? `Updated ${getTimeSince(poolStatus.lastUpdate)} · ${poolStatus.totalUpdates || 0} check-ins`
+                                  : (busynessLoading ? "Loading busyness…" : (busynessError ? "No data" : "No recent check-ins yet"))}
+                              </span>
+                            </div>
+                            <div className="font-semibold" style={{ color: pool.color }}>
+                              View →
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Check In box */}
+            <div className="bg-white pp-card p-6 sticky bottom-4">
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-xl font-bold text-gray-900">Check In</h2>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Which pool are you at?
+                </label>
+                <select
+                  value={selectedPool}
+                  onChange={(e) => setSelectedPool(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:outline-none"
+                >
+                  <option value="">Select a pool...</option>
+                  {POOLS.map((pool) => (
+                    <option key={pool.id} value={pool.id}>{pool.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedPool && !selectedPoolIsOpen && (
+  <div className="mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-sm">
+    This pool is currently closed — check-ins are disabled outside opening hours.
+  </div>
+)}
+
+              {selectedPool && (
+                <div className={"mb-4 animate-fadeIn" + (!selectedPoolIsOpen ? " opacity-50 pointer-events-none" : "")}>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    What lane are you swimming in?
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {LANES.map((lane) => (
+                      <button
+                        key={lane.id}
+                        onClick={() => setSelectedLane(lane.id)}
+                        className={`p-4 rounded-lg border-2 transition-all ${
+                          selectedLane === lane.id
+                            ? "border-teal-500 bg-teal-50 shadow-md"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className="text-3xl mb-2">{lane.icon}</div>
+                        <div className="font-semibold text-sm text-gray-900">
+                          {lane.label.replace(" Lane", "")}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedPool && selectedLane && selectedPoolIsOpen && (
+                <button
+                  onClick={handleSubmit}
+                  className="w-full bg-[#043A3D] text-white font-bold py-4 rounded-[10px] hover:opacity-90 transition-all shadow-md mt-4"
+                >
+                  I'm Swimming Here Now
+                </button>
+              )}
+
+              {!selectedPool && (
+                <p className="text-center text-gray-500 text-sm">
+                  Select a pool to get started
+                </p>
+              )}
+
+              <div className="mt-4 text-xs text-gray-500 text-center">
+                Your check-in is anonymous. Please check in honestly ❤️
+              </div>
+            </div>
+
+            <div className="mt-6 text-center text-gray-500 text-sm">
+              <p>Community-powered lane tracking for swimmers</p>
+              <p className="mt-1">Check in when you arrive • See estimated lane busyness</p>
+            </div>
+          </div>
+          {renderAuthModal()}
+        </div>
+      );
+    }
+
+    // Mount the app
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<PoolBusynessTracker />);
+  </script>
+</body>
+</html>
