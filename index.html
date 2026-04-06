@@ -271,6 +271,51 @@ const LogoWordmark = ({ size = "lg" }) => {
     };
 
     // -----------------------
+    // Map
+    // -----------------------
+    function PoolMap() {
+      useEffect(() => {
+        function tryInit() {
+          if (!window.L) { setTimeout(tryInit, 300); return; }
+          const mapEl = document.getElementById('pp-map');
+          if (!mapEl || mapEl.dataset.init) return;
+          mapEl.dataset.init = '1';
+          const map = window.L.map('pp-map').setView([56.0, -3.5], 6);
+          window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(map);
+          const pools = [
+            {name:'Royal Commonwealth Pool',city:'Edinburgh',lat:55.9366,lng:-3.1627},
+            {name:'Warrender Swim Centre',city:'Edinburgh',lat:55.9352,lng:-3.1876},
+            {name:'Glenogle Swim Centre',city:'Edinburgh',lat:55.9578,lng:-3.2021},
+            {name:'Leith Victoria Swim Centre',city:'Edinburgh',lat:55.9752,lng:-3.1654},
+            {name:'Dalry Swim Centre',city:'Edinburgh',lat:55.9434,lng:-3.2196},
+            {name:'Portobello Swim Centre',city:'Edinburgh',lat:55.9540,lng:-3.1069},
+            {name:'Ainslie Park Leisure Centre',city:'Edinburgh',lat:55.9739,lng:-3.2334},
+            {name:'Tollcross International Swimming Centre',city:'Glasgow',lat:55.8537,lng:-4.2193},
+            {name:'Western Baths Club',city:'Glasgow',lat:55.8751,lng:-4.2813},
+            {name:'Glasgow Club Bellahouston',city:'Glasgow',lat:55.8455,lng:-4.3089},
+            {name:'Glasgow Club Pollok',city:'Glasgow',lat:55.8234,lng:-4.3234},
+            {name:'Glasgow Club Gorbals',city:'Glasgow',lat:55.8489,lng:-4.2567},
+            {name:'Glasgow Club Scotstoun',city:'Glasgow',lat:55.8734,lng:-4.3456},
+            {name:'Glasgow Club Maryhill',city:'Glasgow',lat:55.8934,lng:-4.2934},
+            {name:'The PEAK',city:'Stirling',lat:56.1123,lng:-3.9234},
+            {name:'Zwembad De Zijl',city:'Leiden',lat:52.1734,lng:4.4589},
+            {name:'Combibad De Vliet',city:'Leiden',lat:52.1823,lng:4.4234}
+          ];
+          pools.forEach(p => {
+            window.L.circleMarker([p.lat, p.lng], {
+              radius: 8, fillColor: '#4ecdc4', color: '#043A3D',
+              weight: 2, opacity: 1, fillOpacity: 0.9
+            }).addTo(map).bindPopup('<strong>' + p.name + '</strong><br><span style="color:#666;font-size:12px">' + p.city + '</span>');
+          });
+        }
+        setTimeout(tryInit, 100);
+      }, []);
+      return <div id="pp-map" style={{height: '340px', width: '100%', borderRadius: '12px', marginBottom: '24px', zIndex: 0}}></div>;
+    }
+
+    // -----------------------
     // App
     // -----------------------
     function PoolBusynessTracker() {
@@ -1294,47 +1339,7 @@ useEffect(() => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Pools Covered</h2>
           <p className="text-gray-600 mb-6">Currently tracking busyness at {POOLS.length} pools across the UK & EU</p>
 
-          <div id="pp-map" style={{height: '340px', width: '100%', borderRadius: '12px', marginBottom: '24px', zIndex: 0}}></div>
-
-          <script dangerouslySetInnerHTML={{__html: `
-            (function() {
-              function initMap() {
-                if (!window.L || document.getElementById('pp-map').dataset.init) return;
-                document.getElementById('pp-map').dataset.init = '1';
-                var map = L.map('pp-map').setView([56.0, -3.5], 6);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                  attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
-                var pools = [
-                  {name:'Royal Commonwealth Pool',city:'Edinburgh',lat:55.9366,lng:-3.1627},
-                  {name:'Warrender Swim Centre',city:'Edinburgh',lat:55.9352,lng:-3.1876},
-                  {name:'Glenogle Swim Centre',city:'Edinburgh',lat:55.9578,lng:-3.2021},
-                  {name:'Leith Victoria Swim Centre',city:'Edinburgh',lat:55.9752,lng:-3.1654},
-                  {name:'Dalry Swim Centre',city:'Edinburgh',lat:55.9434,lng:-3.2196},
-                  {name:'Portobello Swim Centre',city:'Edinburgh',lat:55.9540,lng:-3.1069},
-                  {name:'Ainslie Park Leisure Centre',city:'Edinburgh',lat:55.9739,lng:-3.2334},
-                  {name:'Tollcross International Swimming Centre',city:'Glasgow',lat:55.8537,lng:-4.2193},
-                  {name:'Western Baths Club',city:'Glasgow',lat:55.8751,lng:-4.2813},
-                  {name:'Glasgow Club Bellahouston',city:'Glasgow',lat:55.8455,lng:-4.3089},
-                  {name:'Glasgow Club Pollok',city:'Glasgow',lat:55.8234,lng:-4.3234},
-                  {name:'Glasgow Club Gorbals',city:'Glasgow',lat:55.8489,lng:-4.2567},
-                  {name:'Glasgow Club Scotstoun',city:'Glasgow',lat:55.8734,lng:-4.3456},
-                  {name:'Glasgow Club Maryhill',city:'Glasgow',lat:55.8934,lng:-4.2934},
-                  {name:'The PEAK',city:'Stirling',lat:56.1123,lng:-3.9234},
-                  {name:'Zwembad De Zijl',city:'Leiden',lat:52.1734,lng:4.4589},
-                  {name:'Combibad De Vliet',city:'Leiden',lat:52.1823,lng:4.4234}
-                ];
-                pools.forEach(function(p) {
-                  L.circleMarker([p.lat, p.lng], {
-                    radius: 8, fillColor: '#4ecdc4', color: '#043A3D',
-                    weight: 2, opacity: 1, fillOpacity: 0.9
-                  }).addTo(map).bindPopup('<strong>' + p.name + '</strong><br><span style="color:#666;font-size:12px">' + p.city + '</span>');
-                });
-              }
-              if (document.readyState === 'complete') { setTimeout(initMap, 500); }
-              else { window.addEventListener('load', function() { setTimeout(initMap, 500); }); }
-            })();
-          `}} />
+          <PoolMap />
 
           <div className="grid md:grid-cols-2 gap-4">
             {POOLS.map((pool) => (
