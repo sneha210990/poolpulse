@@ -25,7 +25,6 @@ module.exports = defineConfig({
   use: {
     headless: true,
     launchOptions: {
-      executablePath: '/usr/bin/google-chrome-stable',
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
     },
     proxy: proxyConfig,
