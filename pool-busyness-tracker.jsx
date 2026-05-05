@@ -788,8 +788,8 @@ export default function PoolBusynessTracker() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">Questions?</h2>
             <p className="text-gray-700 leading-relaxed">
               If you have any questions about privacy or how Pool Pulse works, email me at{' '}
-              <a href="mailto:snehasindhu2109@gmail.com" className="text-teal-600 hover:text-teal-700 underline">
-                snehasindhu2109@gmail.com
+              <a href="mailto:hello@poolpulse.uk" className="text-teal-600 hover:text-teal-700 underline">
+                hello@poolpulse.uk
               </a>
             </p>
           </div>
@@ -891,8 +891,8 @@ export default function PoolBusynessTracker() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">Questions or Problems?</h2>
             <p className="text-gray-700 leading-relaxed">
               If something's not working right or you have questions, email me at{' '}
-              <a href="mailto:snehasindhu2109@gmail.com" className="text-teal-600 hover:text-teal-700 underline">
-                snehasindhu2109@gmail.com
+              <a href="mailto:hello@poolpulse.uk" className="text-teal-600 hover:text-teal-700 underline">
+                hello@poolpulse.uk
               </a>
               {'. '}
               I'll do my best to help!
@@ -1065,7 +1065,7 @@ export default function PoolBusynessTracker() {
             <p>🔒 Your check-ins are anonymous • No personal data collected • No accounts required</p>
             <p className="mt-2">
               Made with 💙 by Sneha for the Edinburgh swimming community • 
-              <a href="mailto:snehasindhu2109@gmail.com" className="text-teal-600 hover:text-teal-700 underline ml-1">
+              <a href="mailto:hello@poolpulse.uk" className="text-teal-600 hover:text-teal-700 underline ml-1">
                 Contact me
               </a>
             </p>
