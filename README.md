@@ -1,7 +1,7 @@
 # poolpulse
-Privacy-first lane busyness for Edinburgh Leisure pools (pilot: Leith Victoria, Glenogle, Royal Commonwealth).
+Privacy-first lane busyness for swimming pools in UK and EU (pilot: Edinburgh, Glasgow and Leiden)
 
-**Pilot pools:** Six pools in Edinburgh and one pool in Glasgow 
+**Pilot pools:** Pools in Edinburgh, Glasgow and Leiden
 **Lane model:** Fast / Medium / Slow  
 **Signals:** Verified check-ins (OTP for contributors), aggregated and auto-expiring.
 
