@@ -1292,7 +1292,7 @@ useEffect(() => {
     </div>
 
     <p className="text-center text-white/85 text-lg max-w-4xl mx-auto">
-      Check in when you swim. Help other swimmers know how busy each lane is.
+      See how busy each lane is before you go. Check in when you arrive to help the next swimmer.
     </p>
   </div>
 </div>
@@ -1302,19 +1302,25 @@ useEffect(() => {
         <div className="bg-white pp-card p-8 mb-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Swimmers helping swimmers.
+              Check lane busyness. Check in when you swim.
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Check in when you arrive at the pool. Your anonymous check-in helps every swimmer after you know how busy each lane is.
+              See how busy each lane is before you leave the house — powered by swimmers checking in when they arrive.
             </p>
           </div>
 
-          <div className="flex justify-center mb-4">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
             <button
               onClick={() => setShowHomepage(false)}
-              className="bg-[#043A3D] text-white font-bold px-10 py-3.5 rounded-[10px] hover:opacity-90 transition-all shadow-md text-base"
+              className="bg-[#043A3D] text-white font-bold px-8 py-3.5 rounded-[10px] hover:opacity-90 transition-all shadow-md text-base"
             >
-              Check in to your pool →
+              See lane busyness →
+            </button>
+            <button
+              onClick={() => setShowHomepage(false)}
+              className="px-8 py-3.5 rounded-[10px] border-2 border-[#043A3D] text-[#043A3D] font-bold hover:bg-gray-50 transition-all text-base"
+            >
+              Check in to your pool
             </button>
           </div>
 
@@ -1327,28 +1333,28 @@ useEffect(() => {
         <div className="mb-8">
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-white pp-card p-6">
+              <div className="text-2xl mb-2">👀</div>
+              <h3 className="font-bold text-lg text-gray-900 mb-2">See lane busyness</h3>
+              <p className="text-gray-600 text-sm">Check how busy each lane is before you leave the house.</p>
+            </div>
+            <div className="bg-white pp-card p-6">
               <div className="text-2xl mb-2">📍</div>
               <h3 className="font-bold text-lg text-gray-900 mb-2">Check in when you arrive</h3>
               <p className="text-gray-600 text-sm">Pick your pool, pick your lane. One tap, anonymous, done.</p>
             </div>
             <div className="bg-white pp-card p-6">
-              <div className="text-2xl mb-2">👀</div>
-              <h3 className="font-bold text-lg text-gray-900 mb-2">See before you go</h3>
-              <p className="text-gray-600 text-sm">Other swimmers' check-ins show you how busy each lane is right now.</p>
-            </div>
-            <div className="bg-white pp-card p-6">
-              <div className="text-2xl mb-2">🔄</div>
-              <h3 className="font-bold text-lg text-gray-900 mb-2">It only works together</h3>
-              <p className="text-gray-600 text-sm">Every check-in helps the next swimmer. The more people check in, the better it gets.</p>
+              <div className="text-2xl mb-2">🤝</div>
+              <h3 className="font-bold text-lg text-gray-900 mb-2">Swimmers helping swimmers</h3>
+              <p className="text-gray-600 text-sm">Every check-in helps the next swimmer. The more people use it, the better it gets.</p>
             </div>
           </div>
         </div>
 
         {/* Product Flow */}
         <div className="bg-white pp-card p-8 mb-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Arrive → Check in → Swim → Done</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Check busyness → Go swim → Check in → Help the next swimmer</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            When you check in, the next swimmer can see how busy the pool is. That's it. No accounts, no tracking, just community data.
+            See before you go, check in when you're there. No accounts, no tracking, just swimmers helping swimmers.
           </p>
         </div>
 
