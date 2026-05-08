@@ -7,7 +7,7 @@
   <meta name="keywords" content="UK pools, EU pools, swimming, pool busyness, Pool Pulse" />
   <title>Pool Pulse - UK & EU Pool Busyness</title>
 
-  <link rel="icon" href="./assets/poolpulse_app_icon_color.svg" type="image/svg+xml" />
+  <link rel="icon" href="./assets/logo-icon.svg" type="image/svg+xml" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -77,13 +77,18 @@ const MapPin = (props) => <span {...props}>📍</span>;
 const ArrowLeft = (props) => <span {...props}>⬅️</span>;
 const Activity = (props) => <span {...props}>📊</span>;
 const Waves = (props) => <span {...props}>🌊</span>;
-const LogoWordmark = ({ size = "lg" }) => {
+const LogoWordmark = ({ size = "lg", showIcon = true }) => {
   const sizes = { sm: "text-xl", md: "text-2xl", lg: "text-4xl" };
+  const iconSizes = { sm: 24, md: 32, lg: 44 };
+  const iconPx = iconSizes[size] || iconSizes.lg;
   return (
-    <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, letterSpacing: "-0.5px" }} className={sizes[size] || sizes.lg}>
-      <span style={{ color: "white" }}>Pool</span>
-      {" "}
-      <em style={{ color: "#4ecdc4", fontStyle: "italic" }}>Pulse</em>
+    <span className={"inline-flex items-center gap-2 " + (sizes[size] || sizes.lg)}>
+      {showIcon && <img src="./assets/logo-icon.svg" alt="" width={iconPx} height={iconPx} style={{ display: "inline-block" }} />}
+      <span>
+        <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: "white" }}>Pool</span>
+        {" "}
+        <span style={{ fontFamily: "'Segoe UI', sans-serif", fontWeight: 400, fontStyle: "italic", color: "#4ecdc4" }}>Pulse</span>
+      </span>
     </span>
   );
 };
