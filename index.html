@@ -380,7 +380,7 @@ const LogoWordmark = ({ size = "lg" }) => {
           const mapEl = document.getElementById('pp-map');
           if (!mapEl || mapEl.dataset.init) return;
           mapEl.dataset.init = '1';
-          const map = window.L.map('pp-map').setView([56.0, -3.5], 6);
+          const map = window.L.map('pp-map', { scrollWheelZoom: false });
           window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
           }).addTo(map);
@@ -424,6 +424,8 @@ const LogoWordmark = ({ size = "lg" }) => {
               marker.bindPopup('<strong>' + p.name + '</strong><br><span style="color:#666;font-size:12px">' + p.city + '</span>');
             }
           });
+          const bounds = window.L.latLngBounds(pools.map(p => [p.lat, p.lng]));
+          map.fitBounds(bounds, { padding: [30, 30] });
         }
         setTimeout(tryInit, 100);
       }, []);
