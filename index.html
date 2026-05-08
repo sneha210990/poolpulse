@@ -7,8 +7,7 @@
   <meta name="keywords" content="UK pools, EU pools, swimming, pool busyness, Pool Pulse" />
   <title>Pool Pulse - UK & EU Pool Busyness</title>
 
-  <!-- Prevent favicon 404 noise -->
-  <link rel="icon" href="data:," />
+  <link rel="icon" href="./assets/poolpulse_app_icon_color.svg" type="image/svg+xml" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,8 +24,6 @@
   <!-- Tailwind CSS (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
   <!-- Supabase -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -69,7 +66,6 @@
     const SUPABASE_URL = "https://hygjskvfkucuwtcihbiw.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5Z2pza3Zma3VjdXd0Y2loYml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNjQ4OTMsImV4cCI6MjA4Njg0MDg5M30.SSrSE9J9-hs0kZNIzUMBCPST5T_JXZG5I68UF4ZjgLs";
     const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    window.supa = supa; // handy for debugging in console
 
     // -----------------------
     // Icons (Lucide)
@@ -441,6 +437,11 @@ const LogoWordmark = ({ size = "lg" }) => {
         setSelectedLane("");
       }, [selectedPool]);
       const [showSuccess, setShowSuccess] = useState(false);
+      const [toastMessage, setToastMessage] = useState("");
+      const showToast = (msg, duration = 3000) => {
+        setToastMessage(msg);
+        setTimeout(() => setToastMessage(""), duration);
+      };
       const [viewingPool, setViewingPool] = useState(null);
 
       const [showHomepage, setShowHomepage] = useState(true);
@@ -457,6 +458,7 @@ const LogoWordmark = ({ size = "lg" }) => {
       // Pools list filters (beta)
       const [openNowOnly, setOpenNowOnly] = useState(true);
       const [cityFilter, setCityFilter] = useState("All");
+      const [searchQuery, setSearchQuery] = useState("");
 
       // Feedback form
       const FEEDBACK_EMAIL = "hello@poolpulse.uk";
@@ -863,16 +865,6 @@ useEffect(() => {
   return () => window.removeEventListener('popstate', handlePopState);
 }, []);
       
-   // Re-render Lucide icons after React updates
-useEffect(() => {
-  if (window.lucide && window.lucide.createIcons) {
-    try {
-      window.lucide.createIcons();
-    } catch (e) {
-      console.error("Lucide error:", e);
-    }
-  }
-}, []);
 
       const savePoolUpdate = async (poolId, lane) => {
         // UX throttling: 1 check-in per hour per browser (server-side controls still required)
@@ -885,7 +877,7 @@ useEffect(() => {
 
           if (timeSinceLastCheckIn < oneHour) {
             const minutesLeft = Math.ceil((oneHour - timeSinceLastCheckIn) / 60000);
-            alert(`Please wait ${minutesLeft} minutes before checking in again.`);
+            showToast(`Please wait ${minutesLeft} minutes before checking in again.`);
             return;
           }
         }
@@ -911,7 +903,7 @@ useEffect(() => {
           }
         } catch (e) {
           console.error("insert error:", e);
-          alert("Failed to save check-in. Please try again.");
+          showToast("Failed to save check-in. Please try again.");
         }
       };
 
@@ -922,7 +914,7 @@ useEffect(() => {
   if (!pool) return;
 
   if (!isPoolOpen(pool)) {
-    alert(`${pool.name} is currently closed. Check-ins are disabled outside opening hours.`);
+    showToast(`${pool.name} is currently closed. Check-ins are disabled outside opening hours.`);
     return;
   }
 
@@ -964,8 +956,8 @@ useEffect(() => {
         return pool.country === "NL" ? `${city} 🇳🇱` : city;
       };
 
-      const cityOf = (pool) => (pool.country === "NL" ? "EU" : "UK");
-      const cityOptions = ["All", ...Array.from(new Set(POOLS.map((pool) => cityOf(pool))))];
+      const cityOf = (pool) => getPoolCity(pool);
+      const cityOptions = ["All", ...Array.from(new Set(POOLS.map((pool) => cityOf(pool)))).sort()];
 
       const getOpenStatusText = (pool) => {
         const now = new Date();
@@ -1317,23 +1309,17 @@ useEffect(() => {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
+          <div className="flex justify-center mb-4">
             <button
               onClick={() => setShowHomepage(false)}
-              className="bg-[#043A3D] text-white font-bold px-8 py-3 rounded-[10px] hover:opacity-90 transition-all shadow-md text-base"
+              className="bg-[#043A3D] text-white font-bold px-10 py-3.5 rounded-[10px] hover:opacity-90 transition-all shadow-md text-base"
             >
-              Check your pool
+              Check your pool →
             </button>
-            <a
-              href="dashboard.html"
-              className="px-8 py-3 rounded-[10px] border border-[#c9d7d5] text-[#043A3D] bg-white text-base font-semibold hover:bg-gray-50 transition text-center"
-            >
-              Open your dashboard →
-            </a>
           </div>
 
           <p className="text-center text-sm text-gray-500 max-w-2xl mx-auto">
-            No login needed to check your pool. Create an account only if you want to track your swims and routines.
+            No login needed — see lane busyness in seconds. {POOLS.length} pools across {Array.from(new Set(POOLS.map(p => getPoolCity(p)))).length} cities.
           </p>
         </div>
 
@@ -1403,6 +1389,7 @@ useEffect(() => {
   <img
     src="./assets/sneha.jpg"
     alt="Sneha"
+    loading="lazy"
     className="w-32 h-32 mx-auto rounded-full object-cover shadow-lg border-4 border-white"
   />
   <h3 className="text-xl font-bold text-gray-900 mt-4">Sneha</h3>
@@ -1670,6 +1657,18 @@ useEffect(() => {
               </div>
             </div>
 
+            {showSuccess && (
+              <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-teal-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce">
+                ✓ Checked in! Have a great swim
+              </div>
+            )}
+
+            {toastMessage && (
+              <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg z-50 text-sm max-w-xs text-center">
+                {toastMessage}
+              </div>
+            )}
+
             <div className="max-w-4xl mx-auto px-4 py-6">
               {/* Recent check-ins */}
               <div className="bg-white pp-card p-6 mb-6">
@@ -1769,15 +1768,43 @@ useEffect(() => {
                 </div>
               )}
 
-              <div className="text-center">
-                <button
-                  onClick={() => { if (!isOpen) return; setSelectedPool(viewingPool); setViewingPool(null); }}
-                  disabled={!isOpen}
-                  className={"text-white font-bold px-8 py-3 rounded-lg transition-all shadow-md" + (!isOpen ? " opacity-50 cursor-not-allowed" : " hover:opacity-90")}
-                  style={{ backgroundColor: pool.color }}
-                >
-                  {isOpen ? "Check In At This Pool" : "Pool Closed — Check-in disabled"}
-                </button>
+              <div className="bg-white pp-card p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Check In</h2>
+                {!isOpen ? (
+                  <div className="text-center py-4 text-gray-500">
+                    This pool is currently closed — check-ins are disabled outside opening hours.
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-600 mb-3">What lane are you swimming in?</p>
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      {LANES.map((lane) => (
+                        <button
+                          key={lane.id}
+                          onClick={() => setSelectedLane(lane.id)}
+                          className={`p-4 rounded-lg border-2 transition-all ${
+                            selectedLane === lane.id
+                              ? "border-teal-500 bg-teal-50 shadow-md"
+                              : "border-gray-200 hover:border-gray-300"
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">{lane.icon}</div>
+                          <div className="font-semibold text-sm text-gray-900">{lane.label.replace(" Lane", "")}</div>
+                        </button>
+                      ))}
+                    </div>
+                    {selectedLane && (
+                      <button
+                        onClick={() => { savePoolUpdate(viewingPool, selectedLane); }}
+                        className="w-full text-white font-bold py-3 rounded-[10px] hover:opacity-90 transition-all shadow-md"
+                        style={{ backgroundColor: pool.color }}
+                      >
+                        I'm Swimming Here Now
+                      </button>
+                    )}
+                    <p className="text-xs text-gray-500 text-center mt-3">Your check-in is anonymous</p>
+                  </>
+                )}
               </div>
             </div>
             {renderAuthModal()}
@@ -1788,13 +1815,15 @@ useEffect(() => {
       // -----------------------
       // Main Pool List View
       // -----------------------
+      const searchLower = searchQuery.toLowerCase().trim();
       const poolsToShow = POOLS
         .filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter))
-        .filter((p) => (openNowOnly ? isPoolOpen(p) : true));
+        .filter((p) => (openNowOnly ? isPoolOpen(p) : true))
+        .filter((p) => !searchLower || p.name.toLowerCase().includes(searchLower) || (p.location || "").toLowerCase().includes(searchLower) || (p.city || "").toLowerCase().includes(searchLower));
 
-      const showingNoneOpen = openNowOnly && poolsToShow.length === 0;
+      const showingNoneOpen = openNowOnly && poolsToShow.length === 0 && !searchLower;
       const poolsToRender = showingNoneOpen
-        ? POOLS.filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter))
+        ? POOLS.filter((p) => (cityFilter === "All" ? true : cityOf(p) === cityFilter)).filter((p) => !searchLower || p.name.toLowerCase().includes(searchLower) || (p.location || "").toLowerCase().includes(searchLower) || (p.city || "").toLowerCase().includes(searchLower))
         : poolsToShow;
 
       return (
@@ -1855,10 +1884,24 @@ useEffect(() => {
             </div>
           )}
 
+          {toastMessage && (
+            <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg z-50 text-sm max-w-xs text-center">
+              {toastMessage}
+            </div>
+          )}
+
           <div className="max-w-4xl mx-auto px-4 py-6">
             
-        {/* Filters */}
-        <div className="bg-white pp-card p-4 mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        {/* Search & Filters */}
+        <div className="bg-white pp-card p-4 mb-4">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search pools by name or city..."
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 mb-3"
+          />
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
               <input
@@ -1871,7 +1914,7 @@ useEffect(() => {
             </label>
 
             <div className="text-xs text-gray-500">
-              Busyness is based on check-ins from the last {CHECKIN_WINDOW_MINUTES} minutes.
+              Busyness from last {CHECKIN_WINDOW_MINUTES} min
             </div>
           </div>
 
@@ -1886,6 +1929,7 @@ useEffect(() => {
                 <option key={city} value={city}>{city}</option>
               ))}
             </select>
+          </div>
           </div>
         </div>
 
