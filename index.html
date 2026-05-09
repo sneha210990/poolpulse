@@ -836,6 +836,7 @@ const renderAuthModal = () => {
 
       useEffect(() => {
         if (!viewingPool) return;
+        localStorage.setItem("pp_lastPool", viewingPool);
         loadRecentCheckins();
 
         const t = setInterval(() => {
@@ -1333,14 +1334,38 @@ useEffect(() => {
             </p>
           </div>
 
-          <div className="flex justify-center mb-4">
-            <button
-              onClick={() => setShowHomepage(false)}
-              className="bg-[#043A3D] text-white font-bold px-10 py-3.5 rounded-[10px] hover:opacity-90 transition-all shadow-md text-base"
-            >
-              See your pool →
-            </button>
-          </div>
+          {(() => {
+            const lastPoolId = localStorage.getItem("pp_lastPool");
+            const lastPool = lastPoolId && POOLS.find(p => p.id === lastPoolId);
+            if (lastPool) {
+              return (
+                <div className="flex flex-col items-center gap-3 mb-4">
+                  <button
+                    onClick={() => { setShowHomepage(false); setViewingPool(lastPool.id); }}
+                    className="bg-[#043A3D] text-white font-bold px-10 py-3.5 rounded-[10px] hover:opacity-90 transition-all shadow-md text-base"
+                  >
+                    {lastPool.name} →
+                  </button>
+                  <button
+                    onClick={() => setShowHomepage(false)}
+                    className="text-sm text-gray-500 hover:text-gray-700 underline"
+                  >
+                    Choose a different pool
+                  </button>
+                </div>
+              );
+            }
+            return (
+              <div className="flex justify-center mb-4">
+                <button
+                  onClick={() => setShowHomepage(false)}
+                  className="bg-[#043A3D] text-white font-bold px-10 py-3.5 rounded-[10px] hover:opacity-90 transition-all shadow-md text-base"
+                >
+                  See your pool →
+                </button>
+              </div>
+            );
+          })()}
 
           <p className="text-center text-sm text-gray-500 max-w-2xl mx-auto">
             No login needed. {POOLS.length} pools across {Array.from(new Set(POOLS.map(p => getPoolCity(p)))).length} cities. Takes 5 seconds.
