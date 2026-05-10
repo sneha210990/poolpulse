@@ -429,6 +429,39 @@ const POOLS = [
       sunday: { open: '08:00', close: '18:00' }
     }
   },
+  {
+    id: 'beach-leisure-centre-aberdeen',
+    name: 'Beach Leisure Centre',
+    location: 'Beach Boulevard, Aberdeen, AB24 5NR',
+    city: 'Aberdeen',
+    country: 'UK',
+    address: 'Beach Boulevard, Aberdeen, AB24 5NR',
+    color: '#0EA5E9',
+    poolSize: '25m',
+    lanes: 6,
+    notes: 'Run by Sport Aberdeen. 25m main pool, diving pool, and leisure pool.',
+    hours: {
+      weekday: { open: '06:30', close: '21:30' },
+      saturday: { open: '08:00', close: '17:00' },
+      sunday: { open: '09:00', close: '17:00' }
+    }
+  },
+  {
+    id: 'northfield-swimming-pool-aberdeen',
+    name: 'Northfield Swimming Pool',
+    location: 'Auchmill Road, Aberdeen, AB16 7HB',
+    city: 'Aberdeen',
+    country: 'UK',
+    address: 'Auchmill Road, Aberdeen, AB16 7HB',
+    color: '#8B5CF6',
+    poolSize: '25m',
+    notes: 'Run by Sport Aberdeen. Community pool serving the Northfield area.',
+    hours: {
+      weekday: { open: '07:00', close: '21:00' },
+      saturday: { open: '09:00', close: '17:00' },
+      sunday: { open: '09:00', close: '17:00' }
+    }
+  },
 ];
 
 const LANES = [
