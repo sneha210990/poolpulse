@@ -1,0 +1,20 @@
+{
+  "name": "poolpulse-scraper",
+  "version": "1.0.0",
+  "description": "Timetable scraper for PoolPulse — extracts lane swimming sessions from Edinburgh Leisure",
+  "main": "scraper.js",
+  "scripts": {
+    "scrape": "node scraper.js",
+    "scrape:dry": "node scraper.js --dry-run",
+    "scrape:commonwealth": "node scraper.js royal-commonwealth",
+    "scrape:commonwealth:dry": "node scraper.js royal-commonwealth --dry-run"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "dotenv": "^16.4.5",
+    "puppeteer": "^22.15.0"
+  }
+}
